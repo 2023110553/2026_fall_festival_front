@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 기능명세서 (Notion)
+    url: https://app.notion.com/p/3d9f5b75509680f784b7d8904160e925
+    about: 이슈 작성 전에 화면별 상세 기능 정의를 먼저 확인해주세요
+  - name: FE 회의 내용 — 브랜치/커밋/PR 컨벤션 (Notion)
+    url: https://app.notion.com/p/FE-3d9f5b75509680129b45f3b0c7e431bb
+    about: 브랜치 네이밍, 커밋 컨벤션, PR 규칙은 여기서 확인해주세요
