@@ -1,19 +1,52 @@
+import TopHeader from '../../components/common/TopHeader'
+import { useAuth } from '../../hooks/useAuth'
+
 import AdBanner from './components/AdBanner'
 import NoticeMarquee from './components/NoticeMarquee'
 import LanternPreview from './components/LanternPreview'
 import BoothRanking from './components/BoothRanking'
 import NowPlayingCards from './components/NowPlayingCards'
+import * as S from './HomePage.styles'
 
-// 홈 화면 — 각 섹션은 components/ 아래 독립 컴포넌트로 분리해서
-// 담당자가 바뀌어도(배너 담당, 공지 담당 등) 파일 단위로 나눠 작업할 수 있게 한다.
+
+
+const FESTIVAL_PERIOD = '2026. 09.29. - 10.01'
+const FESTIVAL_DAY = 'DAY 1'
+
 export default function HomePage() {
+  const { isLoggedIn } = useAuth()
+
   return (
-    <div>
-      <AdBanner />
-      <NoticeMarquee />
-      <LanternPreview />
-      <BoothRanking />
-      <NowPlayingCards />
-    </div>
+    <S.Page>
+      <TopHeader title="홈" isLoggedIn={isLoggedIn} />
+
+      <S.Content>
+        <AdBanner />
+
+        <S.Hero>
+          <S.HeroDate>{FESTIVAL_PERIOD}</S.HeroDate>
+          <S.HeroRow>
+            <S.HeroLogo aria-label="DIRVANA">
+              DI<S.FlippedR aria-hidden="true">R</S.FlippedR>VANA
+            </S.HeroLogo>
+            <S.DayBadge>{FESTIVAL_DAY}</S.DayBadge>
+          </S.HeroRow>
+        </S.Hero>
+
+        <S.Gap $size={8}>
+          <NoticeMarquee />
+        </S.Gap>
+
+        <S.Gap $size={20}>
+          <LanternPreview>
+            <BoothRanking />
+          </LanternPreview>
+        </S.Gap>
+
+        <S.Gap $size={20}>
+          <NowPlayingCards />
+        </S.Gap>
+      </S.Content>
+    </S.Page>
   )
 }
