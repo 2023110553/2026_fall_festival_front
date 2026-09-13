@@ -10,6 +10,7 @@ import LanternFlowPage from '../app/lantern/LanternFlowPage'
 import PerformancePage from '../app/performance/PerformancePage'
 import InfoPage from '../app/info/InfoPage'
 import MyPage from '../app/mypage/MyPage'
+import ComponentPreviewPage from '../app/dev/ComponentPreviewPage'
 
 import AdminThemeProvider from '../app/admin/AdminThemeProvider'
 import AdminLoginPage from '../app/admin/AdminLoginPage'
@@ -54,4 +55,7 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  ...(import.meta.env.DEV
+    ? [{ path: '/ui-preview', element: <ComponentPreviewPage /> }]
+    : []),
 ])
