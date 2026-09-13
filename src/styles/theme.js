@@ -12,7 +12,7 @@ export const theme = {
     success: '#2FAE60',
   },
   nav: {
-    height: '56px',
+    height: '88px',
   },
   radius: {
     sm: '8px',
