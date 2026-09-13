@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import BoothMarker from './BoothMarker'
 import boothData from './zone1-booths.sample.json'
@@ -21,8 +22,26 @@ import boothData from './zone1-booths.sample.json'
 //   → 이 구역은 지면이 평지가 아니라 단(段)이 있는 대지라, y(표고)를 0으로 고정하면
 //     안 되고 각 부스가 실제로 놓이는 바닥면의 blender.z 값을 그대로 넘겨줘야 한다
 //     (zone1-booths.sample.json의 coordinates.y가 그 값).
-export default function Zone1Scene({ onBoothClick }) {
+//
+// 2026-09-13(3차): brightnessLevel prop 추가 — 부스 밝기 단계(등불 개수 기반, 0~4) 임시
+// 미리보기 값을 MapCanvas로부터 그대로 받아 모든 BoothMarker에 동일하게 전달한다.
+// 아직 부스별 lantern_count 데이터가 없어서 전체에 같은 값을 넣는 임시 상태 — 나중에
+// boothData.places[i].lanternCount 같은 필드가 생기면 각 BoothMarker마다 그 값 기반으로
+// 계산한 개별 단계를 넘기도록 이 자리만 바꾸면 된다(MapCanvas/MapShell 쪽 계약은 유지 가능).
+export default function Zone1Scene({ brightnessLevel = 0, onBoothClick }) {
   const { scene } = useGLTF('/models/zone1.glb')
+
+  // 2026-09-13: 낮/노을/밤 그림자(PCFSoft, directionalLight) 적용을 위해
+  // 지형/건물 glb의 모든 메시가 그림자를 드리우고(cast) 받도록(receive) 설정.
+  // 기본값(false)인 채로 두면 그림자가 아예 안 그려지므로 반드시 필요.
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+      }
+    })
+  }, [scene])
 
   return (
     <>
@@ -33,6 +52,7 @@ export default function Zone1Scene({ onBoothClick }) {
           position={[place.coordinates.x, place.coordinates.y, place.coordinates.z]}
           rotationY={(place.coordinates.rotation * Math.PI) / 180}
           label={place.name}
+          brightnessLevel={brightnessLevel}
           onClick={() => onBoothClick?.(place.id)}
         />
       ))}
