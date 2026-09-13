@@ -1,0 +1,10 @@
+{
+  "_comment": "좌표 소환 테스트용 샘플 데이터 — 실제 부스 데이터 아님(총학생회 확정 전). GET /zones/zone1/places 응답 형태를 흉내냄 (campus-map/map-backend-api-requirements.md 3번 섹션 스키마: coordinates(x, z, rotation), 여기서는 표고(y)도 함께 둠). x/y/z는 Three.js 씬 좌표계 기준(= Blender Y축 부호 반전 및 Z→Y 축 교환이 이미 적용된 값: three.x=blender.x, three.y=blender.z, three.z=-blender.y) — 실제 좌표 export 스크립트도 이 변환을 거쳐서 내려줘야 함(Zone1Scene.jsx 주석 참고).",
+  "_placement_note": "재원 요청(2026-09-13): 부스 크기 3m x 6m, 혜화관·경영관 앞 보행로 위, 아스팔트 도로 경계면에 가깝게 배치. 현재 지형(gyeongyeong_hyehwa_terrain.blend WIP)에서 이 조건에 맞는 보행로는 'WalkwayB_Tile' 그리드 하나뿐(도로 Road_Asphalt 북쪽 경계 바로 옆, blender y=34, 도로 북쪽 경계 y=33 — 1m 이격) — 이 줄을 따라 4개 배치함. 경영관 쪽(도로 남쪽)에는 별도 보행로 오브젝트가 아직 없어서(GGCourt_Asphalt만 있음, 폭이 좁고 성격이 다름) 이번엔 전부 도로 북쪽 보행로에 배치. 남쪽에도 배치가 필요하면 알려주면 좌표 추가할게.",
+  "places": [
+    { "id": "test-booth-1", "name": "테스트 부스 1", "category": "food", "coordinates": { "x": -8, "y": 3.14, "z": -34, "rotation": 0 } },
+    { "id": "test-booth-2", "name": "테스트 부스 2", "category": "goods", "coordinates": { "x": 6, "y": 3.14, "z": -34, "rotation": 0 } },
+    { "id": "test-booth-3", "name": "테스트 부스 3", "category": "food", "coordinates": { "x": 20, "y": 3.14, "z": -34, "rotation": 0 } },
+    { "id": "test-booth-4", "name": "테스트 부스 4", "category": "goods", "coordinates": { "x": 38, "y": 3.14, "z": -34, "rotation": 0 } }
+  ]
+}
