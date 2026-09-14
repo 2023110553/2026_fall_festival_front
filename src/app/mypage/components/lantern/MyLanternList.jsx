@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import Modal from '../common/Modal';
+import Modal from "../../../../components/common/Modal";
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import EmptyState from '../../../../components/common/EmptyState';
 

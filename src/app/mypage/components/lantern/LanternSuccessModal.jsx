@@ -1,4 +1,4 @@
-import Modal from '../common/Modal';
+import Modal from "../../../../components/common/Modal";
 
 /**
  * 2번째, 3번째 등불 달기 성공 시 노출되는 완료 안내 모달 컴포넌트
