@@ -1,4 +1,4 @@
-import Modal from '../common/Modal';
+import Modal from "../../../../components/common/Modal";
 
 export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm }) {
   return (
