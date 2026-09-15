@@ -4,7 +4,10 @@ import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import MyLanternList from './components/lantern/MyLanternList'
 import CreateLanternModal from './components/lantern/CreateLanternModal'
-import MyCouponList from './components/coupon/MyCouponList'
+import ScratchCouponModal from './components/coupon/ScratchCouponModal'
+import CouponResultModal from './components/coupon/CouponResultModal'
+import VerifyCodeModal from './components/coupon/VerifyCodeModal'
+import NoLanternCouponModal from './components/coupon/NoLanternCouponModal'
 import ConfirmLogoutModal from './components/lantern/ConfirmLogoutModal'
 import LanternLimitModal from './components/lantern/LanternLimitModal'
 import LanternSuccessModal from './components/lantern/LanternSuccessModal'
@@ -15,10 +18,15 @@ export default function MyPage() {
   // --- 모달 상태 관리 ---
   const [isLanternModalOpen, setIsLanternModalOpen] = useState(false)   // 나의 등불 목록 모달
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)     // 등불 달기 작성 모달
-  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false)     // 1번째: 쿠폰 긁기 모달
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)   // 2,3번째: 성공 안내 모달
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)       // 3개 초과 안내 모달
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)     // 로그아웃 확인 모달
+  const [isNoLanternModalOpen, setIsNoLanternModalOpen] = useState(false) // 등불 0개 상태에서 쿠폰 클릭 시 안내 모달
+
+  // 쿠폰 플로우 — null | 'scratch' | 'result' | 'verify' 단계 하나로 스크래치/결과/코드입력 모달을 전환
+  const [couponFlow, setCouponFlow] = useState(null)
+  // 현재 보유 쿠폰 — TODO: 실제로는 getMyCoupon()으로 받아온 서버 응답으로 대체
+  const [coupon, setCoupon] = useState(null)
 
   // 등불 목록 데이터 상태 (빈 배열로 시작)
   const [lanterns, setLanterns] = useState([])
@@ -52,12 +60,48 @@ export default function MyPage() {
 
     // 모달 분기 노출
     if (isFirstLantern) {
-      // [1번째 등불] ➔ 스크래치 쿠폰 모달 오픈
-      setIsCouponModalOpen(true)
+      // [1번째 등불] ➔ 새 쿠폰 발급 + 스크래치 모달 오픈
+      setCoupon({ id: created.id, status: 'unscratched' })
+      setCouponFlow('scratch')
     } else {
       // [2번째, 3번째 등불] ➔ 성공 완료 안내 모달 오픈
       setIsSuccessModalOpen(true)
     }
+  }
+
+  // 스크래치 완료 시 당첨/꽝 결과 반영 — TODO: 실제로는 서버가 이미 정해둔 결과를 조회
+  const handleScratchReveal = () => {
+    setCoupon((prev) => {
+      const isWin = Math.random() < 0.5
+      return {
+        ...prev,
+        status: isWin ? 'win' : 'lose',
+        reward: isWin ? '야간부스 30%할인' : undefined,
+      }
+    })
+    setCouponFlow('result')
+  }
+
+  // 쿠폰 사용 코드 검증 — TODO: 실제로는 useCoupon(coupon.id, code) API 호출로 대체
+  const handleVerifyCode = (code) =>
+    new Promise((resolve, reject) => {
+      if (code === '1234') {
+        setCoupon((prev) => ({ ...prev, status: 'used' }))
+        setCouponFlow('result')
+        resolve()
+      } else {
+        reject()
+      }
+    })
+
+  // '나의 쿠폰' 버튼 — 등불이 하나도 없으면 안내 모달, 있으면 보유 쿠폰 상태에 따라 스크래치/결과 모달로 진입
+  const handleOpenCouponFlow = () => {
+    if (lanterns.length === 0) {
+      setIsNoLanternModalOpen(true)
+      return
+    }
+    if (!coupon) return
+    setCouponFlow(coupon.status === 'unscratched' ? 'scratch' : 'result')
   }
 
 // 등불 삭제 처리
@@ -112,7 +156,7 @@ export default function MyPage() {
         </button>
 
         <button
-          onClick={() => setIsCouponModalOpen(true)}
+          onClick={handleOpenCouponFlow}
           style={{
             padding: '12px',
             borderRadius: '12px',
@@ -161,12 +205,24 @@ export default function MyPage() {
         onDelete={handleDeleteLantern}
       />
 
-      {/* 1번째 등불 달기 완료 ➔ 쿠폰 모달 */}
-      <MyCouponList
-        isOpen={isCouponModalOpen}
-        onClose={() => setIsCouponModalOpen(false)}
-        coupons={[]}
-        onSelect={() => {}}
+      {/* 쿠폰 플로우: 스크래치 → 결과(당첨/꽝) → 코드 인증 */}
+      <ScratchCouponModal
+        isOpen={couponFlow === 'scratch'}
+        onClose={() => setCouponFlow(null)}
+        onReveal={handleScratchReveal}
+      />
+
+      <CouponResultModal
+        isOpen={couponFlow === 'result'}
+        onClose={() => setCouponFlow(null)}
+        coupon={coupon}
+        onUseClick={() => setCouponFlow('verify')}
+      />
+
+      <VerifyCodeModal
+        isOpen={couponFlow === 'verify'}
+        onClose={() => setCouponFlow('result')}
+        onSubmit={handleVerifyCode}
       />
 
       {/* 2,3번째 등불 달기 완료 ➔ 성공 안내 모달 */}
@@ -186,6 +242,12 @@ export default function MyPage() {
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={handleConfirmLogout}
+      />
+
+      {/* 등불 0개 상태에서 '나의 쿠폰' 클릭 시 안내 모달 */}
+      <NoLanternCouponModal
+        isOpen={isNoLanternModalOpen}
+        onClose={() => setIsNoLanternModalOpen(false)}
       />
     </div>
   )
