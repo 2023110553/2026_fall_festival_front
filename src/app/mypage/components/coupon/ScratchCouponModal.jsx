@@ -29,11 +29,15 @@ export default function ScratchCouponModal({ isOpen, onClose, onReveal }) {
     canvas.style.width = `${CANVAS_WIDTH}px`
     canvas.style.height = `${CANVAS_HEIGHT}px`
 
-    const ctx = canvas.getContext('2d')
+    // getScratchedRatio에서 getImageData를 반복 호출하므로 브라우저에 미리 알려서 최적화 경로를 타게 함
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
     ctx.scale(dpr, dpr)
+    // 긁었을 때 비치는 색을 결과 배경색(CouponResultModal의 #9F9C99)과 맞추기 위해 먼저 깔아둠
     ctx.fillStyle = '#9F9C99'
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     ctx.fillStyle = '#737373'
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    ctx.fillStyle = '#100B0B'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
 

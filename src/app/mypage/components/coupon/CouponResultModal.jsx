@@ -55,8 +55,8 @@ function CouponResultModal({ isOpen, onClose, coupon, onUseClick }) {
           textAlign: 'center',
           fontWeight: 'bold',
           fontSize: '16px',
-          backgroundColor: isLose ? '#f2f2f2' : '#fff4e5',
-          color: isLose ? '#999' : '#d97706',
+          backgroundColor: '#9F9C99',
+          color:'#100B0B',
         }}
       >
         {isLose ? '꽝' : coupon.reward}
