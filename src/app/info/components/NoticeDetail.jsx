@@ -1,13 +1,30 @@
 import Tag from '../../../components/common/Tag'
+import InfoDetailHeader from './InfoDetailHeader'
+import OverflowMarquee from './OverflowMarquee'
 import * as S from './NoticeDetail.styles'
 
 export default function NoticeDetail({ notice, onBack }) {
   if (!notice) return null
-  return <S.Page>
-    <S.Back type="button" onClick={onBack}>← 목록으로</S.Back>
-    <S.Meta><Tag tone={notice.isUrgent ? 'danger' : 'default'}>{notice.isUrgent ? '긴급 공지' : '일반 공지'}</Tag><time>{notice.date}</time></S.Meta>
-    <S.Title>{notice.title}</S.Title>
-    {notice.imageUrl && <S.Image src={notice.imageUrl} alt={notice.title} />}
-    <S.Content>{notice.content}</S.Content>
-  </S.Page>
+
+  return (
+    <S.Page>
+      <InfoDetailHeader title="공지" onBack={onBack} />
+
+      <S.Article>
+        <S.TitleRow>
+          <Tag tone={notice.isUrgent ? 'danger' : 'default'}>
+            {notice.isUrgent ? '긴급 공지' : '일반 공지'}
+          </Tag>
+          <OverflowMarquee as="h3" variant="detail">
+            {notice.title}
+          </OverflowMarquee>
+        </S.TitleRow>
+
+        {notice.imageUrl && <S.Image src={notice.imageUrl} alt="" />}
+        <S.Content>
+          <time>{notice.date}</time> {notice.content}
+        </S.Content>
+      </S.Article>
+    </S.Page>
+  )
 }

@@ -1,7 +1,40 @@
 import styled from 'styled-components'
-export const Page=styled.article`display:flex;flex-direction:column;gap:16px;color:#fff;`
-export const Back=styled.button`align-self:flex-start;padding:0;border:0;background:transparent;color:#aaa;`
-export const Meta=styled.div`display:flex;align-items:center;gap:8px;time{color:#777;font-size:12px}`
-export const Title=styled.h2`margin:0;font-size:24px;line-height:1.4;`
-export const Image=styled.img`width:100%;border-radius:16px;object-fit:cover;`
-export const Content=styled.p`margin:0;color:#ddd;font-size:14px;line-height:1.8;white-space:pre-wrap;`
+
+export const Page = styled.article`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: ${({ theme }) => theme.color.text};
+`
+
+export const Article = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.68);
+`
+
+export const TitleRow = styled.div`
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+export const Image = styled.img`
+  width: 100%;
+  aspect-ratio: 1.2;
+  border-radius: 8px;
+  background: #0d0708;
+  object-fit: cover;
+`
+
+export const Content = styled.p`
+  margin: 0;
+  color: #4f4f4f;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+`
