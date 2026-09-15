@@ -1,5 +1,4 @@
 import { useState } from 'react'
-
 // 등불 관리 — 신고순/최신순 정렬, 총 개수, 목록(닉네임/문구/부스자리/신고횟수), 삭제(확인 모달 2단계)
 export default function AdminLanternPage() {
   const [sort, setSort] = useState('report')
