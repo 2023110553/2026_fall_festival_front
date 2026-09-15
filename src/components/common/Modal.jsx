@@ -8,22 +8,27 @@ export default function Modal({ open, isOpen, onClose, children, style = {} }) {
 
   // 모달이 열려있을 때 배경 페이지 스크롤 방지
   useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
+    if (!isModalOpen) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    const closeWithEscape = (event) => {
+      if (event.key === 'Escape') onClose?.()
     }
 
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', closeWithEscape)
+
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeWithEscape)
     }
-  }, [isModalOpen])
+  }, [isModalOpen, onClose])
 
   if (!isModalOpen) return null
 
   return (
     <S.Overlay onClick={onClose}>
-      <S.Panel onClick={(e) => e.stopPropagation()} style={style}>
+      <S.Panel role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={style}>
         {children}
       </S.Panel>
     </S.Overlay>

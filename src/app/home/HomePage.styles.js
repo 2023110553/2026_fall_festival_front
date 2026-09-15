@@ -4,8 +4,9 @@ import styled from 'styled-components'
 export const Page = styled.main`
   width: 100%;
   max-width: 375px;
+  min-height: 100vh;
   margin: 0 auto;
-  padding-top: calc(44px + env(safe-area-inset-top));
+  background: transparent;
 `
 
 export const Content = styled.div`
