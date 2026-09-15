@@ -53,6 +53,7 @@ export const LanternCard = styled.li`
   border: 1px solid #E0E0E0;
   background: #F7F7F7;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
 `
 
 export const CardContent = styled.div`

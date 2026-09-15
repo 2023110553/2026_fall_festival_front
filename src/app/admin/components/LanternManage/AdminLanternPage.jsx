@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
 import * as S from './AdminLanternPage.styles'
+import LanternDetailModal from './LanternDetailModal'
+import ConfirmDeleteModal from './ConfirmDeleteModal'
 import sirenIcon from '../../../../assets/admin/siren.svg'
 import closeIcon from '../../../../assets/admin/close.svg'
 
@@ -19,9 +21,24 @@ const MOCK_LANTERNS = [
 // 등불 관리 — 신고순/최신순 정렬, 총 개수, 목록(닉네임/문구/부스자리/신고횟수), 삭제(확인 모달 2단계)
 export default function AdminLanternPage() {
   const [sort, setSort] = useState('report')
+  const [selectedLantern, setSelectedLantern] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   // TODO: getAdminLanterns(sort) 연동 (api/admin.js)
   const lanterns = MOCK_LANTERNS
+
+  // 1단계: 상세 모달의 "삭제하기" → 상세 모달을 닫고 확인 모달을 연다
+  const handleDeleteRequest = (lantern) => {
+    setSelectedLantern(null)
+    setDeleteTarget(lantern)
+  }
+
+  // 2단계: 확인 모달의 "삭제하기" → 실제 삭제
+  const handleDeleteConfirm = () => {
+    // TODO: deleteAdminLantern(deleteTarget.id) 연동 후 목록 갱신
+    console.log('delete lantern', deleteTarget.id)
+    setDeleteTarget(null)
+  }
 
   return (
     <S.Page>
@@ -34,7 +51,7 @@ export default function AdminLanternPage() {
       </S.Header>
       <S.LanternList>
         {lanterns.map((l) => (
-          <S.LanternCard key={l.id}>
+          <S.LanternCard key={l.id} onClick={() => setSelectedLantern(l)}>
             <S.CardContent>
               <S.TitleRow>
                 <S.Nickname>{l.nickname}</S.Nickname>
@@ -55,6 +72,16 @@ export default function AdminLanternPage() {
           </S.LanternCard>
         ))}
       </S.LanternList>
+      <LanternDetailModal
+        lantern={selectedLantern}
+        onClose={() => setSelectedLantern(null)}
+        onDelete={handleDeleteRequest}
+      />
+      <ConfirmDeleteModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </S.Page>
   )
 }
