@@ -96,10 +96,9 @@ export const LoginButton = styled.button`
   height: 24px;
   flex: 0 0 54px;
   padding: 0;
-  border: 1px solid ${({ $appearance, theme }) => ($appearance === 'light' ? theme.color.text : '#fff')};
+  border: 1px solid #D8D8D8;
   border-radius: 12px;
-  background: transparent;
-  color: ${({ $appearance, theme }) => ($appearance === 'light' ? theme.color.text : '#fff')};
+  background: #FDFDFD;
   font-size: 10px;
   font-weight: 400;
   line-height: 22px;

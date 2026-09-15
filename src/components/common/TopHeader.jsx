@@ -87,7 +87,6 @@ export default function TopHeader({
           ) : (
             <S.LoginButton
               type="button"
-              $appearance={appearance}
               onClick={() => setIsLoginOpen(true)}
             >
               로그인
