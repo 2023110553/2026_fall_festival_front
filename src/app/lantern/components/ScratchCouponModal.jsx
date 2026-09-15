@@ -1,7 +1,7 @@
 // 아직 쿠폰을 긁지 않았어요 and 스크래치 인터랙션 모달
 
 import { useEffect, useRef } from 'react'
-import Modal from '../../../../components/common/Modal'
+import Modal from '../../../components/common/Modal'
 
 const CANVAS_WIDTH = 264
 const CANVAS_HEIGHT = 58

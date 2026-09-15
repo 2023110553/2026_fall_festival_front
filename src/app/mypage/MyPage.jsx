@@ -2,15 +2,19 @@
 
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+
+// 1. mypage 전용 컴포넌트 (src/app/mypage/components/...)
 import MyLanternList from './components/lantern/MyLanternList'
-import CreateLanternModal from './components/lantern/CreateLanternModal'
-import ScratchCouponModal from './components/coupon/ScratchCouponModal'
-import CouponResultModal from './components/coupon/CouponResultModal'
-import VerifyCodeModal from './components/coupon/VerifyCodeModal'
+import ConfirmLogoutModal from './components/auth/ConfirmLogoutModal'
 import NoLanternCouponModal from './components/coupon/NoLanternCouponModal'
-import ConfirmLogoutModal from './components/lantern/ConfirmLogoutModal'
-import LanternLimitModal from './components/lantern/LanternLimitModal'
-import LanternSuccessModal from './components/lantern/LanternSuccessModal'
+
+// 2. app/lantern 공통 모달들 (src/app/lantern/components/...)
+import CreateLanternModal from '../lantern/components/CreateLanternModal'
+import ScratchCouponModal from '../lantern/components/ScratchCouponModal'
+import CouponResultModal from '../lantern/components/CouponResultModal'
+import VerifyCodeModal from '../lantern/components/VerifyCodeModal'
+import LanternLimitModal from '../lantern/components/LanternLimitModal'
+import LanternSuccessModal from '../lantern/components/LanternSuccessModal'
 
 export default function MyPage() {
   const { user, logout } = useAuth()
