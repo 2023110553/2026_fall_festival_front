@@ -21,6 +21,9 @@ import AdminNoticeDetailPage from '../app/admin/components/NoticeManage/AdminNot
 import AdminNoticeEditPage from '../app/admin/components/NoticeManage/AdminNoticeEditPage'
 import AdminNoticeCreatePage from '../app/admin/components/NoticeManage/AdminNoticeCreatePage'
 import AdminLostFoundPage from '../app/admin/components/LostFoundManage/AdminLostFoundPage'
+import AdminLostFoundCreatePage from '../app/admin/components/LostFoundManage/AdminLostFoundCreatePage'
+import AdminLostFoundDetailPage from '../app/admin/components/LostFoundManage/AdminLostFoundDetailPage'
+import AdminLostFoundEditPage from '../app/admin/components/LostFoundManage/AdminLostFoundEditPage'
 
 // 라우트 정의는 이 파일 한 곳에서만 관리한다.
 // 일반 사이트(AppLayout, 하단 내비 포함)와 관리자(AdminAppLayout, /admin/*)는
@@ -60,6 +63,9 @@ export const router = createBrowserRouter([
           { path: 'notices/new', element: <AdminNoticeCreatePage /> },
           { path: 'notices/:noticeId', element: <AdminNoticeDetailPage /> },
           { path: 'notices/:noticeId/edit', element: <AdminNoticeEditPage /> },
+          { path: 'lost-found/new', element: <AdminLostFoundCreatePage /> },
+          { path: 'lost-found/:itemId', element: <AdminLostFoundDetailPage /> },
+          { path: 'lost-found/:itemId/edit', element: <AdminLostFoundEditPage /> },
         ],
       },
     ],
