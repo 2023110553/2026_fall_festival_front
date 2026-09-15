@@ -33,6 +33,7 @@ export const Header = styled.header`
     border-radius: 99px;
     overflow: hidden;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
+    margin: 0 auto;
 `
 
 export const Tab = styled.button`
@@ -46,10 +47,6 @@ export const Tab = styled.button`
     border: none;
     background:${({ $active }) => ($active ? '#D8D8D8': 'transparent')};
     cursor: pointer;
-`
-
-export const Main = styled.main`
-    padding: 16px;
 `
 
 export const TABS = [

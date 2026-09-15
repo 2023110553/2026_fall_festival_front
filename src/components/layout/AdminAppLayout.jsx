@@ -23,9 +23,9 @@ export default function AdminAppLayout() {
             </S.Tab>
           ))}
           </S.Header>
-        <S.Main>
+        <main>
           <Outlet />
-        </S.Main>
+        </main>
       </S.Container>
     </S.Page>
   )
