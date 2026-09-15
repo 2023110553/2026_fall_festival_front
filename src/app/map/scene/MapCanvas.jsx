@@ -4,6 +4,7 @@ import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, Selection, SelectiveBloom } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Zone1Scene from './zones/Zone1Scene'
+import Zone2Scene from './zones/Zone2Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 
 // 재원 담당 — 구역별 3D 씬(터레인+건물+부스 앵커)을 감싸는 진입 컴포넌트.
@@ -23,6 +24,10 @@ import SceneEnvironment from './environment/SceneEnvironment'
 //
 // 2026-09-13: 부스 좌표(JSON) → 3D 씬 소환 파이프라인 검증용으로 zone1만 우선 연결.
 // zone2/zone3는 아직 지형 glb/부스 좌표 정리 전이라 TODO로 남겨둠.
+//
+// 2026-09-15: zone2(팔정도) 연결(이슈 #22) — Zone2Scene은 아직 부스 좌표가 없어서
+// brightnessLevel/onBoothClick 없이 지형만 렌더링한다. zone3(만해광장+후문쪽 거리)는
+// 여전히 TODO.
 //
 // 2026-09-13(2차): timeOfDay(낮/노을/밤 라이팅·하늘 전환) 구현.
 // 실제 하늘/조명/그림자 값은 전부 environment/SceneEnvironment.jsx +
@@ -58,8 +63,10 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
         <Suspense fallback={null}>
           {zoneId === 'zone1' ? (
             <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+          ) : zoneId === 'zone2' ? (
+            <Zone2Scene />
           ) : (
-            // TODO: zone2(팔정도), zone3(만해광장+후문쪽 거리) 씬 연결
+            // TODO: zone3(만해광장+후문쪽 거리) 씬 연결
             null
           )}
         </Suspense>
