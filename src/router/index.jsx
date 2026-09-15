@@ -18,6 +18,8 @@ import AdminLoginPage from '../app/admin/AdminLoginPage'
 import AdminLanternPage from '../app/admin/components/LanternManage/AdminLanternPage'
 import AdminNoticePage from '../app/admin/components/NoticeManage/AdminNoticePage'
 import AdminNoticeDetailPage from '../app/admin/components/NoticeManage/AdminNoticeDetailPage'
+import AdminNoticeEditPage from '../app/admin/components/NoticeManage/AdminNoticeEditPage'
+import AdminNoticeCreatePage from '../app/admin/components/NoticeManage/AdminNoticeCreatePage'
 import AdminLostFoundPage from '../app/admin/components/LostFoundManage/AdminLostFoundPage'
 
 // 라우트 정의는 이 파일 한 곳에서만 관리한다.
@@ -55,7 +57,9 @@ export const router = createBrowserRouter([
             ],
           },
           // 상세 화면은 타이틀/탭 없이 자체 헤더를 쓰므로 AdminAppLayout 밖에 둔다
+          { path: 'notices/new', element: <AdminNoticeCreatePage /> },
           { path: 'notices/:noticeId', element: <AdminNoticeDetailPage /> },
+          { path: 'notices/:noticeId/edit', element: <AdminNoticeEditPage /> },
         ],
       },
     ],

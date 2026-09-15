@@ -43,7 +43,9 @@ export default function AdminNoticeDetailPage() {
               <S.Content>{notice.content}</S.Content>
             </S.ContentCard>
             <S.BottomBar>
-              <S.PrimaryButton type="button">게시물 수정하기</S.PrimaryButton>
+              <S.PrimaryButton type="button" onClick={() => navigate(`/admin/notices/${noticeId}/edit`)}>
+                게시물 수정하기
+              </S.PrimaryButton>
               <S.DangerButton type="button" onClick={() => setIsDeleteOpen(true)}>
                 삭제하기
               </S.DangerButton>

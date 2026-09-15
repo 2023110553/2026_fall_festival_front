@@ -16,7 +16,7 @@ export const MOCK_NOTICES = [
     type: 'NORMAL',
     title: '동국대학교 가을 대동제에 코르티스가 온다고?',
     content: CONTENT,
-    imageUrl: mockCortis,
+    imageUrl: null,
   })),
 ]
 

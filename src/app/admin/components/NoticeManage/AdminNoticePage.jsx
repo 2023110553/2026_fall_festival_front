@@ -1,13 +1,14 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import * as S from './AdminNoticePage.styles'
 import { MOCK_NOTICES, NOTICE_TYPE_LABEL } from './mockNotices'
+import NoticeTypeSelectModal from './NoticeTypeSelectModal'
 
-// 공지 관리 — 목록(태그/제목/미리보기), 신규 등록(유형 선택 모달→작성), 상세/수정/삭제
 export default function AdminNoticePage() {
   const navigate = useNavigate()
+  const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false)
 
-  // TODO: getAdminNotices() 연동 (api/admin.js)
   const notices = MOCK_NOTICES
 
   return (
@@ -25,9 +26,16 @@ export default function AdminNoticePage() {
         ))}
       </S.NoticeList>
       <S.BottomBar>
-        {/* TODO: 공지 등록 플로우(유형 선택 모달→작성) */}
-        <S.PrimaryButton type="button">공지 등록하기</S.PrimaryButton>
+        <S.PrimaryButton type="button" onClick={() => setIsTypeSelectOpen(true)}>
+          공지 등록하기
+        </S.PrimaryButton>
       </S.BottomBar>
+
+      <NoticeTypeSelectModal
+        isOpen={isTypeSelectOpen}
+        onClose={() => setIsTypeSelectOpen(false)}
+        onSelect={(type) => navigate(`/admin/notices/new?type=${type}`)}
+      />
     </S.Page>
   )
 }
