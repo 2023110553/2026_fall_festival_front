@@ -1,34 +1,55 @@
-import { useState } from 'react'
-import CollabList from './collab/CollabList'
-import NoticeList from './notice/NoticeList'
-import LostFoundList from './lostfound/LostFoundList'
-import DevTeamList from './team/DevTeamList'
+import { useMemo, useState } from 'react'
+import TopHeader from '../../components/common/TopHeader'
+import SegmentedTabs from '../../components/common/SegmentedTabs'
+import CollabList from './components/CollabList'
+import NoticeList from './components/NoticeList'
+import LostFoundList from './components/LostFoundList'
+import DevTeamList from './components/DevTeamList'
+import { COLLAB_MOCKS, LOST_FOUND_MOCKS, NOTICE_MOCKS } from './info.mock'
+import * as S from './InfoPage.styles'
 
-const TABS = [
-  { key: 'collab', label: '협업' },
-  { key: 'notice', label: '공지' },
-  { key: 'lostfound', label: '분실물' },
-  { key: 'team', label: '개발진' },
+const INFO_TABS = [
+  { value: 'collab', label: '협업' },
+  { value: 'notice', label: '공지' },
+  { value: 'lostfound', label: '분실물' },
+  { value: 'developer', label: '개발진' },
 ]
 
-// 안내(ABOUT) — 협업/공지/분실물/개발진 4개 하위 탭. 각 탭은 info/{tab}/ 폴더 안에 목록+상세로 나뉜다.
 export default function InfoPage() {
   const [tab, setTab] = useState('collab')
+  const [lostDate, setLostDate] = useState('9/29')
+  const [keyword, setKeyword] = useState('')
+
+  const lostItems = useMemo(() => {
+    const query = keyword.trim().toLowerCase()
+    return LOST_FOUND_MOCKS.filter((item) => {
+      const matchesDate = item.date === lostDate
+      const searchableText = `${item.title} ${item.location} ${item.hashtags.join(' ')}`.toLowerCase()
+      return matchesDate && (!query || searchableText.includes(query))
+    })
+  }, [keyword, lostDate])
 
   return (
-    <div>
-      <nav>
-        {TABS.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)} disabled={tab === t.key}>
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
-      {tab === 'collab' && <CollabList collabs={[]} onSelect={() => {}} />}
-      {tab === 'notice' && <NoticeList notices={[]} onSelect={() => {}} />}
-      {tab === 'lostfound' && <LostFoundList items={[]} onSelect={() => {}} />}
-      {tab === 'team' && <DevTeamList teams={[]} />}
-    </div>
+    <S.Page>
+      <TopHeader title="안내" />
+      <S.Content>
+        <SegmentedTabs items={INFO_TABS} value={tab} onChange={setTab} ariaLabel="안내 메뉴" />
+        <S.Section role="tabpanel">
+          {tab === 'collab' && <CollabList collabs={COLLAB_MOCKS} onSelect={() => {}} />}
+          {tab === 'notice' && <NoticeList notices={NOTICE_MOCKS} onSelect={() => {}} />}
+          {tab === 'lostfound' && (
+            <LostFoundList
+              items={lostItems}
+              date={lostDate}
+              keyword={keyword}
+              onDateChange={setLostDate}
+              onKeywordChange={setKeyword}
+              onSelect={() => {}}
+            />
+          )}
+          {tab === 'developer' && <DevTeamList teams={[]} />}
+        </S.Section>
+      </S.Content>
+    </S.Page>
   )
 }
