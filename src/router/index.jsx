@@ -11,6 +11,7 @@ import PerformancePage from '../app/performance/PerformancePage'
 import InfoPage from '../app/info/InfoPage'
 import MyPage from '../app/mypage/MyPage'
 import ComponentPreviewPage from '../app/dev/ComponentPreviewPage'
+import PerformanceDetailPage from '../app/performance/PerformanceDetailPage'
 
 import AdminThemeProvider from '../app/admin/AdminThemeProvider'
 import AdminLoginPage from '../app/admin/AdminLoginPage'
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: 'map', element: <MapPage /> },
       { path: 'lantern', element: <LanternFlowPage /> },
       { path: 'performance', element: <PerformancePage /> },
+      { path: 'performance/:id', element: <PerformanceDetailPage /> },
       { path: 'info', element: <InfoPage /> },
       { path: 'mypage', element: <MyPage /> },
     ],
