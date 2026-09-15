@@ -8,8 +8,9 @@ import CreateLanternModal from './components/CreateLanternModal'
 import ScratchCouponModal from './components/ScratchCouponModal'
 import CouponResultModal from './components/CouponResultModal'
 import VerifyCodeModal from './components/VerifyCodeModal'
-import LanternSuccessModal from './components/LanternSuccessModal'
-import LanternLimitModal from './components/LanternLimitModal'
+
+import LoginModal from '../auth/LoginModal'
+import AlertModal from '../../components/common/AlertModal'
 
 export default function LanternFlowPage() {
   const { isLoggedIn } = useAuth()
@@ -24,16 +25,17 @@ export default function LanternFlowPage() {
   const [couponFlow, setCouponFlow] = useState(null)
   const [coupon, setCoupon] = useState(null)
 
-  // 💡 BottomNav 등 전역 이벤트(openLanternModal) 수신 및 모달 오픈 처리
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  // BottomNav 등 전역 이벤트(openLanternModal) 수신 및 모달 오픈 처리
   useEffect(() => {
     const handleOpen = () => {
       // -------------------------------------------------------------
       // [개발용 로그인 우회]
       // 실제 로그인 연동 시 아래 주석을 해제하고 로그인 모달을 띄워줍니다.
-      // if (!isLoggedIn) {
-      //   openLoginModal()
-      //   return
-      // }
+      if (!isLoggedIn) {
+        setIsLoginModalOpen(true)
+        return
+      }
       // -------------------------------------------------------------
 
       // 등불 작성 개수 제한 분기 (3개 이상 시 제한 모달)
@@ -97,7 +99,10 @@ export default function LanternFlowPage() {
   return (
     <>
       {/* --- 모달 랜더링 영역 --- */}
-
+      <LoginModal
+        open={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
       {/* 1. 등불 작성 모달 */}
       <CreateLanternModal
         isOpen={isCreateModalOpen}
@@ -129,15 +134,19 @@ export default function LanternFlowPage() {
       />
 
       {/* 5. 2,3번째 등불 작성 성공 안내 모달 */}
-      <LanternSuccessModal
+      <AlertModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
+        title="등불 달기 성공!"
+        subTitle="성공적으로 등불이 달렸습니다."
       />
 
       {/* 6. 3개 초과 작성 제한 안내 모달 */}
-      <LanternLimitModal
+      <AlertModal
         isOpen={isLimitModalOpen}
         onClose={() => setIsLimitModalOpen(false)}
+        title="등불 3개를 모두 달았어요"
+        subTitle="등불은 하루에 3개씩만 달 수 있어요"
       />
     </>
   )
