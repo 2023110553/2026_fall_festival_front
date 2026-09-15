@@ -11,11 +11,15 @@ import PerformancePage from '../app/performance/PerformancePage'
 import InfoPage from '../app/info/InfoPage'
 import MyPage from '../app/mypage/MyPage'
 import ComponentPreviewPage from '../app/dev/ComponentPreviewPage'
+import PerformanceDetailPage from '../app/performance/PerformanceDetailPage'
 
 import AdminThemeProvider from '../app/admin/AdminThemeProvider'
 import AdminLoginPage from '../app/admin/AdminLoginPage'
 import AdminLanternPage from '../app/admin/components/LanternManage/AdminLanternPage'
 import AdminNoticePage from '../app/admin/components/NoticeManage/AdminNoticePage'
+import AdminNoticeDetailPage from '../app/admin/components/NoticeManage/AdminNoticeDetailPage'
+import AdminNoticeEditPage from '../app/admin/components/NoticeManage/AdminNoticeEditPage'
+import AdminNoticeCreatePage from '../app/admin/components/NoticeManage/AdminNoticeCreatePage'
 import AdminLostFoundPage from '../app/admin/components/LostFoundManage/AdminLostFoundPage'
 
 // 라우트 정의는 이 파일 한 곳에서만 관리한다.
@@ -30,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'map', element: <MapPage /> },
       { path: 'lantern', element: <LanternFlowPage /> },
       { path: 'performance', element: <PerformancePage /> },
+      { path: 'performance/:id', element: <PerformanceDetailPage /> },
       { path: 'info', element: <InfoPage /> },
       { path: 'mypage', element: <MyPage /> },
     ],
@@ -51,6 +56,10 @@ export const router = createBrowserRouter([
               { path: 'lost-found', element: <AdminLostFoundPage /> },
             ],
           },
+          // 상세 화면은 타이틀/탭 없이 자체 헤더를 쓰므로 AdminAppLayout 밖에 둔다
+          { path: 'notices/new', element: <AdminNoticeCreatePage /> },
+          { path: 'notices/:noticeId', element: <AdminNoticeDetailPage /> },
+          { path: 'notices/:noticeId/edit', element: <AdminNoticeEditPage /> },
         ],
       },
     ],
