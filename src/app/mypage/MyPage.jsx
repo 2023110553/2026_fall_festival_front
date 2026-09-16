@@ -61,7 +61,14 @@ export default function MyPage() {
     // 모달 분기 노출
     if (isFirstLantern) {
       // [1번째 등불] ➔ 새 쿠폰 발급 + 스크래치 모달 오픈
-      setCoupon({ id: created.id, status: 'unscratched' })
+      // TODO: 실제로는 서버가 등록 순서로 이미 확정한 당첨 결과를 응답에 포함해서 내려줌
+      const isWin = Math.random() < 0.5
+      setCoupon({
+        id: created.id,
+        status: 'unscratched',
+        reward: isWin ? '야간부스 30%할인' : undefined,
+        isWin,
+      })
       setCouponFlow('scratch')
     } else {
       // [2번째, 3번째 등불] ➔ 성공 완료 안내 모달 오픈
@@ -69,16 +76,12 @@ export default function MyPage() {
     }
   }
 
-  // 스크래치 완료 시 당첨/꽝 결과 반영 — TODO: 실제로는 서버가 이미 정해둔 결과를 조회
+  // 스크래치 완료 시 화면 전환 — 당첨 결과는 쿠폰 발급 시점에 이미 확정되어 있으므로 여기선 상태만 전환
   const handleScratchReveal = () => {
-    setCoupon((prev) => {
-      const isWin = Math.random() < 0.5
-      return {
-        ...prev,
-        status: isWin ? 'win' : 'lose',
-        reward: isWin ? '야간부스 30%할인' : undefined,
-      }
-    })
+    setCoupon((prev) => ({
+      ...prev,
+      status: prev.isWin ? 'win' : 'lose',
+    }))
     setCouponFlow('result')
   }
 
@@ -210,6 +213,7 @@ export default function MyPage() {
         isOpen={couponFlow === 'scratch'}
         onClose={() => setCouponFlow(null)}
         onReveal={handleScratchReveal}
+        coupon={coupon}
       />
 
       <CouponResultModal

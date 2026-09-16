@@ -5,12 +5,13 @@ import Modal from '../../../../components/common/Modal'
 
 const CANVAS_WIDTH = 264
 const CANVAS_HEIGHT = 58
-const BRUSH_RADIUS = 14
+const BRUSH_RADIUS = 10
 const REVEAL_THRESHOLD = 0.55 // 55% 이상 긁으면 결과 공개
 const SAMPLE_STEP = 4 // getImageData 전체 순회 대신 4픽셀마다 1개만 샘플링해서 부하 절감
 
 // onReveal: 스크래치가 기준치 이상 진행되면 호출 → 상위에서 CouponResultModal로 전환
-export default function ScratchCouponModal({ isOpen, onClose, onReveal }) {
+// coupon: 발급 시점에 이미 확정된 결과(isWin/reward) — 스크래치 레이어 밑에 미리 그려서 긁는 도중에 보이게 함
+export default function ScratchCouponModal({ isOpen, onClose, onReveal, coupon }) {
   const canvasRef = useRef(null)
   const ctxRef = useRef(null)
   const isScratchingRef = useRef(false)
@@ -32,14 +33,12 @@ export default function ScratchCouponModal({ isOpen, onClose, onReveal }) {
     // getScratchedRatio에서 getImageData를 반복 호출하므로 브라우저에 미리 알려서 최적화 경로를 타게 함
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     ctx.scale(dpr, dpr)
-    // 긁었을 때 비치는 색을 결과 배경색(CouponResultModal의 #9F9C99)과 맞추기 위해 먼저 깔아둠
-    ctx.fillStyle = '#9F9C99'
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    // canvas는 회색 스크래치 레이어만 담당 — 실제 결과 텍스트는 canvas 뒤에 별도 div로 깔아두고
+    // destination-out으로 이 레이어를 지우면 그 뒤의 div가 비쳐 보이는 구조
+    ctx.globalCompositeOperation = 'source-over'
     ctx.fillStyle = '#737373'
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-    ctx.fillStyle = '#100B0B'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
 
     ctxRef.current = ctx
     isScratchingRef.current = false
@@ -139,14 +138,47 @@ export default function ScratchCouponModal({ isOpen, onClose, onReveal }) {
           손으로 문질러서 당첨 결과를 확인해보세요
         </p>
 
-        <canvas
-          ref={canvasRef}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          style={{ touchAction: 'none', borderRadius: '8px', cursor: 'pointer' }}
-        />
+        <div
+          style={{
+            position: 'relative',
+            width: `${CANVAS_WIDTH}px`,
+            height: `${CANVAS_HEIGHT}px`,
+            margin: '0 auto',
+          }}
+        >
+          {/* canvas 밑에 깔린 실제 결과 — 스크래치 레이어가 지워지면 이 텍스트가 비쳐 보임 */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',
+              backgroundColor: '#9F9C99',
+              color: '#100B0B',
+              fontWeight: 'bold',
+              fontSize: '16px',
+            }}
+          >
+            {coupon?.isWin ? coupon.reward : '꽝'}
+          </div>
+
+          <canvas
+            ref={canvasRef}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              touchAction: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+            }}
+          />
+        </div>
 
         <div style={{ marginTop: '16px' }}>
           <button
