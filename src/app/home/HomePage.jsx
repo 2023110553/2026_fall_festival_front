@@ -1,5 +1,4 @@
 import TopHeader from '../../components/common/TopHeader'
-import { useAuth } from '../../hooks/useAuth'
 
 import AdBanner from './components/AdBanner'
 import NoticeMarquee from './components/NoticeMarquee'
@@ -14,11 +13,9 @@ const FESTIVAL_PERIOD = '2026. 09.29. - 10.01'
 const FESTIVAL_DAY = 'DAY 1'
 
 export default function HomePage() {
-  const { isLoggedIn } = useAuth()
-
   return (
     <S.Page>
-      <TopHeader title="홈" isLoggedIn={isLoggedIn} />
+      <TopHeader title="홈" appearance="light" />
 
       <S.Content>
         <AdBanner />

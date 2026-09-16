@@ -38,12 +38,41 @@ export const Marker = styled.img`
 export const Title = styled.h1`
   overflow: hidden;
   margin: 0;
-  color: #fff;
+  color: ${({ $appearance, theme }) => ($appearance === 'light' ? theme.color.text : '#fff')};
   font-size: 20px;
   font-weight: 600;
   line-height: normal;
   text-overflow: ellipsis;
   white-space: nowrap;
+`
+
+export const Actions = styled.div`
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+export const LanguageButton = styled.button`
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: 1px solid rgba(17, 18, 20, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #333;
+  font-size: 9px;
+  opacity: 1;
+  cursor: default;
+`
+
+export const LanguageChevron = styled.span`
+  margin-left: 1px;
+  color: #555;
+  font-size: 10px;
+  transform: translateY(-1px);
 `
 
 export const ProfileButton = styled.button`
@@ -67,10 +96,9 @@ export const LoginButton = styled.button`
   height: 24px;
   flex: 0 0 54px;
   padding: 0;
-  border: 1px solid #fff;
+  border: 1px solid #D8D8D8;
   border-radius: 12px;
-  background: transparent;
-  color: #fff;
+  background: #FDFDFD;
   font-size: 10px;
   font-weight: 400;
   line-height: 22px;

@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import NowPlayingCard from './components/NowPlayingCard'
 import TimelineList from './components/TimelineList'
-import SetlistModal from './components/SetlistModal'
+import SetlistModal from './components/Setlist'
 
 // 공연 안내(STAGE) — 날짜 탭 + 지금 공연중 하이라이트 + 시간대별 타임라인 + 상세(셋리스트) 모달
 export default function PerformancePage() {
@@ -9,7 +8,6 @@ export default function PerformancePage() {
 
   return (
     <div>
-      <NowPlayingCard performance={null} />
       <TimelineList performances={[]} onSelect={setSelectedId} />
       <SetlistModal open={!!selectedId} onClose={() => setSelectedId(null)} setlist={[]} />
     </div>
