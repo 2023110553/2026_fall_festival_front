@@ -1,6 +1,125 @@
 import styled from 'styled-components'
-export const List=styled.div`display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;`
-export const Card=styled.article`min-width:260px;padding:20px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171717;color:#fff;scroll-snap-align:start;`
-export const Role=styled.strong`display:block;color:#999;font-size:12px;`
-export const Lead=styled.h3`margin:12px 0 8px;font-size:20px;`
-export const Members=styled.p`margin:0;color:#aaa;font-size:13px;line-height:1.6;`
+
+const cardTransform = (position) => {
+  if (position === 0) return 'translateX(-50%)'
+  if (position === -1) return 'translateX(calc(-50% - 120px)) translateY(148px) scale(0.714285) rotate(-10deg)'
+  if (position === 1) return 'translateX(calc(-50% + 121px)) translateY(148px) scale(0.714285) rotate(10deg)'
+  if (position <= -2) return 'translateX(calc(-50% - 171px)) translateY(164px) scale(0.714285) rotate(-20deg)'
+  return 'translateX(calc(-50% + 172px)) translateY(164px) scale(0.714285) rotate(20deg)'
+}
+
+const cardLayer = (position) => {
+  if (position <= -2) return 1
+  if (position === -1) return 2
+  if (position === 0) return 3
+  if (position === 1) return 4
+  return 5
+}
+
+export const Wrapper = styled.div`
+  position: relative;
+  min-height: 514px;
+`
+
+export const RoleTabs = styled.div`
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+`
+
+export const RoleTab = styled.button`
+  flex: 0 0 auto;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: ${({ $active }) => ($active ? '#737373' : '#d8d8d8')};
+  color: ${({ $active }) => ($active ? '#fdfdfd' : '#9f9c99')};
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  &:focus-visible { outline: 2px solid #dc7054; outline-offset: 2px; }
+`
+
+export const Hint = styled.p`
+  margin: 15px 0 0;
+  color: #737373;
+  font-size: 12px;
+  line-height: 17px;
+  text-align: center;
+`
+
+export const CardStage = styled.div`
+  position: relative;
+  width: calc(100% + 32px);
+  height: 408px;
+  margin-left: -16px;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+
+  &::after {
+    position: absolute;
+    top: 250px;
+    left: 50%;
+    z-index: 1;
+    width: 288px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(80, 67, 57, 0.14);
+    filter: blur(18px);
+    transform: translateX(-50%);
+    content: '';
+  }
+
+  &:focus-visible { outline: 2px solid #dc7054; outline-offset: -2px; }
+`
+
+export const CardSlot = styled.button`
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: ${({ $position }) => cardLayer($position)};
+  width: 210px;
+  height: 280px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: ${({ $position }) => cardTransform($position)};
+  transform-origin: center;
+  cursor: pointer;
+  transition: transform 0.32s ease, z-index 0s linear 0.16s;
+
+  &:focus-visible { outline: 2px solid #dc7054; outline-offset: 4px; }
+`
+
+export const Indicators = styled.div`
+  position: absolute;
+  right: 0;
+  bottom: 42px;
+  left: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+`
+
+export const Indicator = styled.button`
+  width: ${({ $active }) => ($active ? '18px' : '6px')};
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: ${({ $active }) => ($active ? '#dc7054' : '#d8d8d8')};
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease;
+  &:focus-visible { outline: 2px solid #737373; outline-offset: 2px; }
+`

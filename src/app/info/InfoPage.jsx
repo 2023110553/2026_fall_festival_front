@@ -9,6 +9,7 @@ import LostFoundList from './components/LostFoundList'
 import LostFoundDetail from './components/LostFoundDetail'
 import DevTeamList from './components/DevTeamList'
 import { COLLAB_MOCKS, LOST_FOUND_MOCKS, NOTICE_MOCKS } from './info.mock'
+import { DEV_TEAM_MOCKS } from './devTeam.mock'
 import * as S from './InfoPage.styles'
 
 const INFO_TABS = [
@@ -85,7 +86,7 @@ export default function InfoPage() {
                   onSelect={(id) => openDetail('lostfound', id)}
                 />
               )}
-              {tab === 'developer' && <DevTeamList teams={[]} />}
+              {tab === 'developer' && <DevTeamList teams={DEV_TEAM_MOCKS} />}
             </>
           )}
         </S.Section>
