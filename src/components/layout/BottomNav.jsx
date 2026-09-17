@@ -47,8 +47,9 @@ export default function BottomNav() {
       <S.LanternItem
         type="button"
         aria-label="등불 달기"
-        aria-current={isActive('/lantern') ? 'page' : undefined}
-        onClick={() => navigate('/lantern')}
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('openLanternModal'));
+        }}
       >
         <S.LanternButton>
           <S.PlusIcon src={plusIcon} alt="" aria-hidden="true" />

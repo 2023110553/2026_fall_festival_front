@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Modal from "../../../../components/common/Modal";
+import Modal from '../../../components/common/Modal'
 
 const largeModalStyle = {
   display: 'flex',
