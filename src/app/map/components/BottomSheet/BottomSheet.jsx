@@ -19,6 +19,7 @@ export default function BottomSheet() {
 
     const handleOutsidePointerDown = (event) => {
       if (!event.isPrimary || event.button !== 0 || dragRef.current) return
+      if (event.target instanceof Element && event.target.closest('[data-sheet-collapse-ignore]')) return
       const sheet = sheetRef.current
       if (!sheet || sheet.contains(event.target)) return
 
