@@ -16,8 +16,13 @@ export function MapProvider({ children }) {
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
   const [searchTerm, setSearchTerm] = useState('')
+
+  // 디자인 미리보기용 초기값
   const [selectedBoothId, setSelectedBoothId] = useState(null)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isSheetOpen, setIsSheetOpen] = useState(true)
+  //바텀시트 디자인 후 주석 풀어야합니다!!!!!!
+  // const [selectedBoothId, setSelectedBoothId] = useState(null)
+  // const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [sheetTab, setSheetTab] = useState('info') // 'info' | 'lantern'
   // 2026-09-13(3차): 부스 밝기 단계(0~4) 임시 미리보기 상태.
   // 원래 설계(final-plan-team-share.md 2-3절)는 부스마다 실제 등불 개수(lantern_count)를
