@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Html } from '@react-three/drei'
 import { Select } from '@react-three/postprocessing'
 import * as THREE from 'three'
+import PinLabel from '../../components/PinLabel/PinLabel'
 
 // 재사용 가능한 부스(천막) 오브젝트 — 실제 부스 3D 템플릿(.glb)이 아직 없어서
 // 좌표 소환 테스트 겸 시각적 데모용으로 만든 캐노피(가젤보) 천막 메시.
@@ -472,40 +473,14 @@ export default function BoothMarker({
           필요하면 프론트A가 <Html occlude> 형태로 바꿔도 됨. 색은 랜턴/조명 톤(#ffdca0 계열)과
           맞춰 부스 장식 팔레트와 통일감을 줬다. */}
       {label ? (
-        <group name={`booth-label-${label}`} position={[0, poleHeight + roofRise + 0.5, 0]}>
+        <group
+          name={`booth-label-${label}`}
+          position={[0, poleHeight + roofRise + 0.5, 0]}
+        >
           <Html center distanceFactor={30} zIndexRange={[10, 0]}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '3px 8px',
-                borderRadius: '999px',
-                background: 'rgba(20, 20, 30, 0.72)',
-                border: '1px solid rgba(255, 220, 160, 0.6)',
-                color: '#fff6e6',
-                fontSize: '13px',
-                fontWeight: 600,
-                fontFamily: 'sans-serif',
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none',
-                userSelect: 'none',
-              }}
-            >
-              <span
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: '#ffdca0',
-                  boxShadow: '0 0 6px 2px rgba(255, 220, 160, 0.9)',
-                  flexShrink: 0,
-                }}
-              />
-              {label}
-            </div>
+            <PinLabel />
           </Html>
-        </group>
+        </group>  
       ) : null}
     </group>
   )
