@@ -4,6 +4,7 @@ import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
 import ConfirmDeleteModal from './ConfirmDeleteModal'
 import EditLanternModal from '../../../lantern/components/EditLanternModal'
+import { formatLanternDateTime } from '../../../lantern/utils/formatLanternDateTime'
 import * as S from './MyLanternList.styles'
 
 const largeModalStyle = {
@@ -17,24 +18,6 @@ const largeModalStyle = {
   background: '#FFF',
   boxShadow:
     '0 3px 6px 0 rgba(255, 161, 161, 0.25), 0 -4px 6px 0 rgba(194, 255, 175, 0.25), 0 0 6px 0 rgba(243, 246, 188, 0.75)',
-}
-
-function formatTime24(timeStr) {
-  if (!timeStr) return ''
-  if (!timeStr.includes('오전') && !timeStr.includes('오후')) return timeStr
-
-  const isPM = timeStr.includes('오후')
-  const cleanStr = timeStr.replace(/오전|오후/g, '').trim()
-  const parts = cleanStr.split(':')
-  if (parts.length < 2) return timeStr
-
-  let hours = parseInt(parts[0], 10)
-  const minutes = parts[1]
-
-  if (isPM && hours < 12) hours += 12
-  else if (!isPM && hours === 12) hours = 0
-
-  return `${String(hours).padStart(2, '0')}:${minutes}`
 }
 
 export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete, onEdit }) {
@@ -86,7 +69,7 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
                       {isAdmin ? '관리자에 의해 삭제된 댓글입니다.' : '삭제한 댓글입니다'}
                     </S.DeletedMessage>
                     <S.DeletedTime $isAdmin={isAdmin}>
-                      {formatTime24(l.createdAt)}
+                      {formatLanternDateTime(l.createdAt)}
                     </S.DeletedTime>
                   </S.DeletedCard>
                 )
