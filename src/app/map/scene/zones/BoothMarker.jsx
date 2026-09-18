@@ -492,6 +492,8 @@ export default function BoothMarker({
   position,
   rotationY = 0,
   label,
+  category,
+  lanternCount = 0,
   color = '#1d5fa8',
   accentColor = '#123f75',
   brightnessLevel = 0,
@@ -637,7 +639,7 @@ export default function BoothMarker({
           position={[0, poleHeight + roofRise + 0.5, 0]}
         >
           <Html center distanceFactor={30} zIndexRange={[10, 0]}>
-            <PinLabel />
+            <PinLabel onClick={onClick} label={label} category={category} lanternCount={lanternCount} />
           </Html>
         </group>  
       ) : null}
