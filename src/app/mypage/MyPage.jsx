@@ -15,12 +15,16 @@ import CouponResultModal from '../lantern/components/CouponResultModal'
 import VerifyCodeModal from '../lantern/components/VerifyCodeModal'
 import { useCreateLanternFlow } from '../lantern/hooks/useCreateLanternFlow'
 import { useLanterns } from '../lantern/context/LanternProvider'
+import { getTodayLanternCount } from '../lantern/utils/getCurrentFestivalDate'
+import { setMockToday } from '../lantern/utils/getToday'
+import { FESTIVAL_DATES } from '../../constants/festivalDates'
 
 export default function MyPage() {
   const { user, logout } = useAuth()
 
   // 등불 리스트는 LanternProvider로 전역 공유 (나의 등불 목록 모달은 AppLayout에 항상 떠 있는 LanternFlowPage가 렌더링)
   const { lanterns, addLantern, requestLanternList } = useLanterns()
+  const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
 
   // --- 모달 상태 관리 ---
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false) // 로그아웃 확인 모달
@@ -40,7 +44,7 @@ export default function MyPage() {
     closeSuccessModal,
     handleCreateLantern,
   } = useCreateLanternFlow({
-    lanternCount: lanterns.length,
+    lanternCount: todayLanternCount,
     onCreated: addLantern,
     onFirstLantern: (created) => {
       // [1번째 등불] ➔ 새 쿠폰 발급 + 스크래치 모달 오픈
@@ -115,7 +119,7 @@ export default function MyPage() {
         </S.PrimaryButton>
 
         <S.SecondaryButton onClick={requestLanternList}>
-          나의 등불 ({lanterns.length}/3)
+          나의 등불 ({todayLanternCount}/3)
         </S.SecondaryButton>
 
         <S.DefaultButton onClick={handleOpenCouponFlow}>
@@ -141,6 +145,25 @@ export default function MyPage() {
         </button>
       </div>
 
+      {/* TEMP: 목업 상태에서 지난/미래 날짜 화면을 확인하기 위한 오늘 날짜 오버라이드 — 확인 끝나면 제거 */}
+      {import.meta.env.DEV && (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {FESTIVAL_DATES.map((date, index) => (
+            <button
+              key={date}
+              type="button"
+              onClick={() => {
+                setMockToday(date)
+                window.location.reload()
+              }}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px dashed #4a90d9', background: '#fff', color: '#4a90d9', cursor: 'pointer' }}
+            >
+              [테스트] DAY{index + 1}로
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 로그아웃 버튼 */}
       <S.LogoutWrapper>
         <S.LogoutButton onClick={() => setIsLogoutModalOpen(true)}>
@@ -153,7 +176,7 @@ export default function MyPage() {
         isOpen={isCreateModalOpen}
         onClose={closeCreateModal}
         onSubmitSuccess={handleCreateLantern}
-        currentCount={lanterns.length}
+        currentCount={todayLanternCount}
       />
 
       <ScratchCouponModal
