@@ -5,6 +5,7 @@ import { EffectComposer, Selection, SelectiveBloom } from '@react-three/postproc
 import * as THREE from 'three'
 import Zone1Scene from './zones/Zone1Scene'
 import Zone2Scene from './zones/Zone2Scene'
+import Zone3Scene from './zones/Zone3Scene'
 import Zone4Scene from './zones/Zone4Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 
@@ -36,6 +37,12 @@ import SceneEnvironment from './environment/SceneEnvironment'
 // (drei useGLTF 기본 MeshoptDecoder + three r180의 EXT_texture_webp 지원). 자세한 파이프라인은
 // zones/README.md 참고. 카메라 위치/타깃은 아직 zone1 기준 임시값이라 zone4에선 건물이 화면
 // 위쪽에 치우쳐 보일 수 있음 — 구역 전환 카메라 연출을 정할 때 함께 조정 예정.
+//
+// 2026-09-19: zone3(만해광장) 연결 — 이로써 확정 3구역 + 학림관까지 모든 구역 씬이 연결됐다.
+// 현재 zone3.glb는 만해광장 본체까지이고 "후문쪽 거리"는 모델링이 추가되면 같은 파일명으로
+// 재-export해서 교체한다. 만해광장은 중심이 원점 근처(x -21~21, z -15~14)라 zone1 기준 고정
+// 카메라([10,140,90] → target [10,3,-30])에서는 꽤 멀리/위에서 보인다 — 구역 전환 카메라 연출을
+// 정할 때 zone4와 함께 조정 예정.
 //
 // 2026-09-13(2차): timeOfDay(낮/노을/밤 라이팅·하늘 전환) 구현.
 // 실제 하늘/조명/그림자 값은 전부 environment/SceneEnvironment.jsx +
@@ -73,12 +80,11 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
             <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
           ) : zoneId === 'zone2' ? (
             <Zone2Scene />
+          ) : zoneId === 'zone3' ? (
+            <Zone3Scene />
           ) : zoneId === 'zone4' ? (
             <Zone4Scene />
-          ) : (
-            // TODO: zone3(만해광장+후문쪽 거리) 씬 연결
-            null
-          )}
+          ) : null}
         </Suspense>
         {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
         {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
