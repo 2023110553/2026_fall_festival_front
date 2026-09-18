@@ -10,7 +10,7 @@ import { PERFORMANCE_MOCKS } from './Performance.mock'
 export default function PerformancePage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const selectedDate = searchParams.get('date') ?? '1'
+  const selectedDate = searchParams.get('date') ?? '2026-10-01'
 
   const handleDateChange = (date) => {
     setSearchParams({ date })
