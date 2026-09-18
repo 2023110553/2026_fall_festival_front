@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Html } from '@react-three/drei'
 import { Select } from '@react-three/postprocessing'
 import * as THREE from 'three'
@@ -80,6 +80,53 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 //      강렬한 빛 번짐이 나오도록 함(자세한 값은 MapCanvas.jsx 주석 참고). 9번 항목에서
 //      지붕/처마 emissive를 이미 걷어냈기 때문에, 광원을 아무리 세게 키워도 천막 색상이
 //      하얗게 날아가는 부작용이 없다 — 광원 강화가 안전해진 배경.
+//  14) 지붕을 진짜 히프(모임)지붕으로 재구성 — 재원이 실제 캐노피 천막(3M x 6M, 파란 폴딩
+//      가젤보) 사진을 다시 공유하며 "이 디자인으로 다시 만들고 싶다"고 요청. 색상(카테고리색)은
+//      그대로 두고("천막 색상까지 바꾸고 싶단 얘기는 아니야") 형태만 사진에 맞춰 올렸다.
+//      기존 지붕은 boxGeometry 2장을 Z축으로만 접은 맞배(게이블)지붕이라, 긴 변(X축) 양 끝이
+//      막혀 있지 않고 그냥 뻥 뚫린 삼각기둥 실루엣이었다 — 실제 사진 속 캐노피는 네 면이 전부
+//      용마루로 접히는 히프(hip)지붕이라 실루엣이 달랐다. 커스텀 BufferGeometry(useHipRoofGeometry,
+//      HipRoof 컴포넌트)로 짧아진 용마루(ridgeRun, 상수 roofHipInset만큼 양 끝을 접어 넣음) +
+//      네 모서리 처마로 떨어지는 삼각/사다리꼴 6장을 직접 만들어서, 실제 캐노피처럼 앞뒤(용마루
+//      방향 양 끝)도 경사지도록 했다. 정점을 삼각형마다 따로 둬서(정점 공유 없음) 면 경계가
+//      또렷하게 각지도록(flat shading) 했다 — 기존 박스 지붕 패널과 같은 마감이라 이질감 없음.
+//      용마루 포인트 컬러 바(accentColor)도 짧아진 용마루 길이(ridgeRun)에 맞춰 줄였다.
+//  15) 캐노피 위 조명(현재 이름 CanopyRidgeLights, 처음 이름은 CanopyLightSwags) 추가 —
+//      재원이 참고 사진(밤에 텐트 위로 조명이 걸쳐진 사진, 텐트 자체엔 천 색상 변화 없음)을
+//      보고 요청한 "조명 설치"(재원 표현 그대로 "그 위에... 조명을 설치"). 기존
+//      TentLightOutline은 지붕/처마/기둥의 "윤곽선"을 따라 팽팽하게 붙어 있는 조명끈이라
+//      결이 달라서 별도 컴포넌트로 분리했다. 최종 형태에 이르기까지 몇 차례 다시 만들었다 —
+//      16/17번 항목 참고. 색/기본 강도(TENT_LIGHT_STRING_INTENSITY)는 기존 조명끈과
+//      통일해서 한 세트처럼 보이게 함. 추가로 재원 요청("등불 단계에 따라 조명의 밝기가
+//      증가되는 것도 유지하자")에 맞춰, TentLightOutline+CanopyRidgeLights 둘 다 이제
+//      brightnessLevel에 살짝 반응하도록 바꿨다(getTentLightIntensityScale) — 정확히는
+//      "유지"가 아니라 이번에 새로 추가한 동작인데(예전엔 둘 다 밝기 단계와 무관한 고정
+//      장식이었음, 8/10번 항목 참고), 재원이 원하는 결과가 그거라 판단해서 반영함. 0단계에서도
+//      "설치된 조명"이 완전히 꺼져 보이면 어색하니 최소 50%(TENT_LIGHT_MIN_SCALE) 밝기는
+//      유지하고 4단계에서 100%까지 밝아진다 — 바닥 글로우(GroundGlow)는 기존과 동일하게
+//      0~100%로 그대로 둠(원래도 연동돼 있었음).
+//  16) 14/15번 항목을 헤드리스 렌더로 미리보기해서 보여준 뒤 재원 피드백 2건 반영.
+//      (a) "천막이 너무 납작해보여" — roofRise(처마 대비 용마루 높이)를 0.55→1로 올림
+//      (경사각 약 17°→30°). 히프지붕/조명끈 좌표가 전부 roofRise 하나로 계산되는 구조라
+//      이 상수만 바꿔도 지붕·조명끈이 다같이 따라 올라감(다른 코드 수정 불필요).
+//      (b) "조명 배치/크기를 줄이면 좋겠다, 너무 난잡해" — TentLightOutline에 있던 용마루+hip
+//      대각선 조명 세그먼트 5개를 제거(캐노피 위 조명과 같은 역할이 겹쳐서 처마 모서리마다
+//      전구가 뭉쳐 보였음). 이제 TentLightOutline은 처마 둘레+기둥만 담당하고, 지붕 위
+//      대각선/능선 조명은 캐노피 위 조명 컴포넌트가 전담하는 것으로 역할을 정리. 추가로
+//      TentLightOutline bulbSize 0.07→0.05로, 당시 CanopyLightSwags(대각선 X자 교차 방식)도
+//      bulbsPerMeter 1→0.6·bulbSize 0.06→0.045로 낮춰서 전체적으로 밀도/크기를 줄였다.
+//      광원 강도(TENT_LIGHT_STRING_INTENSITY)와 블룸 설정은 안 건드림 — 이번 요청은
+//      "크기/배치"였지 "밝기"가 아니었기 때문.
+//  17) v2 스크린샷 확인 후 재원이 "상단 면 비스듬한 경사면에 떠있는 조명 네개만 없앨 수
+//      있나" 요청 — 당시 CanopyLightSwags(대각선 X자 교차) 구조에서 능선(t=0.5) 바로 근처
+//      전구 4개(대각선 2개 × 2개씩)가 지붕 중앙에 옹기종기 몰려 붕 떠 보이는 부분이라
+//      판단, crestGap으로 그 4개를 잘라내는 1차 수정을 했었다. 그런데 재원이 다시 확인하고
+//      "그 4개 말고, 그 아래에 4개(처마 쪽에 걸쳐있던 대각선 나머지 절반)를 없애고 싶었다,
+//      남는 조명은 중앙 모서리(용마루) 기준으로 일렬로 배치해달라"고 정정 — 즉 "대각선이
+//      X자로 교차하는 구조" 자체가 애초에 원하는 그림이 아니었던 것. 그래서 대각선 방식을
+//      아예 버리고 컴포넌트를 새로 짰다(CanopyLightSwags → CanopyRidgeLights로 개명) —
+//      지금은 용마루를 따라 나란히 늘어선 조명 4개가 전부인 훨씬 단순한 구조. 대각선/처짐
+//      계산이 사라져서 코드도 짧아졌다. 자세한 최종 설계는 컴포넌트 자체 주석 참고.
 //
 // 좌표/앵커 규칙(팀 합의, map-section-scope-and-roles.md B안):
 //   - 이 컴포넌트는 "부스 오브젝트 + 라벨 앵커 좌표"만 제공한다.
@@ -128,6 +175,20 @@ const TENT_LIGHT_STRING_INTENSITY = 8
 // 계열로" 요청 — 랜턴/등불이랑 톤을 맞춰서 "등불빛이 바닥에 비친다"는 느낌으로 통일함.
 // 카테고리 구분은 나중에 필요해지면 지붕 색(color prop)만으로도 충분히 구분되므로,
 // 바닥 글로우까지 카테고리색을 쓸 필요는 없다고 판단.)
+
+// 히프지붕 용마루 인셋(14번 항목) — 처마(halfRidge)에서 이만큼 안쪽까지 용마루가 짧아진다.
+// width=6 기준 슬로프span(depth 3 + 처마 돌출)에 대해 자연스러운 경사각이 나오도록 잡은 값.
+// Math.max로 하한을 둬서, 나중에 width/depth가 지금보다 훨씬 작아지는 경우에도 용마루 길이가
+// 음수(지붕이 뒤집힘)가 되지 않도록 방어했다.
+const ROOF_HIP_INSET = 2
+
+// 조명끈(TentLightOutline+CanopyRidgeLights) 밝기 배율 — 재원 요청("등불 단계에 따라 조명
+// 밝기도 올라가는 것 유지하자", 15번 항목)에 맞춰 추가. 0단계에서도 "설치된 조명"이 완전히
+// 꺼져 보이면 부자연스러우니 최소 50%는 유지하고, 단계가 올라갈수록 100%까지 밝아진다.
+const TENT_LIGHT_MIN_SCALE = 0.5
+function getTentLightIntensityScale(safeLevel, maxLevel) {
+  return TENT_LIGHT_MIN_SCALE + (1 - TENT_LIGHT_MIN_SCALE) * (safeLevel / maxLevel)
+}
 
 // 바닥 글로우 링 — 중심이 가장 밝고 가장자리로 갈수록 부드럽게 사라지는 원형 그라디언트.
 // 이미지 텍스처 없이 셰이더로 원형 falloff만 계산한다(프로젝트의 "이미지 에셋 안 늘리기" 방침과 동일,
@@ -232,6 +293,47 @@ function PoleLantern({ position }) {
   )
 }
 
+// 히프(모임)지붕 커스텀 지오메트리(14번 항목) — 짧아진 용마루 양 끝(rL/rR)에서 네 처마 모서리
+// (cFL/cFR/cBL/cBR)로 접히는 삼각형 2장(hip) + 사다리꼴 2장(앞/뒤, 각 2삼각형)으로 지붕을 만든다.
+// 정점을 삼각형마다 따로 둬서(공유 없음) computeVertexNormals가 곧 페이스 노멀이 되도록 했다 —
+// 즉 부드럽게 섞이지 않고 면마다 또렷하게 각지는(flat shading) 마감이며, 이는 기존 박스 지붕
+// 패널들과 같은 시각적 마감이라 다른 부분과 이질감이 없다.
+function useHipRoofGeometry(halfRidge, halfRun, slopeSpan, roofRise) {
+  return useMemo(() => {
+    const rL = [-halfRun, roofRise, 0]
+    const rR = [halfRun, roofRise, 0]
+    const cFL = [-halfRidge, 0, -slopeSpan]
+    const cFR = [halfRidge, 0, -slopeSpan]
+    const cBR = [halfRidge, 0, slopeSpan]
+    const cBL = [-halfRidge, 0, slopeSpan]
+
+    // 6개 삼각형 = 왼쪽 hip + 오른쪽 hip + 앞 사다리꼴(2장) + 뒤 사다리꼴(2장).
+    // 바깥쪽+위쪽을 향하는 노멀이 나오도록 정점 순서(외적 방향)를 맞춰뒀다.
+    const triangles = [
+      [rL, cFL, cBL],
+      [rR, cBR, cFR],
+      [rL, rR, cFR],
+      [rL, cFR, cFL],
+      [rL, cBL, cBR],
+      [rL, cBR, rR],
+    ]
+
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(triangles.flat(2)), 3))
+    geometry.computeVertexNormals()
+    return geometry
+  }, [halfRidge, halfRun, slopeSpan, roofRise])
+}
+
+function HipRoof({ halfRidge, halfRun, slopeSpan, roofRise, color }) {
+  const geometry = useHipRoofGeometry(halfRidge, halfRun, slopeSpan, roofRise)
+  return (
+    <mesh geometry={geometry} castShadow receiveShadow>
+      <meshStandardMaterial color={color} />
+    </mesh>
+  )
+}
+
 // 천막 조명 테두리(TentLightOutline) — 지붕 각진 라인(용마루+대각선)뿐 아니라, 처마 둘레
 // 사각 테두리 + 기둥 6개까지 전부 조명끈으로 감싸서 "빛으로 천막 전체 윤곽을 그린" 느낌을 낸다.
 // 재원 피드백("천막 자체가 밋밋하다" + "깃발 같은 장식보다는 빛 효과로 부스를 부각시키고
@@ -250,46 +352,31 @@ function PoleLantern({ position }) {
 // bulbSize를 0.12→0.07로 다시 낮춤(원래값 0.045보다는 여전히 크지만 훨씬 절제된 크기).
 // 밀도(bulbsPerMeter)나 광원 강도(TENT_LIGHT_STRING_INTENSITY)는 이번엔 그대로 둠 —
 // 딱 크기만 다시 줄여달라는 요청이었기 때문.
+// 16번 항목: 지붕 각진 라인(용마루+hip 대각선 5개) 세그먼트를 제거했다 — 캐노피 위 조명이
+// 생기면서 "지붕을 가로지르는 대각선 조명"역할이 겹치게 됐고, 두 세트가 같은 모서리(처마
+// 4곳)에 다 모이다 보니 재원 피드백처럼 "조명이 난잡해" 보였다. 이제 능선 조명은
+// CanopyRidgeLights 하나만 담당하고, TentLightOutline은 처마 둘레 + 기둥으로 역할을 좁혔다.
+// bulbSize도 0.07→0.05로 한 단계 더 줄여서 전구가 서로 뭉쳐 보이는 걸 줄였다.
 function TentLightOutline({
   ridgeSpan,
   slopeSpan,
   poleHeight,
-  roofRise,
   poleOffsets,
   poleInsetX,
   poleInsetZ,
   color = LIGHT_STRING_COLOR,
   bulbsPerMeter = 0.7,
-  bulbSize = 0.07,
+  bulbSize = 0.05,
+  intensityScale = 1,
 }) {
-  const ridgeY = poleHeight + roofRise
-  const eaveY = poleHeight // 처마(지붕과 처마 천이 만나는 높이) — 대각선 조명끈의 하단과 동일 높이
+  const eaveY = poleHeight // 처마(지붕과 처마 천이 만나는 높이)
   const poleLightBottom = 0.15 // 기둥 조명끈 시작 높이(바닥에서 살짝 띄움)
   const poleLightTop = poleHeight - 0.55 // 랜턴(poleHeight-0.32 부근)과 안 겹치게 그 아래에서 멈춤
 
   const segments = [
-    // 1) 지붕 각진 라인 — 용마루 가로줄 + 게이블 단 대각선 4개(기존 RoofLightStrings와 동일)
-    [
-      [-ridgeSpan / 2, ridgeY, 0],
-      [ridgeSpan / 2, ridgeY, 0],
-    ],
-    [
-      [-ridgeSpan / 2, ridgeY, 0],
-      [-ridgeSpan / 2, eaveY, -slopeSpan],
-    ],
-    [
-      [-ridgeSpan / 2, ridgeY, 0],
-      [-ridgeSpan / 2, eaveY, slopeSpan],
-    ],
-    [
-      [ridgeSpan / 2, ridgeY, 0],
-      [ridgeSpan / 2, eaveY, -slopeSpan],
-    ],
-    [
-      [ridgeSpan / 2, ridgeY, 0],
-      [ridgeSpan / 2, eaveY, slopeSpan],
-    ],
-    // 2) 처마 둘레 사각 테두리 — 발밑까지 천막을 감싸는 느낌을 주는 4변(신규)
+    // 1) 처마 둘레 사각 테두리 — 발밑까지 천막을 감싸는 느낌을 주는 4변. (16번 항목: 예전엔
+    //    여기에 용마루+hip 대각선 라인도 있었는데, 그 역할은 이제 CanopyRidgeLights가 지붕
+    //    "위"에서 전담하므로 겹치지 않게 여기서는 뺐다 — 처마 테두리+기둥만 남김.)
     [
       [-ridgeSpan / 2, eaveY, -slopeSpan],
       [ridgeSpan / 2, eaveY, -slopeSpan],
@@ -306,7 +393,7 @@ function TentLightOutline({
       [ridgeSpan / 2, eaveY, -slopeSpan],
       [ridgeSpan / 2, eaveY, slopeSpan],
     ],
-    // 3) 기둥 6개 각각을 감싸는 세로 조명끈(신규) — 바닥~랜턴 바로 아래까지
+    // 2) 기둥 6개 각각을 감싸는 세로 조명끈 — 바닥~랜턴 바로 아래까지
     ...poleOffsets.map(([signX, signZ]) => [
       [signX * poleInsetX, poleLightBottom, signZ * poleInsetZ],
       [signX * poleInsetX, poleLightTop, signZ * poleInsetZ],
@@ -325,10 +412,76 @@ function TentLightOutline({
             return (
               <mesh key={`${si}-${i}`} position={pos}>
                 <sphereGeometry args={[bulbSize, 10, 10]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={TENT_LIGHT_STRING_INTENSITY} toneMapped={false} />
+                <meshStandardMaterial
+                  color={color}
+                  emissive={color}
+                  emissiveIntensity={TENT_LIGHT_STRING_INTENSITY * intensityScale}
+                  toneMapped={false}
+                />
               </mesh>
             )
           })
+        })}
+      </group>
+    </Select>
+  )
+}
+
+// 캐노피 용마루 위 조명(15번 항목, 17번 항목에서 현재 형태로 재정리) — TentLightOutline(지붕/
+// 처마/기둥 "윤곽선")과 달리, 용마루(능선) 바로 위에 살짝 띄운 조명 한 줄을 얹어서
+// "지붕 위에 조명을 설치"한 느낌을 낸다.
+//
+// 설계 변경 기록:
+//   1) 처음엔 마주보는 처마 모서리끼리(대각선) 이어서 X자로 교차하며 처마 밑으로 처지는
+//      (sag) 현수선 형태로 만들었는데, 렌더링해보니 히프지붕이 불투명해서 그 밑을 가려버려
+//      지도 카메라(위/바깥에서 보는 구도)에서는 거의 안 보이는 문제가 있었다. 그래서 처지는
+//      방향을 위로 뒤집어(sag→rise) 용마루보다 높은 지점을 지나가도록 바꿨다(1차 수정).
+//   2) 대각선 방식 그대로 두니, 대각선이 교차하는 용마루 부근에서 두 대각선의 전구 4개가
+//      한 지점에 옹기종기 몰려 지붕 한복판에 붕 뜬 것처럼 보였다 — 재원이 스크린샷에서
+//      "상단 경사면에 떠있는 조명 네개" 문제로 짚어줌. crestGap으로 그 부분만 잘라내는
+//      시도를 했었는데(2차 수정), 재원이 다시 보고 "그게 아니라 그 아래 4개(처마 쪽에
+//      걸쳐있던 대각선 나머지 절반)를 없애고 싶었다"고 정정 — 즉 대각선 방식 자체가
+//      요구사항과 안 맞았던 것.
+//   3) 그래서 대각선 X자 교차 방식을 완전히 버리고, 재원 요청대로 "중앙 모서리(용마루)
+//      기준으로 일렬로" 재구성했다 — 지금은 용마루를 따라 한 줄로 나란히 늘어선 조명
+//      bulbCount개(기본 4개)가 전부다. 대각선/처짐 계산이 없어져서 컴포넌트도
+//      훨씬 단순해짐. 용마루 표면(정확히는 용마루 포인트 컬러 바, HipRoof 지붕 자체보다도
+//      약간 더 위)보다 roofClearance만큼 띄워서 붕 뜬 조명 줄처럼 보이게 했다 — 이 높이는
+//      어차피 지붕에서 가장 높은 지점이라 별도 수치 검증 없이도 어느 각도에서 봐도 지붕에
+//      가려지지 않는다(용마루 자체보다 낮은 지점은 지붕이 가릴 수 있지만, 용마루보다 높은
+//      지점은 그 무엇도 가리지 않기 때문).
+function CanopyRidgeLights({
+  halfRun,
+  poleHeight,
+  roofRise,
+  roofClearance = 0.1,
+  color = LIGHT_STRING_COLOR,
+  bulbCount = 4,
+  bulbSize = 0.045,
+  intensityScale = 1,
+}) {
+  const y = poleHeight + roofRise + roofClearance // 용마루보다 roofClearance만큼 위
+  // 용마루 전체 길이(halfRun*2)에 걸쳐 bulbCount개를 균등 배치 — 끝에 딱 붙지 않도록
+  // 살짝 안쪽으로 여백을 둔다(0.85배, 가장자리에서 15%씩 인셋).
+  const span = halfRun * 2 * 0.85
+
+  return (
+    <Select enabled>
+      <group>
+        {Array.from({ length: bulbCount }, (_, i) => {
+          const t = bulbCount === 1 ? 0.5 : i / (bulbCount - 1)
+          const x = -span / 2 + span * t
+          return (
+            <mesh key={i} position={[x, y, 0]}>
+              <sphereGeometry args={[bulbSize, 10, 10]} />
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={TENT_LIGHT_STRING_INTENSITY * intensityScale}
+                toneMapped={false}
+              />
+            </mesh>
+          )
         })}
       </group>
     </Select>
@@ -339,6 +492,8 @@ export default function BoothMarker({
   position,
   rotationY = 0,
   label,
+  category,
+  lanternCount = 0,
   color = '#1d5fa8',
   accentColor = '#123f75',
   brightnessLevel = 0,
@@ -347,7 +502,11 @@ export default function BoothMarker({
   const width = 6 // 부스 폭 — 통로와 나란한 긴 변(정면이 넓게 보이는 방향), 캐노피 천막 표준 규격
   const depth = 3 // 부스 깊이 — 통로에서 안쪽으로 들어가는 짧은 변
   const poleHeight = 2.3
-  const roofRise = 0.55 // 처마 대비 용마루 높이
+  // 처마 대비 용마루 높이 — 16번 항목: 재원 피드백("천막이 너무 납작해보여")으로 0.55→1(경사각
+  // 약 17°→30°)로 올림. 히프지붕/조명끈 좌표가 전부 이 값 하나로 계산되는 구조라(useHipRoofGeometry,
+  // TentLightOutline, CanopyRidgeLights 전부 roofRise를 prop으로 받아 계산) 이 숫자만 바꿔도
+  // 나머지 지오메트리·조명끈이 자동으로 같이 따라 올라간다 — 다른 코드는 손댈 필요 없었음.
+  const roofRise = 1
   const eaveOverhang = 0.25 // 처마가 다리보다 살짝 튀어나오는 정도
   const valanceHeight = 0.28 // 처마 밑으로 늘어지는 천 높이
 
@@ -356,15 +515,18 @@ export default function BoothMarker({
   const poleInsetX = halfWidth - 0.2
   const poleInsetZ = halfDepth - 0.2
   const slopeSpan = halfDepth + eaveOverhang // 용마루 중심에서 처마까지(Z축) 거리
-  const ridgeSpan = width + eaveOverhang * 2 // 용마루 길이(X축, 처마 돌출 포함)
-  const roofSlopeLength = Math.sqrt(slopeSpan ** 2 + roofRise ** 2)
-  const roofSlopeAngle = Math.atan2(roofRise, slopeSpan)
+  const ridgeSpan = width + eaveOverhang * 2 // 처마 전체 길이(X축, 처마 돌출 포함) — 히프지붕의 처마단
+  const halfRidge = ridgeSpan / 2
+  const halfRun = Math.max(halfRidge - ROOF_HIP_INSET, 0.3) // 용마루 절반 길이(14번 항목, 최소 0.3 보장)
+  const ridgeRun = halfRun * 2 // 용마루 전체 길이 — 처마(ridgeSpan)보다 짧아진 실제 용마루
 
   // 0~4 범위로 안전하게 clamp(잘못된 값이 들어와도 배열 밖을 참조하지 않도록)
-  // glowIntensity는 이제 바닥 글로우(GroundGlow)의 밝기/반경 계산에만 쓰인다 — 지붕/처마는
-  // 더 이상 이 값에 반응하지 않음(9번 항목 참고).
+  // glowIntensity는 바닥 글로우(GroundGlow)의 밝기/반경 계산에 쓰인다 — 지붕/처마 자체는
+  // 여전히 이 값에 반응하지 않음(9번 항목 참고).
   const safeLevel = Math.min(Math.max(Math.round(brightnessLevel), 0), BRIGHTNESS_TIERS.length - 1)
   const { emissiveIntensity: glowIntensity } = BRIGHTNESS_TIERS[safeLevel]
+  // 조명끈(TentLightOutline+CanopyRidgeLights) 밝기 배율 — 15번 항목, 등불 단계에 따라 50%~100%.
+  const lightIntensityScale = getTentLightIntensityScale(safeLevel, BRIGHTNESS_TIERS.length - 1)
 
   // 다리 6개 — 긴 변(X축)마다 3개씩 2줄로 배치 (실제 3m x 6m 캐노피 천막 프레임과 동일)
   const poleOffsets = [
@@ -403,46 +565,45 @@ export default function BoothMarker({
         </group>
       ))}
 
-      {/* 맞배지붕 캐노피 — 경사면 2장, 용마루가 X축(통로 방향)과 나란하게.
-          카테고리 색(color prop)만 표시하는 일반 재질 — 밝기 단계 표현은 바닥 글로우가
-          전담하므로 여기서는 emissive/블룸을 쓰지 않는다(9번 항목, 재원 요청). */}
-      <mesh
-        position={[0, poleHeight + roofRise / 2, -slopeSpan / 2]}
-        rotation={[-roofSlopeAngle, 0, 0]}
-        castShadow
-        receiveShadow
-      >
-        <boxGeometry args={[ridgeSpan, 0.05, roofSlopeLength]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-      <mesh
-        position={[0, poleHeight + roofRise / 2, slopeSpan / 2]}
-        rotation={[roofSlopeAngle, 0, 0]}
-        castShadow
-        receiveShadow
-      >
-        <boxGeometry args={[ridgeSpan, 0.05, roofSlopeLength]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
+      {/* 히프(모임)지붕 캐노피 — 짧아진 용마루(ridgeRun) 양 끝에서 네 처마 모서리로 접히는
+          진짜 4면 지붕(14번 항목, useHipRoofGeometry). 카테고리 색(color prop)만 표시하는
+          일반 재질 — 밝기 단계 표현은 바닥 글로우가 전담하므로 여기서는 emissive/블룸을
+          쓰지 않는다(9번 항목, 재원 요청은 그대로 유지 — 이번 요청은 형태만 바꿔달라는 것). */}
+      <group position={[0, poleHeight, 0]}>
+        <HipRoof halfRidge={halfRidge} halfRun={halfRun} slopeSpan={slopeSpan} roofRise={roofRise} color={color} />
+      </group>
 
-      {/* 용마루 포인트 컬러 라인 */}
+      {/* 용마루 포인트 컬러 라인 — 짧아진 용마루 길이(ridgeRun)에 맞춰 폭도 같이 줄임 */}
       <mesh position={[0, poleHeight + roofRise + 0.03, 0]}>
-        <boxGeometry args={[ridgeSpan, 0.06, 0.06]} />
+        <boxGeometry args={[ridgeRun, 0.06, 0.06]} />
         <meshStandardMaterial color={accentColor} />
       </mesh>
 
-      {/* 천막 조명 테두리 — 지붕 각진 라인(용마루+대각선)뿐 아니라 처마 둘레 사각 테두리와
-          기둥 6개까지 조명끈으로 감싸서, 천막 전체 윤곽이 빛으로 드러나도록 확장했다
-          (재원 피드백: "천막이 밋밋하다" + "깃발보다는 빛 효과로 부각"). 랜턴과 마찬가지로
-          밝기 단계와 무관하게 항상 켜져 있는 고정 장식. */}
+      {/* 천막 조명 테두리 — 처마 둘레 사각 테두리 + 기둥 6개를 조명끈으로 감싸서, 천막 아랫부분
+          윤곽이 빛으로 드러나도록 한다(재원 피드백: "천막이 밋밋하다" + "깃발보다는 빛 효과로
+          부각"). 16번 항목: 지붕 위 능선 조명은 이제 CanopyRidgeLights가 전담하므로
+          여기서는 뺐다(재원 피드백 "조명이 난잡해" — 같은 모서리에 두 세트가 겹치던 문제 해소).
+          15번 항목부터는 brightnessLevel에 따라 50%~100% 밝기로 반응한다(완전히 꺼지진 않음). */}
       <TentLightOutline
         ridgeSpan={ridgeSpan}
         slopeSpan={slopeSpan}
         poleHeight={poleHeight}
-        roofRise={roofRise}
         poleOffsets={poleOffsets}
         poleInsetX={poleInsetX}
         poleInsetZ={poleInsetZ}
+        intensityScale={lightIntensityScale}
+      />
+
+      {/* 캐노피 위 용마루 조명(15번 항목, 17번 항목에서 지금 형태로 재정리) — 재원이 공유한
+          참고 사진처럼 지붕 "위"에 조명을 설치하되(용마루보다 높은 지점에 띄워서 지붕 표면에
+          가려지지 않음), 재원이 최종적으로 요청한 대로 대각선 교차 없이 용마루를 따라
+          일렬로 배치했다(컴포넌트 자체 주석에 전체 변경 이력 정리). TentLightOutline과
+          마찬가지로 brightnessLevel에 따라 50%~100% 밝기로 반응. */}
+      <CanopyRidgeLights
+        halfRun={halfRun}
+        poleHeight={poleHeight}
+        roofRise={roofRise}
+        intensityScale={lightIntensityScale}
       />
 
       {/* 처마 밑으로 늘어지는 천(valance) — 긴 변 2면 + 짧은 변 2면, 처마 둘레를 감싸는 형태.
@@ -478,7 +639,7 @@ export default function BoothMarker({
           position={[0, poleHeight + roofRise + 0.5, 0]}
         >
           <Html center distanceFactor={30} zIndexRange={[10, 0]}>
-            <PinLabel />
+            <PinLabel onClick={onClick} label={label} category={category} lanternCount={lanternCount} />
           </Html>
         </group>  
       ) : null}

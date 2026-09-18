@@ -93,3 +93,12 @@ export const CategoryButton = styled.button`
         color: #FDFDFD;
     }
 `
+
+// 2026-09-18 추가: useMapZoneBooths 연결하면서 로딩/에러 상태 표시용으로 필요해짐
+// (전엔 mock json을 동기로 바로 읽어써서 로딩 상태 자체가 없었음)
+export const StatusMessage = styled.p`
+    padding: 24px 0;
+    text-align: center;
+    font-size: 13px;
+    color: #9F9C99;
+`

@@ -4,7 +4,6 @@ export {
   Page,
   TotalCount,
   TitleRow,
-  TypeTag as DateTag,
   Title,
   BottomBar,
   PrimaryButton,
@@ -17,6 +16,22 @@ export const ItemList = styled.ul`
   padding: 0;
   margin: 0;
   list-style: none;
+`
+
+export const DateTag = styled.span`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 35px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: #9F9C99;
+  color: #FFF;
+  font-size: 10px;
+  font-weight: 400;
+  white-space: nowrap;
+  font-family: 'pretendard', sans-serif;
 `
 
 export const ItemCard = styled.li`
@@ -53,6 +68,7 @@ export const Keyword = styled.span`
   font-size: 10px;
   white-space: nowrap; 
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
+  font-family: 'pretendard', sans-serif;
 `
 
 export const Thumbnail = styled.div`

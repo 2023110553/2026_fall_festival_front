@@ -52,6 +52,8 @@ export default function Zone1Scene({ brightnessLevel = 0, onBoothClick }) {
           position={[place.coordinates.x, place.coordinates.y, place.coordinates.z]}
           rotationY={(place.coordinates.rotation * Math.PI) / 180}
           label={place.name}
+          category={place.category}
+          lanternCount={place.lantern_count}
           brightnessLevel={brightnessLevel}
           onClick={() => onBoothClick?.(place.id)}
         />
