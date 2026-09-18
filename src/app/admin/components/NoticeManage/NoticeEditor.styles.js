@@ -8,7 +8,6 @@ export {
   HeaderTitle,
   TitleRow,
   ContentCard,
-  TypeTag,
   BottomBar,
   PrimaryButton,
 } from './AdminNoticeDetailPage.styles'
@@ -99,7 +98,8 @@ export const Toast = styled.div`
   background: #FFF;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   color: #000;
-  font-size: 9px;
+  font-size: 10px;
+  font-family: 'pretendard', sans-serif;
 
   svg {
     flex-shrink: 0;
@@ -121,10 +121,11 @@ export const TypeSelectWrap = styled.label`
 
 export const TypeSelect = styled.select`
   appearance: none;
-  padding: 3px 18px 3px 7px;
+  height: 30px;
+  padding: 0 18px 0 7px;
   border: none;
-  border-radius: 4px;
-  background: ${({ $urgent }) => ($urgent ? '#A11D1D' : '#6E6E6E')};
+  border-radius: 5px;
+  background: ${({ $urgent }) => ($urgent ? '#AD0000' : '#6E6E6E')};
   color: #FFF;
   font-family: inherit;
   font-size: 10px;
@@ -134,4 +135,17 @@ export const TypeSelect = styled.select`
     color: #000;
     background: #FFF;
   }
+`
+
+export const TypeTag = styled.span`
+  flex-shrink: 0;
+  height: 30px;
+  padding: 4px 2px 4px 6px;
+  border-radius: 4px;
+  background: ${({ $urgent }) => ($urgent ? '#DC7054' : '#6E6E6E')};
+  color: #FFF;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: 'pretendard', sans-serif;
 `

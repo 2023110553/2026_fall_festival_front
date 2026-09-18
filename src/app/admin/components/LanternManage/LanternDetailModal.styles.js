@@ -30,13 +30,20 @@ export const Nickname = styled.h2`
 `
 
 export const ReportBadge = styled.span`
-  padding: 2px 6px;
-  border-radius: 99px;
-  background: #F2B8B8;
-  color: #B71C1C;
-  font-size: 9px;
+  display: flex;
+  height: 14px;
+  padding: 2px 5px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  background: #FFB2B2;
+  color: #AD0000;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 8px;
+  font-style: normal;
   font-weight: 500;
-  white-space: nowrap;
+  line-height: normal;
 `
 
 export const ReportCount = styled.div`
@@ -63,11 +70,13 @@ export const MessageBox = styled.p`
   margin: 10px 0 0;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #9E9D99;
+  background: #9E9C99;
   color: #FFF;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
   word-break: keep-all;
+  font-family: 'pretendard', sans-serif;
+  font-weight: 500;
 `
 
 export const ButtonRow = styled.div`
@@ -83,15 +92,17 @@ const BaseButton = styled.button`
   border-radius: 10px;
   font-size: 15px;
   font-weight: 500;
+  font-family: 'pretendard', sans-serif;
   cursor: pointer;
 `
 
 export const CloseButton = styled(BaseButton)`
-  background: #EFEFEF;
-  color: #7A7A7A;
+  background: #EEE;
+  color: #100B0B;
+  opacity: 0.6;
 `
 
 export const DeleteButton = styled(BaseButton)`
-  background: #EDB5B5;
-  color: #B71C1C;
+  background: #FFB2B2;
+  color: #AD0000;
 `
