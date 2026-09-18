@@ -20,7 +20,7 @@ export default function MyPage() {
   const { user, logout } = useAuth()
 
   // 등불 리스트는 LanternProvider로 전역 공유 (나의 등불 목록 모달은 AppLayout에 항상 떠 있는 LanternFlowPage가 렌더링)
-  const { lanterns, addLantern } = useLanterns()
+  const { lanterns, addLantern, requestLanternList } = useLanterns()
 
   // --- 모달 상태 관리 ---
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false) // 로그아웃 확인 모달
@@ -55,9 +55,6 @@ export default function MyPage() {
       setCouponFlow('scratch')
     },
   })
-
-  // 나의 등불 목록 모달은 전역 이벤트로 열림 (AppLayout의 LanternFlowPage가 처리)
-  const openLanternListModal = () => window.dispatchEvent(new CustomEvent('openMyLanternListModal'))
 
   // 스크래치 완료 시 화면 전환 — 당첨 결과는 쿠폰 발급 시점에 이미 확정되어 있으므로 여기선 상태만 전환
   const handleScratchReveal = () => {
@@ -117,7 +114,7 @@ export default function MyPage() {
           + 등불 달기
         </S.PrimaryButton>
 
-        <S.SecondaryButton onClick={openLanternListModal}>
+        <S.SecondaryButton onClick={requestLanternList}>
           나의 등불 ({lanterns.length}/3)
         </S.SecondaryButton>
 

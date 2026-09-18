@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import * as S from './TopHeader.styles'
 import LoginModal from '../../app/auth/LoginModal'
 import { useAuth } from '../../hooks/useAuth'
+import { useLanterns } from '../../app/lantern/context/LanternProvider'
 
 import titleMarker from '../../assets/top-header/title-marker.svg'
 import profileIcon from '../../assets/top-header/profile.svg'
@@ -15,6 +16,7 @@ export default function TopHeader({
 }) {
   const navigate = useNavigate()
   const { isLoggedIn: authIsLoggedIn, logout } = useAuth()
+  const { requestLanternList } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
@@ -52,7 +54,7 @@ export default function TopHeader({
   }
   // 나의 등불은 페이지 이동 없이 어디서든 전역 모달로 오픈 (AppLayout에 항상 떠 있는 LanternFlowPage가 처리)
   const openMyLanternListModal = () => {
-    window.dispatchEvent(new CustomEvent('openMyLanternListModal'))
+    requestLanternList()
     closeMenu()
   }
   const handleLogout = () => {

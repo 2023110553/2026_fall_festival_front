@@ -19,7 +19,7 @@ export default function LanternFlowPage() {
   const { isLoggedIn } = useAuth()
 
   // --- 상태 관리 --- (등불 리스트는 LanternProvider로 전역 공유 — MyPage 등 다른 화면과 같은 목록을 본다)
-  const { lanterns, addLantern, deleteLantern, editLantern } = useLanterns()
+  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers } = useLanterns()
 
   // 쿠폰 플로우: null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
@@ -45,40 +45,40 @@ export default function LanternFlowPage() {
   })
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  // BottomNav 등 전역 이벤트(openLanternModal) 수신 및 모달 오픈 처리
-  useEffect(() => {
-    const handleOpen = () => {
-      // -------------------------------------------------------------
-      // [개발용 로그인 우회]
-      // 실제 로그인 연동 시 아래 주석을 해제하고 로그인 모달을 띄워줍니다.
-      if (!isLoggedIn) {
-        setIsLoginModalOpen(true)
-        return
-      }
-      // -------------------------------------------------------------
 
-      openCreateModal()
+  // BottomNav('+' 버튼)가 호출할 오픈 함수 — 로그인 여부 확인 후 등불 작성 모달(또는 제한 모달) 오픈
+  const handleOpenCreateFlow = () => {
+    // -------------------------------------------------------------
+    // [개발용 로그인 우회]
+    // 실제 로그인 연동 시 아래 주석을 해제하고 로그인 모달을 띄워줍니다.
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+      return
     }
+    // -------------------------------------------------------------
 
-    window.addEventListener('openLanternModal', handleOpen)
-    return () => window.removeEventListener('openLanternModal', handleOpen)
-  }, [isLoggedIn, openCreateModal])
+    openCreateModal()
+  }
 
-  // 프로필 메뉴(TopHeader) / 마이페이지 버튼 등에서 '나의 등불' 모달을 여는 전역 이벤트 처리
+  // 프로필 메뉴(TopHeader) / 마이페이지 버튼이 호출할 오픈 함수 — '나의 등불' 목록(또는 0개 안내) 오픈
   const [isLanternListOpen, setIsLanternListOpen] = useState(false)
   const [isNoLanternModalOpen, setIsNoLanternModalOpen] = useState(false)
-  useEffect(() => {
-    const handleOpenList = () => {
-      if (lanterns.length === 0) {
-        setIsNoLanternModalOpen(true)
-      } else {
-        setIsLanternListOpen(true)
-      }
+  const handleOpenListFlow = () => {
+    if (lanterns.length === 0) {
+      setIsNoLanternModalOpen(true)
+    } else {
+      setIsLanternListOpen(true)
     }
+  }
 
-    window.addEventListener('openMyLanternListModal', handleOpenList)
-    return () => window.removeEventListener('openMyLanternListModal', handleOpenList)
-  }, [lanterns.length])
+  // 위 두 함수를 LanternProvider(Context)에 등록 — BottomNav/TopHeader는 형제 컴포넌트라
+  // 이 페이지의 로컬 상태를 직접 못 건드리므로, window 커스텀 이벤트 대신 이 등록 방식으로 연결한다.
+  useEffect(() => {
+    registerTriggers({
+      openCreateModal: handleOpenCreateFlow,
+      openLanternList: handleOpenListFlow,
+    })
+  })
 
   // 스크래치 완료 핸들러
   const handleScratchReveal = () => {
