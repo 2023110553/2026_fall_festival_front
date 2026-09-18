@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export { TypeTag, BottomBar, PrimaryButton } from './AdminNoticePage.styles'
+export { BottomBar, PrimaryButton } from './AdminNoticePage.styles'
 
 export const Page = styled.div`
   min-height: 100vh;
@@ -62,7 +62,18 @@ export const Title = styled.h2`
   font-weight: 600;
   line-height: 1.35;
   word-break: keep-all;
-  padding-top: 1px;
+`
+
+export const TypeTag = styled.span`
+  flex-shrink: 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: ${({ $urgent }) => ($urgent ? '#DC7054' : '#6E6E6E')};
+  color: #FFF;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: 'pretendard', sans-serif;
 `
 
 export const ContentCard = styled.article`
@@ -86,17 +97,19 @@ export const Content = styled.p`
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: keep-all;
+  font-family: 'pretendard', sans-serif;
 `
 
 export const DangerButton = styled.button`
-  width: 137px;
+  width: 138px;
   height: 60px;
   flex-shrink: 0;
-  border: 1px solid #C62828;
+  border: 1px solid #AD0000;
   border-radius: 99px;
-  background: #EDB5B5;
-  color: #C62828;
-  font-size: 17px;
-  font-weight: 500;
+  background: #FFB2B2;
+  color: #AD0000;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'pretendard', sans-serif;
   cursor: pointer;
 `
