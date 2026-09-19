@@ -1,71 +1,52 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import AlertModal from '../../components/common/AlertModal'
 
 // 1. mypage 전용 컴포넌트 및 스타일
-import MyLanternList from './components/lantern/MyLanternList'
 import ConfirmLogoutModal from './components/auth/ConfirmLogoutModal'
 import * as S from './MyPage.styles'
 
-// 2. app/lantern 공통 모달들
+// 2. app/lantern 공통 모달들, 등불 작성 플로우 훅, 전역 등불 리스트
 import CreateLanternModal from '../lantern/components/CreateLanternModal'
 import ScratchCouponModal from '../lantern/components/ScratchCouponModal'
 import CouponResultModal from '../lantern/components/CouponResultModal'
 import VerifyCodeModal from '../lantern/components/VerifyCodeModal'
+import { useCreateLanternFlow } from '../lantern/hooks/useCreateLanternFlow'
+import { useLanterns } from '../lantern/context/LanternProvider'
+import { getTodayLanternCount } from '../lantern/utils/getCurrentFestivalDate'
+import { setMockToday } from '../lantern/utils/getToday'
+import { FESTIVAL_DATES } from '../../constants/festivalDates'
 
 export default function MyPage() {
   const { user, logout } = useAuth()
 
+  // 등불 리스트는 LanternProvider로 전역 공유 (나의 등불 목록 모달은 AppLayout에 항상 떠 있는 LanternFlowPage가 렌더링)
+  const { lanterns, addLantern, requestLanternList } = useLanterns()
+  const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
+
   // --- 모달 상태 관리 ---
-  const [isLanternModalOpen, setIsLanternModalOpen] = useState(false) // 나의 등불 목록 모달
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false) // 등불 달기 작성 모달
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false) // 성공 안내 모달
-  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false) // 3개 초과 안내 모달
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false) // 로그아웃 확인 모달
-  const [isNoLanternModalOpen, setIsNoLanternModalOpen] = useState(false) // 등불 0개 안내 모달
+  const [isNoLanternModalOpen, setIsNoLanternModalOpen] = useState(false) // '나의 쿠폰' 클릭 시 등불 0개 안내 모달
 
   // 쿠폰 플로우 — null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
   const [coupon, setCoupon] = useState(null)
 
-  // 등불 목록 데이터 상태
-  const [lanterns, setLanterns] = useState([])
-
-  // 1. '+ 등불 달기' 버튼 클릭 시
-  const handleOpenCreateModal = () => {
-    if (lanterns.length >= 3) {
-      setIsLimitModalOpen(true)
-    } else {
-      setIsCreateModalOpen(true)
-    }
-  }
-
-  // 2. '나의 등불' 버튼 클릭 시
-  const handleOpenLanternList = () => {
-    if (lanterns.length === 0) {
-      setIsNoLanternModalOpen(true)
-    } else {
-      setIsLanternModalOpen(true)
-    }
-  }
-
-  // 3. '등불 달기' 작성 완료 제출 시
-  const handleCreateLantern = (newLantern) => {
-    const isFirstLantern = lanterns.length === 0
-
-    const created = {
-      id: Date.now(),
-      nickname: newLantern.nickname || '익명의 코끼리',
-      message: newLantern.content,
-      content: newLantern.content,
-      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }
-
-    setLanterns((prev) => [...prev, created])
-
-    if (isFirstLantern) {
+  const {
+    isCreateModalOpen,
+    closeCreateModal,
+    openCreateModal,
+    isLimitModalOpen,
+    closeLimitModal,
+    isSuccessModalOpen,
+    closeSuccessModal,
+    handleCreateLantern,
+  } = useCreateLanternFlow({
+    lanternCount: todayLanternCount,
+    onCreated: addLantern,
+    onFirstLantern: (created) => {
       // [1번째 등불] ➔ 새 쿠폰 발급 + 스크래치 모달 오픈
       // TODO: 실제로는 서버가 등록 순서로 이미 확정한 당첨 결과를 응답에 포함해서 내려줌
       const isWin = Math.random() < 0.5
@@ -76,10 +57,8 @@ export default function MyPage() {
         isWin,
       })
       setCouponFlow('scratch')
-    } else {
-      setIsSuccessModalOpen(true)
-    }
-  }
+    },
+  })
 
   // 스크래치 완료 시 화면 전환 — 당첨 결과는 쿠폰 발급 시점에 이미 확정되어 있으므로 여기선 상태만 전환
   const handleScratchReveal = () => {
@@ -123,31 +102,6 @@ export default function MyPage() {
     setCouponFlow(coupon.status === 'unscratched' ? 'scratch' : 'result')
   }
 
-  // 등불 삭제 처리
-  const handleDeleteLantern = (id) => {
-    setLanterns((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isDeleted: true } : item
-      )
-    )
-  }
-
-  useEffect(() => {
-    const savedLanterns = localStorage.getItem('my_lanterns')
-    if (savedLanterns) {
-      setLanterns(JSON.parse(savedLanterns))
-    }
-  }, [])
-
-  // 등불 수정 처리
-  const handleEditLantern = (id, newContent) => {
-    setLanterns((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, message: newContent, content: newContent } : item
-      )
-    )
-  }
-
   // 로그아웃 처리
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false)
@@ -160,12 +114,12 @@ export default function MyPage() {
 
       {/* 테스트 및 이동 버튼 영역 */}
       <S.ButtonGroup>
-        <S.PrimaryButton onClick={handleOpenCreateModal}>
+        <S.PrimaryButton onClick={openCreateModal}>
           + 등불 달기
         </S.PrimaryButton>
 
-        <S.SecondaryButton onClick={handleOpenLanternList}>
-          나의 등불 ({lanterns.length}/3)
+        <S.SecondaryButton onClick={requestLanternList}>
+          나의 등불 ({todayLanternCount}/3)
         </S.SecondaryButton>
 
         <S.DefaultButton onClick={handleOpenCouponFlow}>
@@ -191,6 +145,25 @@ export default function MyPage() {
         </button>
       </div>
 
+      {/* TEMP: 목업 상태에서 지난/미래 날짜 화면을 확인하기 위한 오늘 날짜 오버라이드 — 확인 끝나면 제거 */}
+      {import.meta.env.DEV && (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {FESTIVAL_DATES.map((date, index) => (
+            <button
+              key={date}
+              type="button"
+              onClick={() => {
+                setMockToday(date)
+                window.location.reload()
+              }}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px dashed #4a90d9', background: '#fff', color: '#4a90d9', cursor: 'pointer' }}
+            >
+              [테스트] DAY{index + 1}로
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 로그아웃 버튼 */}
       <S.LogoutWrapper>
         <S.LogoutButton onClick={() => setIsLogoutModalOpen(true)}>
@@ -201,17 +174,9 @@ export default function MyPage() {
       {/* --- 연결된 모달 목록 --- */}
       <CreateLanternModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={closeCreateModal}
         onSubmitSuccess={handleCreateLantern}
-        currentCount={lanterns.length}
-      />
-
-      <MyLanternList
-        isOpen={isLanternModalOpen}
-        onClose={() => setIsLanternModalOpen(false)}
-        lanterns={lanterns}
-        onDelete={handleDeleteLantern}
-        onEdit={handleEditLantern}
+        currentCount={todayLanternCount}
       />
 
       <ScratchCouponModal
@@ -236,14 +201,14 @@ export default function MyPage() {
 
       <AlertModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
+        onClose={closeSuccessModal}
         title="등불 달기 성공!"
         subTitle="성공적으로 등불이 달렸습니다."
       />
 
       <AlertModal
         isOpen={isLimitModalOpen}
-        onClose={() => setIsLimitModalOpen(false)}
+        onClose={closeLimitModal}
         title="등불 3개를 모두 달았어요"
         subTitle="등불은 하루에 3개씩만 달 수 있어요"
       />
