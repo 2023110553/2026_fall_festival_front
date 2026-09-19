@@ -1,30 +1,135 @@
-import { useMapContext } from '../../context/MapProvider'
-import LanternViewTab from '../LanternViewTab/LanternViewTab'
+﻿import { useMapContext } from '../../context/MapProvider'
+import BoothListPanel from './BoothListPanel'
+import { useEffect, useRef, useState } from 'react'
+import BoothDetailPanel from './BoothDetailPanel'
+import * as S from './BottomSheet.styles'
 
-// 부스 핀/카드 선택 시 화면 하단에서 올라오는 바텀시트.
-// "부스 설명" / "등불 보기" 탭 전환은 MapProvider의 sheetTab 상태로 관리한다.
-// PlaceDetailPage(풀페이지)와 데이터/레이아웃 구조가 거의 동일하므로,
-// 실제 "부스 설명" 탭 내용은 별도 컴포넌트로 분리해서 두 곳에서 함께 재사용할 것 (새로 만들지 말 것).
-export default function BottomSheet({ open, boothId, onClose }) {
-  const { sheetTab, setSheetTab } = useMapContext()
+export default function BottomSheet() {
+  const { isSheetOpen, selectedBoothId, setSelectedBoothId, setSheetTab, setSearchTerm } = useMapContext()
+  const [isSearching, setIsSearching] = useState(false)
+  const previousSnap = useRef('middle')
+  const [sheetHeight, setSheetHeight] = useState(null)
+  const [snapPosition, setSnapPosition] = useState('middle')
+  const [isDragging, setIsDragging] = useState(false)
+  const sheetRef = useRef(null)
+  const dragRef = useRef(null)
 
-  if (!open || !boothId) return null
+  useEffect(() => {
+    if (!isSheetOpen || isSearching) return
+
+    const handleOutsidePointerDown = (event) => {
+      if (!event.isPrimary || event.button !== 0 || dragRef.current) return
+      if (event.target instanceof Element && event.target.closest('[data-sheet-collapse-ignore]')) return
+      const sheet = sheetRef.current
+      if (!sheet || sheet.contains(event.target)) return
+
+      if (event.clientY < sheet.getBoundingClientRect().top) {
+        setSheetHeight(null)
+        setSnapPosition('low')
+      }
+    }
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown, true)
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointerDown, true)
+    }
+  }, [isSheetOpen, isSearching])
+
+  const handleDragStart = (event) => {
+    if (isSearching) return
+    if (!event.isPrimary || event.button !== 0) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    const styles = getComputedStyle(sheetRef.current)
+    const startHeight = sheetRef.current.getBoundingClientRect().height
+    setSheetHeight(startHeight)
+    setIsDragging(true)
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startHeight,
+      currentHeight: startHeight,
+      minHeight: parseFloat(styles.minHeight),
+      maxHeight: parseFloat(styles.maxHeight),
+      topGap: parseFloat(styles.getPropertyValue('--sheet-top-gap')),
+    }
+  }
+
+  const handleDragMove = (event) => {
+    const drag = dragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    const nextHeight = drag.startHeight + drag.startY - event.clientY
+    drag.currentHeight = Math.min(drag.maxHeight, Math.max(drag.minHeight, nextHeight))
+    setSheetHeight(drag.currentHeight)
+  }
+
+  const handleDragEnd = (event) => {
+    if (dragRef.current?.pointerId !== event.pointerId) return
+    const drag = dragRef.current
+    const points = [
+      { position: 'low', height: drag.minHeight },
+      { position: 'middle', height: Math.min(drag.maxHeight, Math.max(drag.minHeight, (drag.maxHeight + drag.topGap) * 0.75)) },
+      { position: 'high', height: drag.maxHeight },
+    ]
+    const nearest = points.reduce((closest, point) =>
+      Math.abs(point.height - drag.currentHeight) < Math.abs(closest.height - drag.currentHeight)
+        ? point : closest
+    )
+    setSnapPosition(nearest.position)
+    setSheetHeight(null)
+    setIsDragging(false)
+    dragRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  if (!isSheetOpen) return null
+
+  const handleSelectBooth = (id) => {
+    setIsSearching(false)
+    setSearchTerm('')
+    setSelectedBoothId(id)
+    setSheetTab('info')
+  }
 
   return (
-    <div>
-      <button onClick={onClose}>{'<'}</button>
-      <button onClick={() => setSheetTab('info')} disabled={sheetTab === 'info'}>
-        부스 설명
-      </button>
-      <button onClick={() => setSheetTab('lantern')} disabled={sheetTab === 'lantern'}>
-        등불 보기
-      </button>
-
-      {sheetTab === 'info' ? (
-        <p>부스 기본정보/소개/운영정보 placeholder (boothId: {boothId})</p>
+    <S.Sheet
+      ref={sheetRef}
+      $snapPosition={snapPosition}
+      $isDragging={isDragging}
+      style={{ height: sheetHeight == null ? undefined : `${sheetHeight}px` }}
+    >
+      <S.DragHandle
+        onPointerDown={handleDragStart}
+        onPointerMove={handleDragMove}
+        onPointerUp={handleDragEnd}
+        onPointerCancel={handleDragEnd}
+        onLostPointerCapture={handleDragEnd}
+      >
+        <S.HandleBar />
+      </S.DragHandle>
+      <S.Content>
+        {selectedBoothId == null ? (
+        <BoothListPanel
+          onSelectBooth={handleSelectBooth}
+          isSearching={isSearching}
+          onOpenSearch={() => {
+            previousSnap.current = snapPosition
+            setSearchTerm('')
+            setSheetHeight(null)
+            setSnapPosition('high')
+            setIsSearching(true)
+          }}
+          onCancelSearch={() => {
+            setSearchTerm('')
+            setIsSearching(false)
+            setSnapPosition(previousSnap.current)
+          }}
+        />
       ) : (
-        <LanternViewTab boothId={boothId} />
-      )}
-    </div>
+        <BoothDetailPanel boothId={selectedBoothId} onBack={() => setSelectedBoothId(null)} />
+        )}
+      </S.Content>
+    </S.Sheet>
   )
 }

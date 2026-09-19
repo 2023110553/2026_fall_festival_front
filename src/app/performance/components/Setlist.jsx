@@ -39,12 +39,11 @@ const Song = styled.li`
 
     border-radius: 8px;
 
-    border: 1px solid var(--light_grey, #D8D8D8);
-  background: var(--aurora_white, #FDFDFD);
-  /* box_shadow */
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
+    background: rgba(255, 255, 255, 0.70);
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
 
     font-size: 14px;
+    color: #100B0B;
     font-weight: 400;
     line-height: normal;
     font-family: Pretendard;

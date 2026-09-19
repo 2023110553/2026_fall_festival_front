@@ -111,6 +111,10 @@ export default function DevTeamList({ teams }) {
           const position = getCardPosition(index, activeIndex)
           const active = position === 0
 
+          if (members.length > 5 && (position < -2 || position > 2)) {
+            return null
+          }
+
           return (
             <S.CardSlot
               key={member.id}

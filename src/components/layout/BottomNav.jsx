@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useLanterns } from '../../app/lantern/context/LanternProvider'
 import * as S from './BottomNav.styles'
 
 import homeIcon from '../../assets/bottom-nav/home.svg'
@@ -20,6 +21,7 @@ const RIGHT_ITEMS = [
 export default function BottomNav() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const { requestCreateModal } = useLanterns()
 
   const isActive = (path) =>
     path === '/' ? pathname === path : pathname === path || pathname.startsWith(`${path}/`)
@@ -47,8 +49,7 @@ export default function BottomNav() {
       <S.LanternItem
         type="button"
         aria-label="등불 달기"
-        aria-current={isActive('/lantern') ? 'page' : undefined}
-        onClick={() => navigate('/lantern')}
+        onClick={requestCreateModal}
       >
         <S.LanternButton>
           <S.PlusIcon src={plusIcon} alt="" aria-hidden="true" />

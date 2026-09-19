@@ -35,7 +35,7 @@ export const ImageArea = styled.div`
   justify-content: center;
   margin: 0 16px;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 5px;
   background: #000;
   aspect-ratio: 1 / 1;
 `
@@ -65,7 +65,7 @@ export const Keyword = styled.span`
   align-items: center;
   height: 26px;
   padding: 0 10px;
-  border-radius: 6px;
+  border-radius: 99px;
   background: #FDFDFD;
   color: #000;
   font-size: 12px;
@@ -109,7 +109,7 @@ export const AddKeywordButton = styled.button`
   height: 26px;
   padding: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 99px;
   background: #FDFDFD;
   cursor: pointer;
 `
@@ -117,5 +117,7 @@ export const AddKeywordButton = styled.button`
 export const Hint = styled.p`
   margin: 12px 0 0;
   color: #000;
-  font-size: 10px;
+  font-size: 12px;
+  font-family: 'pretendard', sans-serif;
+  font-weight: 500;
 `

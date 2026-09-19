@@ -1,10 +1,13 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { EffectComposer, Selection, SelectiveBloom } from '@react-three/postprocessing'
+import { EffectComposer, Selection, SelectiveBloom, ToneMapping } from '@react-three/postprocessing'
+import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import Zone1Scene from './zones/Zone1Scene'
 import Zone2Scene from './zones/Zone2Scene'
+import Zone3Scene from './zones/Zone3Scene'
+import Zone4Scene from './zones/Zone4Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 
 // 재원 담당 — 구역별 3D 씬(터레인+건물+부스 앵커)을 감싸는 진입 컴포넌트.
@@ -28,6 +31,33 @@ import SceneEnvironment from './environment/SceneEnvironment'
 // 2026-09-15: zone2(팔정도) 연결(이슈 #22) — Zone2Scene은 아직 부스 좌표가 없어서
 // brightnessLevel/onBoothClick 없이 지형만 렌더링한다. zone3(만해광장+후문쪽 거리)는
 // 여전히 TODO.
+//
+// 2026-09-16: zone4(학림관) 연결 + zone1/zone2 glb를 디테일 개선본으로 교체(이슈 #33).
+// 세 glb 모두 gltf-transform으로 meshopt 압축·WebP 텍스처·재질별 메시 병합을 적용한 최적화본이라
+// (zone1 기준 메시 1,533 → 91개) 드로우콜이 크게 줄었다. 로더 쪽 추가 설정은 필요 없다
+// (drei useGLTF 기본 MeshoptDecoder + three r180의 EXT_texture_webp 지원). 자세한 파이프라인은
+// zones/README.md 참고. 카메라 위치/타깃은 아직 zone1 기준 임시값이라 zone4에선 건물이 화면
+// 위쪽에 치우쳐 보일 수 있음 — 구역 전환 카메라 연출을 정할 때 함께 조정 예정.
+//
+// 2026-09-16(2차, 이슈 #37): 톤매핑 복구 — 재원 피드백 "낮은 너무 쨍하고 밤은 너무 어둡다"의 근본 원인.
+// @react-three/postprocessing의 <EffectComposer>는 마운트되는 동안 renderer.toneMapping을
+// NoToneMapping으로 강제한다(HDR 버퍼에서 효과를 계산하려는 라이브러리 설계). 그래서 블룸을 넣은
+// 2026-09-13 이후로 씬이 톤매핑 없이 화면에 나가고 있었음 → 밝은 값은 1.0에서 딱 잘리고(하이라이트가
+// 하얗게 날아가 "쨍한" 느낌), 어두운 값은 눌린 채 그대로. 해결은 파이프라인 마지막에 <ToneMapping>
+// 효과를 넣어 블룸까지 계산된 HDR 결과를 한 번에 ACES Filmic 커브로 내리는 것. 조명 세기/환경광은
+// environment/timeOfDayPresets.js에서 같이 손봤다(그 파일 주석 참고).
+// 순서가 중요: SelectiveBloom(HDR에서 빛 번짐 계산) → ToneMapping(LDR로 내림). 반대로 두면 블룸이 죽는다.
+// 같이 고친 것 — SelectiveBloom에 ignoreBackground 추가. SelectiveBloom은 "선택한 오브젝트의 깊이 == 씬 깊이"인
+// 픽셀만 번지게 하는데, 기본값에서는 아무것도 안 그려진 배경 픽셀(깊이 최대)도 "일치"로 쳐서 배경 전체가 블룸에
+// 들어가고 있었다. 낮 배경(#f5f5f5)은 밝기 임계값(0.15)을 훌쩍 넘으니 화면 전체에 뿌연 안개 + 배경이 하얗게 날아가는
+// 결과 → 이것도 "쨍함"의 큰 원인이었음(헤드리스 렌더에서 확인). ignoreBackground를 켜면 배경은 블룸 계산에서 빠지고
+// 랜턴/조명끈 같은 실제 선택 오브젝트만 번진다.
+//
+// 2026-09-19: zone3(만해광장) 연결(이슈 #63) — 이로써 확정 3구역 + 학림관까지 모든 구역 씬이 연결됐다.
+// 현재 zone3.glb는 만해광장 본체까지이고 "후문쪽 거리"는 모델링이 추가되면 같은 파일명으로
+// 재-export해서 교체한다. 만해광장은 중심이 원점 근처(x -21~21, z -15~14)라 zone1 기준 고정
+// 카메라([10,140,90] → target [10,3,-30])에서는 꽤 멀리/위에서 보인다 — 구역 전환 카메라 연출을
+// 정할 때 zone4와 함께 조정 예정.
 //
 // 2026-09-13(2차): timeOfDay(낮/노을/밤 라이팅·하늘 전환) 구현.
 // 실제 하늘/조명/그림자 값은 전부 environment/SceneEnvironment.jsx +
@@ -65,16 +95,25 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
             <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
           ) : zoneId === 'zone2' ? (
             <Zone2Scene />
-          ) : (
-            // TODO: zone3(만해광장+후문쪽 거리) 씬 연결
-            null
-          )}
+          ) : zoneId === 'zone3' ? (
+            <Zone3Scene />
+          ) : zoneId === 'zone4' ? (
+            <Zone4Scene />
+          ) : null}
         </Suspense>
         {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
         {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
         <OrbitControls target={[10, 3, -30]} />
         <EffectComposer>
-          <SelectiveBloom mipmapBlur luminanceThreshold={0.15} luminanceSmoothing={0.4} intensity={1.4} radius={0.6} />
+          <SelectiveBloom
+            mipmapBlur
+            ignoreBackground
+            luminanceThreshold={0.15}
+            luminanceSmoothing={0.4}
+            intensity={1.4}
+            radius={0.6}
+          />
+          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       </Selection>
     </Canvas>
