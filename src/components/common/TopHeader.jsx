@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import * as S from './TopHeader.styles'
 import LoginModal from '../../app/auth/LoginModal'
 import { useAuth } from '../../hooks/useAuth'
+import { useLanterns } from '../../app/lantern/context/LanternProvider'
 
 import titleMarker from '../../assets/top-header/title-marker.svg'
 import profileIcon from '../../assets/top-header/profile.svg'
@@ -15,6 +16,7 @@ export default function TopHeader({
 }) {
   const navigate = useNavigate()
   const { isLoggedIn: authIsLoggedIn, logout } = useAuth()
+  const { requestLanternList } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
@@ -48,6 +50,11 @@ export default function TopHeader({
   const closeMenu = () => setIsMenuOpen(false)
   const openMyPage = (section) => {
     navigate(`/mypage?section=${section}`)
+    closeMenu()
+  }
+  // 나의 등불은 페이지 이동 없이 어디서든 전역 모달로 오픈 (AppLayout에 항상 떠 있는 LanternFlowPage가 처리)
+  const openMyLanternListModal = () => {
+    requestLanternList()
     closeMenu()
   }
   const handleLogout = () => {
@@ -99,7 +106,7 @@ export default function TopHeader({
             <S.MenuItem type="button" role="menuitem" onClick={() => openMyPage('coupons')}>
               나의 쿠폰
             </S.MenuItem>
-            <S.MenuItem type="button" role="menuitem" onClick={() => openMyPage('lanterns')}>
+            <S.MenuItem type="button" role="menuitem" onClick={openMyLanternListModal}>
               나의 등불
             </S.MenuItem>
             <S.LogoutItem type="button" role="menuitem" onClick={handleLogout}>

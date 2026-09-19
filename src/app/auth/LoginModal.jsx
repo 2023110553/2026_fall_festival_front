@@ -7,10 +7,16 @@ export default function LoginModal({ open, onClose }) {
   const { login } = useAuth()
 
   const handleKakaoLogin = () => {
-    // TODO: 백엔드 카카오 SDK/OAuth 연동 
+    // TODO: 백엔드 카카오 SDK/OAuth 연동
     // Kakao.Auth.login({
     //   success: (authObj) => login({ accessToken: authObj.access_token }),
     // })
+
+    // TEMP: 카카오 SDK 연동 전까지 개발 중에만 로그인 상태를 흉내내는 목업 — 실 연동 시 제거
+    if (import.meta.env.DEV) {
+      login({ accessToken: 'dev-mock-token', user: { id: 'dev', nickname: '테스트유저' } })
+    }
+
     onClose()
   }
 
