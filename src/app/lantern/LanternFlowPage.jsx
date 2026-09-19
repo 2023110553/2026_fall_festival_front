@@ -5,11 +5,13 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCreateLanternFlow } from './hooks/useCreateLanternFlow'
 import { useLanterns } from './context/LanternProvider'
 import { getTodayLanternCount } from './utils/getCurrentFestivalDate'
+import { revealCoupon, markCouponUsed } from './utils/couponRules'
 
 // app/lantern/components/ 모달 import
 import CreateLanternModal from './components/CreateLanternModal'
 import ScratchCouponModal from './components/ScratchCouponModal'
 import CouponResultModal from './components/CouponResultModal'
+import EmptyCouponModal from './components/EmptyCouponModal'
 import VerifyCodeModal from './components/VerifyCodeModal'
 import MyLanternList from '../mypage/components/lantern/MyLanternList'
 
@@ -26,6 +28,8 @@ export default function LanternFlowPage() {
   // 쿠폰 플로우: null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
   const [coupon, setCoupon] = useState(null)
+  const [isNewCoupon, setIsNewCoupon] = useState(false)
+  const [isNoCouponModalOpen, setIsNoCouponModalOpen] = useState(false)
 
   const {
     isCreateModalOpen,
@@ -41,7 +45,16 @@ export default function LanternFlowPage() {
     onCreated: addLantern,
     onFirstLantern: (created) => {
       // 1번째 등불: 스크래치 복권 생성 및 모달 오픈
-      setCoupon({ id: created.id, status: 'unscratched' })
+      // 서버 연동 전 목업 결과를 미리 정해 긁는 중과 결과 모달의 내용을 일치시킨다.
+      const isWin = Math.random() < 0.5
+      setCoupon({
+        id: created.id,
+        status: 'unscratched',
+        isWin,
+        reward: isWin ? '야간부스 30% 할인' : undefined,
+        usageDescription: isWin ? '사과대 광홍 부스에서 사용 가능' : undefined,
+      })
+      setIsNewCoupon(true)
       setCouponFlow('scratch')
     },
   })
@@ -73,30 +86,43 @@ export default function LanternFlowPage() {
     }
   }
 
-  // 위 두 함수를 LanternProvider(Context)에 등록 — BottomNav/TopHeader는 형제 컴포넌트라
+  const handleOpenCouponFlow = () => {
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+      return
+    }
+    if (!coupon) {
+      setIsNoCouponModalOpen(true)
+      return
+    }
+    setIsNewCoupon(false)
+    setCouponFlow(coupon.status === 'unscratched' ? 'scratch' : 'result')
+  }
+
+  // 메뉴 동작을 LanternProvider(Context)에 등록 — BottomNav/TopHeader는 형제 컴포넌트라
   // 이 페이지의 로컬 상태를 직접 못 건드리므로, window 커스텀 이벤트 대신 이 등록 방식으로 연결한다.
   useEffect(() => {
     registerTriggers({
       openCreateModal: handleOpenCreateFlow,
       openLanternList: handleOpenListFlow,
+      openCoupon: handleOpenCouponFlow,
     })
   })
 
   // 스크래치 완료 핸들러
   const handleScratchReveal = () => {
-    setCoupon((prev) => ({
-      ...prev,
-      status: 'win',
-      reward: '야간부스 30% 할인',
-    }))
+    if (coupon?.status !== 'unscratched') return
+    setCoupon(revealCoupon(coupon))
     setCouponFlow('result')
   }
 
   // 3. 현장 코드 검증 핸들러
   const handleVerifyCode = (code) =>
     new Promise((resolve, reject) => {
-      if (code === '1234') {
-        setCoupon((prev) => ({ ...prev, status: 'used' }))
+      if (coupon?.status !== 'win') {
+        reject(new Error('사용할 수 없는 쿠폰이에요.'))
+      } else if (code.trim() === '1234') {
+        setCoupon(markCouponUsed(coupon))
         setCouponFlow('result')
         resolve()
       } else {
@@ -124,6 +150,8 @@ export default function LanternFlowPage() {
         isOpen={couponFlow === 'scratch'}
         onClose={() => setCouponFlow(null)}
         onReveal={handleScratchReveal}
+        coupon={coupon}
+        isNewCoupon={isNewCoupon}
       />
 
       {/* 3. 쿠폰 결과/당첨 모달 */}
@@ -164,6 +192,12 @@ export default function LanternFlowPage() {
         lanterns={lanterns}
         onDelete={deleteLantern}
         onEdit={editLantern}
+      />
+
+      {/* 쿠폰 미발급 안내 모달 */}
+      <EmptyCouponModal
+        isOpen={isNoCouponModalOpen}
+        onClose={() => setIsNoCouponModalOpen(false)}
       />
 
       {/* 8. 등불 0개 안내 모달 */}

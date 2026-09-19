@@ -16,7 +16,7 @@ export default function TopHeader({
 }) {
   const navigate = useNavigate()
   const { isLoggedIn: authIsLoggedIn, logout } = useAuth()
-  const { requestLanternList } = useLanterns()
+  const { requestLanternList, requestCoupon } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
@@ -48,8 +48,8 @@ export default function TopHeader({
   }, [isMenuOpen])
 
   const closeMenu = () => setIsMenuOpen(false)
-  const openMyPage = (section) => {
-    navigate(`/mypage?section=${section}`)
+  const openMyCouponModal = () => {
+    requestCoupon()
     closeMenu()
   }
   // 나의 등불은 페이지 이동 없이 어디서든 전역 모달로 오픈 (AppLayout에 항상 떠 있는 LanternFlowPage가 처리)
@@ -103,7 +103,7 @@ export default function TopHeader({
 
         {isLoggedIn && isMenuOpen && (
           <S.Menu id={menuId} role="menu">
-            <S.MenuItem type="button" role="menuitem" onClick={() => openMyPage('coupons')}>
+            <S.MenuItem type="button" role="menuitem" onClick={openMyCouponModal}>
               나의 쿠폰
             </S.MenuItem>
             <S.MenuItem type="button" role="menuitem" onClick={openMyLanternListModal}>

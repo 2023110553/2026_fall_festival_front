@@ -37,7 +37,7 @@ export function LanternProvider({ children }) {
   // BottomNav(+버튼)/TopHeader(나의 등불) 등은 LanternFlowPage와 형제 컴포넌트라 그 로컬 상태를
   // 직접 못 건드린다. 대신 LanternFlowPage가 마운트 시 자신의 오픈 함수를 여기에 등록해두고,
   // 형제 컴포넌트는 registerTriggers로 등록된 함수를 통해서만 호출한다 (window 커스텀 이벤트 대체).
-  const triggersRef = useRef({ openCreateModal: null, openLanternList: null })
+  const triggersRef = useRef({ openCreateModal: null, openLanternList: null, openCoupon: null })
 
   const registerTriggers = useCallback((triggers) => {
     triggersRef.current = triggers
@@ -51,6 +51,10 @@ export function LanternProvider({ children }) {
     triggersRef.current.openLanternList?.()
   }, [])
 
+  const requestCoupon = useCallback(() => {
+    triggersRef.current.openCoupon?.()
+  }, [])
+
   return (
     <LanternContext.Provider
       value={{
@@ -61,6 +65,7 @@ export function LanternProvider({ children }) {
         registerTriggers,
         requestCreateModal,
         requestLanternList,
+        requestCoupon,
       }}
     >
       {children}

@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useState } from 'react'
 import Modal from '../../../components/common/Modal'
+import * as S from './VerifyCodeModal.styles'
 
 // onSubmit(code): 상위에서 useCoupon(couponId, code) 호출 — 실패 시 reject(에러) 해주면
 // 이 모달이 알아서 에러 문구를 띄우고 재입력을 받는다.
@@ -24,10 +25,10 @@ function VerifyCodeModal({ isOpen, onClose, onSubmit }) {
   }, [])
 
   const handleSubmit = useCallback(async () => {
-    if (code.length < 1 || isSubmitting) return
+    if (!code.trim() || isSubmitting) return
     setIsSubmitting(true)
     try {
-      await onSubmit(code)
+      await onSubmit(code.trim())
     } catch (err) {
       setError(err?.message || '올바른 코드가 아닙니다.')
     } finally {
@@ -35,78 +36,51 @@ function VerifyCodeModal({ isOpen, onClose, onSubmit }) {
     }
   }, [code, isSubmitting, onSubmit])
 
-  const canSubmit = code.length >= 1 && !isSubmitting
+  const canSubmit = code.trim().length >= 1 && !isSubmitting
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div style={{ textAlign: 'left', padding: '4px 0' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#111' }}>
-          확인 코드를 입력해주세요
-        </h2>
-        <p style={{ fontSize: '12px', color: '#666', marginTop: '6px', margin: '6px 0 0 0' }}>
-          주점에서 직접 서버한테 보여주세요
-        </p>
+    <Modal isOpen={isOpen} onClose={onClose} style={S.panelStyle}>
+      <form onSubmit={(event) => { event.preventDefault(); handleSubmit() }}>
+        <S.Title>
+          확인 코드를 입력해주세요.
+        </S.Title>
+        <S.Description>
+          주점에서 직접 서버한테 보여주세요.
+        </S.Description>
 
-        <input
+        <S.CodeInput
           value={code}
           onChange={handleChange}
-          placeholder="확인 코드 입력"
+          aria-label="확인 코드"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? 'coupon-code-error' : undefined}
+          autoFocus
           disabled={isSubmitting}
-          style={{
-            width: '100%',
-            marginTop: '16px',
-            padding: '12px',
-            borderRadius: '12px',
-            border: '1px solid #ddd',
-            fontSize: '14px',
-            boxSizing: 'border-box',
-          }}
         />
 
-        {error && (
-          <p style={{ fontSize: '12px', fontWeight: '600', color: '#DC7054', margin: '5px 0 5px 4px' }}>
+        <S.FeedbackSlot>
+          {error && (
+          <S.ErrorMessage id="coupon-code-error" role="alert">
             {error}
-          </p>
-        )}
+          </S.ErrorMessage>
+          )}
+        </S.FeedbackSlot>
 
-        <div style={{ display: 'flex', gap: '8px', marginTop: error ? '0' : '20px' }}>
-          <button
+        <S.ButtonGroup>
+          <S.CloseButton
             type="button"
             onClick={onClose}
-            style={{
-              flex: 1,
-              padding: '12px',
-              backgroundColor: '#ededed',
-              border: 'none',
-              borderRadius: '12px',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#666',
-              cursor: 'pointer',
-            }}
           >
             닫기
-          </button>
-          <button
-            type="button"
+          </S.CloseButton>
+          <S.SubmitButton
+            type="submit"
             disabled={!canSubmit}
-            onClick={handleSubmit}
-            style={{
-              flex: 1,
-              padding: '12px',
-              border: 'none',
-              borderRadius: '12px',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              cursor: canSubmit ? 'pointer' : 'not-allowed',
-              backgroundColor: canSubmit ? '#111' : '#ddd',
-              color: canSubmit ? '#fff' : '#888',
-            }}
           >
             {isSubmitting ? '확인 중...' : '확인'}
-          </button>
-        </div>
-      </div>
+          </S.SubmitButton>
+        </S.ButtonGroup>
+      </form>
     </Modal>
   )
 }
