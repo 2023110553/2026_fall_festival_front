@@ -29,29 +29,34 @@ export const SearchButton = styled.button`
     &:focus-visible { outline: 2px solid #DC7054; }
 `
 export const ButtonWrapper = styled.div`
-    background: #D8D8D8;
-    display: inline-block;
+    background: var(--text_black, #272727);
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
     border-radius: 999px;
-    gap: 4px;
-    padding: 5px;
+    gap: 0;
+    padding: 3px;
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
 `
 export const Button = styled.button`
     border-radius: 999px;
     border: 0;
-    padding: 6px 16px;
-    background: ${({ $active }) => ($active ? '#fff' : 'transparent')};
-    box-shadow: ${({ $active }) =>
-    $active ? '0 5px 12px rgba(0, 0, 0, 0.2)' : 'none'};
+    width: 42px;
+    height: 30px;
+    padding: 0;
+    background: ${({ $active }) => ($active ? 'var(--aurora_orange, #DC7054)' : 'transparent')};
+    color: #FDFDFD;
 
     font-family: inherit;
-    font-weight: ${({ $active }) => ($active ? 700 : 400)};
+    font-size: 12px;
+    line-height: normal;
+    font-weight: ${({ $active }) => ($active ? 600 : 400)};
 
-    transition: background 0.2s, box-shadow 0.2s;
+    transition: background 0.2s;
 
     &:focus-visible {
-        outline: 2px solid #dc7054;
-        outline-offset: 2px;
+        outline: 2px solid #FDFDFD;
+        outline-offset: -3px;
     }
 `
 
@@ -74,8 +79,8 @@ export const CategoryList = styled.div`
 export const CategoryButton = styled.button`
     padding: 4px 10px;
     font-size: 12px;
-    background: #FDFDFD;
-    color: #272727;
+    background: ${({ $active }) => ($active ? '#272727' : '#FDFDFD')};
+    color: ${({ $active }) => ($active ? '#FDFDFD' : '#272727')};
     border: 0;
     border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
@@ -88,8 +93,8 @@ export const CategoryButton = styled.button`
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
     }
 
-    &:focus {
-        background-color:#9F9C99;
-        color: #FDFDFD;
+    &:focus-visible {
+        outline: 2px solid #DC7054;
+        outline-offset: 2px;
     }
 `

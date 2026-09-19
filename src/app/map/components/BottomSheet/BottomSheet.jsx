@@ -13,6 +13,15 @@ export default function BottomSheet() {
   const [isDragging, setIsDragging] = useState(false)
   const sheetRef = useRef(null)
   const dragRef = useRef(null)
+  const contentRef = useRef(null)
+
+  useEffect(() => {
+    if (selectedBoothId != null) {
+      setSheetHeight(null)
+      setSnapPosition('high')
+    }
+    if (contentRef.current) contentRef.current.scrollTop = 0
+  }, [selectedBoothId])
 
   useEffect(() => {
     if (!isSheetOpen || isSearching) return
@@ -108,7 +117,7 @@ export default function BottomSheet() {
       >
         <S.HandleBar />
       </S.DragHandle>
-      <S.Content>
+      <S.Content ref={contentRef}>
         {selectedBoothId == null ? (
         <BoothListPanel
           onSelectBooth={handleSelectBooth}
