@@ -5,6 +5,7 @@ import TopHeader from '../../components/common/TopHeader'
 import FestivalDateTabs from '../../components/common/FestivalDateTabs'
 import NowPlaying from './components/NowPlaying'
 import { PERFORMANCE_MOCKS, SERVER_TIME_MOCK } from './Performance.mock'
+import useServerTime from '../../hooks/useServerTime'
 
 const FESTIVAL_DATES = ['2026-09-29', '2026-09-30', '2026-10-01']
 
@@ -17,6 +18,7 @@ function getDefaultDate(serverTime) {
 export default function PerformancePage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const now = useServerTime(SERVER_TIME_MOCK)
   const selectedDate = searchParams.get('date') ?? getDefaultDate(SERVER_TIME_MOCK)
 
   const handleDateChange = (date) => {
@@ -35,7 +37,7 @@ export default function PerformancePage() {
         <FestivalDateTabs value={selectedDate} onChange={handleDateChange} />
       </HeaderTab>
       <CardArea>
-        <NowPlaying performance={nowPlaying} serverTime={SERVER_TIME_MOCK} />
+        <NowPlaying performance={nowPlaying} now={now} />
         <Divider />
       </CardArea>
       <TimelineList
