@@ -5,11 +5,18 @@ export default function DevTeamCard({ member, active }) {
     <S.Card $active={active} aria-hidden={!active}>
       <S.Track>{member.track}</S.Track>
       <S.Glow aria-hidden="true" />
-      {member.imageUrl && <S.Profile src={member.imageUrl} alt="" />}
+
+      {member.imageUrl && (
+        <S.ProfileSlot>
+          <S.Profile src={member.imageUrl} alt="" />
+        </S.ProfileSlot>
+      )}
+
       <S.Info>
         <S.Department>{member.department}</S.Department>
         <S.Name>{member.name}</S.Name>
       </S.Info>
+
       {!active && <S.Dim aria-hidden="true" />}
     </S.Card>
   )

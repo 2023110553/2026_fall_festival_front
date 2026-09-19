@@ -36,13 +36,20 @@ export const Glow = styled.div`
   background: radial-gradient(50% 50% at 50% 50%, #fffc42 0%, rgba(255, 255, 255, 0) 100%);
 `
 
-export const Profile = styled.img`
+export const ProfileSlot = styled.div`
   position: absolute;
   top: 65px;
   left: 39px;
   z-index: 1;
   width: 130px;
   height: 130px;
+  overflow: hidden;
+`
+
+export const Profile = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 `
 
