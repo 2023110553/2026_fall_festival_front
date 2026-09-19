@@ -23,7 +23,7 @@ export const Item = styled.li`
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: ${({ $isNow }) => ($isNow ? ACCENT : DOT)};
+    background: ${({ $isLive }) => ($isLive ? ACCENT : DOT)};
     filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.25)) blur(3px);
   }
   &::after {
@@ -33,8 +33,8 @@ export const Item = styled.li`
     top: 24px;
     width: 2px;
     height: 67px;
-    background: ${({ $isNow }) =>
-    $isNow
+    background: ${({ $isLive }) =>
+    $isLive
       ? 'linear-gradient(180deg, #dc7054 0%, #fcf8f7 100%)'
       : 'linear-gradient(180deg, #dadada 0%, #fcf8f7 100%)'};
   }
@@ -42,9 +42,9 @@ export const Item = styled.li`
 
 export const Time = styled.p`
   margin: 0 0 8px;
-  color: ${({ $isNow }) => ($isNow ? ACCENT : TEXT)};
+  color: ${({ $isLive }) => ($isLive ? ACCENT : TEXT)};
   font-size: 14px;
-  font-weight: ${({ $isNow }) => ($isNow ? 600 : 400)};
+  font-weight: ${({ $isLive }) => ($isLive ? 600 : 400)};
 `
 
 export const Card = styled.button`
@@ -55,10 +55,10 @@ export const Card = styled.button`
   padding: 12px;
   border: 0;
   border-radius: 6px;
-  background: ${({ $isNow }) =>
-    $isNow ? 'rgba(220, 112, 84, 0.1)' : CARD_BG};
-  box-shadow: ${({ $isNow }) =>
-    $isNow ? '0 2px 5px 0 rgba(0, 0, 0, 0.15)' : '0 2px 5px 0 rgba(0, 0, 0, 0.1)'};
+  background: ${({ $isLive }) =>
+    $isLive ? 'rgba(220, 112, 84, 0.1)' : CARD_BG};
+  box-shadow: ${({ $isLive }) =>
+    $isLive ? '0 2px 5px 0 rgba(0, 0, 0, 0.15)' : '0 2px 5px 0 rgba(0, 0, 0, 0.1)'};
 `
 
 export const Left = styled.div`

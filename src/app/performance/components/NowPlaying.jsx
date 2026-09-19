@@ -1,6 +1,8 @@
 import * as S from './NowPlaying.styles'
+import { formatTime, getProgress } from '../../../utils/time'
 
-export default function NowPlaying({ performance }) {
+
+export default function NowPlaying({ performance, serverTime }) {
     if (!performance) {
         return (
             <S.Card>
@@ -9,22 +11,22 @@ export default function NowPlaying({ performance }) {
         )
     }
 
-    const { name, category, time, progress } = performance
-    const [start, end] = time.split(' - ')
+    const { team_name, affiliation, start_at, end_at } = performance
+    const progress = getProgress(serverTime, start_at, end_at)
     return (
         <S.Card>
             <S.Row>
                 <S.Thumb />
                 <S.TextGroup>
-                    <S.Name>{name}</S.Name>
-                    <S.Category>{category}</S.Category>
+                    <S.Name>{team_name}</S.Name>
+                    {affiliation && <S.Category>{affiliation}</S.Category>}
                 </S.TextGroup>
             </S.Row>
 
             <S.ProgressArea>
                 <S.TimeRow>
-                    <span>{start}</span>
-                    <span>{end}</span>
+                    <span>{formatTime(start_at)}</span>
+                    <span>{formatTime(end_at)}</span>
                 </S.TimeRow>
                 <S.Bar>
                     <S.Fill $percent={progress * 100} />

@@ -4,20 +4,29 @@ import TimelineList from './components/TimelineList'
 import TopHeader from '../../components/common/TopHeader'
 import FestivalDateTabs from '../../components/common/FestivalDateTabs'
 import NowPlaying from './components/NowPlaying'
-import { PERFORMANCE_MOCKS } from './Performance.mock'
+import { PERFORMANCE_MOCKS, SERVER_TIME_MOCK } from './Performance.mock'
 
-// 공연 안내(STAGE) — 날짜 탭 + 지금 공연중 하이라이트 + 시간대별 타임라인 + 상세(셋리스트) 모달
+const FESTIVAL_DATES = ['2026-09-29', '2026-09-30', '2026-10-01']
+
+function getDefaultDate(serverTime) {
+  const today = serverTime.slice(0, 10)
+  return FESTIVAL_DATES.includes(today) ? today : '2026-09-29'
+}
+
+// 공연 안내(STAGE) — 날짜 탭 + 지금 공연중 하이라이트 + 시간대별 타임라인
 export default function PerformancePage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const selectedDate = searchParams.get('date') ?? '2026-10-01'
+  const selectedDate = searchParams.get('date') ?? getDefaultDate(SERVER_TIME_MOCK)
 
   const handleDateChange = (date) => {
     setSearchParams({ date })
   }
 
-  const performances = PERFORMANCE_MOCKS.filter((p) => p.date === selectedDate)
-  const nowPlaying = performances.find((p) => p.isNow)
+  const performances = PERFORMANCE_MOCKS.filter(
+    (p) => p.festival_date === selectedDate
+  )
+  const nowPlaying = performances.find((p) => p.is_live) ?? null
 
   return (
     <Page>
@@ -26,7 +35,7 @@ export default function PerformancePage() {
         <FestivalDateTabs value={selectedDate} onChange={handleDateChange} />
       </HeaderTab>
       <CardArea>
-        <NowPlaying performance={nowPlaying} />
+        <NowPlaying performance={nowPlaying} serverTime={SERVER_TIME_MOCK} />
         <Divider />
       </CardArea>
       <TimelineList
@@ -48,7 +57,7 @@ const Page = styled.main`
 
 const HeaderTab = styled.div`
   padding: 16px 16px 0;
-  `
+`
 
 const CardArea = styled.div`
   padding: 16px 16px 0;
