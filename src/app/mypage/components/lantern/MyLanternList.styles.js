@@ -1,9 +1,16 @@
 import styled from 'styled-components'
 
-export const Header = styled.div`
-    text-align: left;
+export const HeaderRow = styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
     width: 100%;
     margin-bottom: 14px;
+`
+
+export const Header = styled.div`
+    text-align: left;
 `
 
 export const Title = styled.h2`
@@ -18,6 +25,82 @@ export const SubTitle = styled.p`
     color: #666666;
     margin: 3px 0 0 0;
     font-weight: 500;
+`
+
+export const DayPicker = styled.div`
+    position: relative;
+    flex-shrink: 0;
+`
+
+export const DayBadge = styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #dc7054;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+`
+
+export const DayBadgeChevron = styled.span`
+    font-size: 11px;
+    line-height: 1;
+`
+
+export const DayDropdown = styled.div`
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+    padding: 6px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+`
+
+export const DayOption = styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: ${({ $active }) => ($active ? 'rgba(220, 112, 84, 0.12)' : 'transparent')};
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+        background-color: ${({ $active }) => ($active ? 'rgba(220, 112, 84, 0.12)' : '#f4f4f4')};
+    }
+`
+
+export const DayOptionLabel = styled.span`
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    font-weight: 700;
+    color: ${({ $active }) => ($active ? '#dc7054' : '#333333')};
+`
+
+export const DayOptionDate = styled.span`
+    font-size: 10px;
+    font-weight: 500;
+    color: #999999;
+`
+
+export const DayOptionCheck = styled.span`
+    font-size: 12px;
+    font-weight: 700;
+    color: ${({ $active }) => ($active ? '#dc7054' : '#333333')};
 `
 
 export const ListWrapper = styled.div`

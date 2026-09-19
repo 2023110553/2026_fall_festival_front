@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCreateLanternFlow } from './hooks/useCreateLanternFlow'
 import { useLanterns } from './context/LanternProvider'
+import { getTodayLanternCount } from './utils/getCurrentFestivalDate'
 
 // app/lantern/components/ 모달 import
 import CreateLanternModal from './components/CreateLanternModal'
@@ -20,6 +21,7 @@ export default function LanternFlowPage() {
 
   // --- 상태 관리 --- (등불 리스트는 LanternProvider로 전역 공유 — MyPage 등 다른 화면과 같은 목록을 본다)
   const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers } = useLanterns()
+  const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
 
   // 쿠폰 플로우: null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
@@ -35,7 +37,7 @@ export default function LanternFlowPage() {
     closeSuccessModal,
     handleCreateLantern,
   } = useCreateLanternFlow({
-    lanternCount: lanterns.length,
+    lanternCount: todayLanternCount,
     onCreated: addLantern,
     onFirstLantern: (created) => {
       // 1번째 등불: 스크래치 복권 생성 및 모달 오픈
@@ -114,7 +116,7 @@ export default function LanternFlowPage() {
         isOpen={isCreateModalOpen}
         onClose={closeCreateModal}
         onSubmitSuccess={handleCreateLantern}
-        currentCount={lanterns.length}
+        currentCount={todayLanternCount}
       />
 
       {/* 2. 첫 등불 스크래치 복권 모달 */}
