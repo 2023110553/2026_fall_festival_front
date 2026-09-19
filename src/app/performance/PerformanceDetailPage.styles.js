@@ -12,7 +12,7 @@ export const Page = styled.main`
     display: flex;
     flex-direction: column;
 
-    background: #fdfdfd;
+    background: transparent;
 
     font-family: Pretendard, sans-serif;
 `
@@ -62,22 +62,23 @@ export const HeaderTitle = styled.h1`
 
     color: ${TEXT};
 
-    font-size: 14px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 600;
 `
 
 export const DetailPanel = styled.section`
     flex: 1;
 
-    min-height: 676px;
+    min-height: calc(100dvh - 60px);
+    width: 343px;
 
     margin: 0 16px;
-    padding: 28px 20px 120px;
+    padding: 28px 20px 16px 20px;
 
     box-sizing: border-box;
 
     border-radius: 12px;
-    background: #f7f7f7;
+    background: transparent;
     box-shadow: 0 0 10.82px rgba(0, 0, 0, 0.25);
 `
 
@@ -87,7 +88,7 @@ export const Divider = styled.div`
 
     margin: 12px 0 20px;
 
-    background: #ffffff;
+    background: #fdfdfd;
 `
 
 export const SetlistSection = styled.section`
@@ -97,7 +98,7 @@ export const SetlistSection = styled.section`
 export const SectionTitle = styled.h3`
     margin: 0 0 8px;
 
-    color: #333333;
+    color: #737373;
 
     font-size: 12px;
     font-weight: 400;

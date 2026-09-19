@@ -21,29 +21,55 @@ export const TitleGroup = styled.div`
 export const Marker = styled.img`
     width: 10px;
     height: 10px;
+
+    border-radius: 99px;
+
+    opacity: 1;
+
+    background: var(
+    --aurora_orange,
+    #dc7054
+    );
+
+    filter: blur(2px);
 `
 
 export const Title = styled.h2`
     margin: 0;
 
-    color: #ffffff;
+    color: #000;
 
     font-size: 20px;
     font-weight: 600;
 `
 
 export const MoreLink = styled.button`
+    display: flex;
+    align-items: center;
+
     padding: 0;
 
     border: 0;
+    gap: 4px;
     background: transparent;
 
-    color: #ffffff;
+    color: #000;
 
     font-size: 12px;
     font-weight: 400;
+    text-align: center;
 
     cursor: pointer;
+`
+
+export const ArrowBox = styled.span`
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `
 
 export const Scroller = styled.ul`
@@ -98,6 +124,7 @@ export const CardButton = styled.button`
     background: transparent;
 
     text-align: left;
+
     cursor: pointer;
 `
 
@@ -125,9 +152,14 @@ export const BottomGradient = styled.div`
 
     border-radius: 0 0 12px 12px;
 
-    background: rgba(159, 156, 153, 0.7);
+    background: rgba(
+    159,
+    156,
+    153,
+    0.7
+    );
 
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(2px);
 `
 
@@ -136,11 +168,11 @@ export const CardInfo = styled.div`
 
     left: 24px;
     right: 24px;
-    bottom: 12px;
+    bottom: 16px;
 
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 `
 
 export const InfoRow = styled.div`
@@ -167,8 +199,9 @@ export const CardTime = styled.span`
     flex-shrink: 0;
 
     color: #fdfdfd;
+
     font-size: 12px;
-    font-weight: 300;
+    font-weight: 400;
 `
 
 export const ProgressTrack = styled.span`
@@ -181,14 +214,22 @@ export const ProgressTrack = styled.span`
 
     border-radius: 99px;
 
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(
+    255,
+    255,
+    255,
+    0.8
+    );
 `
 
 export const ProgressFill = styled.span`
     display: block;
 
     width: ${({ $value }) =>
-    `${Math.min(Math.max($value, 0), 1) * 100}%`};
+    `${Math.min(
+        Math.max($value, 0),
+        1
+    ) * 100}%`};
 
     height: 100%;
 
