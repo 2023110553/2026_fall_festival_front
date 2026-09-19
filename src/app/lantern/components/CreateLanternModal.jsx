@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Modal from '../../../components/common/Modal'
 import * as S from './CreateLanternModal.styles'
+import { BOOTH_CATEGORIES } from '../../../constants/categories'
 
-// 부스별 점 색상 — BE에서 부스 색상 필드를 내려주기 전까지 인덱스로 순환
-const BOOTH_DOT_COLORS = ['#FF6B6B', '#5FD068', '#4C9AFF', '#FFC24C'];
+// map 도메인 PinLabel.jsx와 동일한 방식 — 부스 category를 지도 마커와 같은 색으로 매핑
+const DEFAULT_BOOTH_DOT_COLOR = '#DC7054';
+const getCategoryColor = (category) =>
+  BOOTH_CATEGORIES.find((item) => item.value === category)?.color ?? DEFAULT_BOOTH_DOT_COLOR;
 
 const largeModalStyle = {
   display: 'flex',
@@ -37,9 +40,9 @@ export default function CreateLanternModal({
     ? boothList
     // 일단 부스 더미데이터로 넣어놓음
     : [
-        { id: 'booth1', name: '맛있는 타코야키 부스' },
-        { id: 'booth2', name: '컴퓨터공학과 체험 부스' },
-        { id: 'booth3', name: '중앙 동아리 밴드 공연 부스' },
+        { id: 'booth1', name: '맛있는 타코야키 부스', category: 'ETC' },
+        { id: 'booth2', name: '컴퓨터공학과 체험 부스', category: 'COLLAB' },
+        { id: 'booth3', name: '중앙 동아리 밴드 공연 부스', category: 'ETC' },
       ];
 
   const selectedBoothName = resolvedBoothList.find((booth) => booth.id === selectedBooth)?.name ?? '';
@@ -152,9 +155,9 @@ export default function CreateLanternModal({
 
                 {isBoothOpen && (
                   <S.DropdownList>
-                    {resolvedBoothList.map((booth, index) => (
+                    {resolvedBoothList.map((booth) => (
                       <S.DropdownItem key={booth.id} onClick={() => handleSelectBooth(booth.id)}>
-                        <S.Dot $color={BOOTH_DOT_COLORS[index % BOOTH_DOT_COLORS.length]} />
+                        <S.Dot $color={getCategoryColor(booth.category)} />
                         {booth.name}
                       </S.DropdownItem>
                     ))}
