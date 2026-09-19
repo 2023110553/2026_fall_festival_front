@@ -1,9 +1,8 @@
 {
-  "_comment": "팔정도(zone2) 부스 좌표 샘플 — 실제 부스 데이터 아님(총학생회 확정 전). 스키마·좌표계는 zone1-booths.sample.json과 동일: coordinates는 Three.js 씬 좌표(three.x=blender.x, three.y=blender.z, three.z=-blender.y), rotation은 도 단위(Y축 회전, 0이면 6m 긴 변이 x축과 나란함). Zone2Scene.jsx가 이 파일의 coordinates를 읽어 BoothMarker를 배치한다.",
+  "_comment": "팔정도(zone2) 부스 목데이터 — 실제 부스 데이터 아님(총학생회 확정 전). 세호님 '장소 목록 조회 (지도 핀 + 카드 리스트)' API(GET /api/booths/) 응답의 data.booths[] 항목과 1:1 동일 스키마. map_x/map_y/map_elevation/rotation은 명세대로 'FE 3D 씬 좌표 무변환'(map_x=씬 x, map_y=씬 z, map_elevation=씬 y, rotation=y축 회전 각도)이다. ZoneBooths.jsx가 이 값을 그대로 BoothMarker position/rotationY에 사용한다.",
   "_placement_note": "2026-09-19: 재원 요청 '맵마다 부스 목데이터 추가, 보행로 위주, 팔정도는 가장 높은 밝기 단계 위주'. 좌표는 최적화된 zone2.glb의 실제 지오메트리를 재질별로 읽어서 잡음. 팔정도는 50x50m 광장 중심이 원점이고 중심에서 8갈래(0°/45°/…)로 5m 폭 보행로(mat_PZ_concrete_pavement, 상면 y≈0.1)가 뻗는 구조 — 중심 반경 약 6.4m까지는 8갈래가 겹쳐서 통째로 포장된 원판이고, 블렌더 문서(paljeongdo-zone-blender-structure.md) 기준 '중앙 반경 8m는 축제 부스 자리'로 비워둔 곳이다. 그래서 동서(E-W) 보행로를 축으로 양옆에 부스를 늘어세워 '부스 거리'를 만들었다: 앞면(6m 변)이 보행로와 나란하고(rotation 0) 부스 뒷면이 연석 바로 뒤에 오도록 z=±3.75(부스 z 범위 ±2.25~±5.25, 보행로 폭 ±2.5). 가운데 x=±4 슬롯 4개는 중앙 원판 위, x=±11 슬롯은 보행로 잔디 가장자리. 겹침 검사로 뺀 슬롯: (x=-11, 남측)은 나무 줄기(x≈-12.5, z≈4.5)와 겹치고, x=±18 슬롯은 가로등(x≈-19, z≈-4.6 / x≈-18, z≈4.3)·나무(x≈15.9, z≈6.3 / x≈18.1, z≈-6.3)와 겹쳐서 제외. 북측 코끼리 받침대(z≈-9~-21)·남측 불상 기단(z≈9~21)·석등(x=±4.3, z=7.6)·벤치(대각 보행로, r≈12~17)·휴지통(r=21)과는 전부 1m 이상 떨어져 있음. lantern_count는 요청대로 7개 중 6개가 5단계(100개 이상), 1개만 4단계(대비용).",
-  "places": [
+  "booths": [
     {
-      "id": 201,
       "booth_id": 201,
       "name": "팔정도 메인 주점",
       "subtitle": "총학생회 직영",
@@ -11,17 +10,16 @@
       "category": "ALCOHOL",
       "location_detail": "팔정도 중앙 보행로 북측 1번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": -11,
+      "map_y": -3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 128,
-      "operation": { "open_at": "17:00", "close_at": "22:00" },
-      "coordinates": { "x": -11, "y": 0.1, "z": -3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "17:00", "close_at": "22:00" }
     },
     {
-      "id": 202,
       "booth_id": 202,
       "name": "팔정도 등불 소원 부스",
       "subtitle": "축제 기획단",
@@ -29,17 +27,16 @@
       "category": "ETC",
       "location_detail": "팔정도 중앙 보행로 북측 2번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": -4,
+      "map_y": -3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 205,
-      "operation": { "open_at": "12:00", "close_at": "22:00" },
-      "coordinates": { "x": -4, "y": 0.1, "z": -3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "12:00", "close_at": "22:00" }
     },
     {
-      "id": 203,
       "booth_id": 203,
       "name": "팔정도 굿즈 팝업",
       "subtitle": "예술대학 시각디자인학과 협업",
@@ -47,17 +44,16 @@
       "category": "COLLAB",
       "location_detail": "팔정도 중앙 보행로 북측 3번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": 4,
+      "map_y": -3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 341,
-      "operation": { "open_at": "12:00", "close_at": "22:00" },
-      "coordinates": { "x": 4, "y": 0.1, "z": -3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "12:00", "close_at": "22:00" }
     },
     {
-      "id": 204,
       "booth_id": 204,
       "name": "팔정도 불꽃 떡볶이",
       "subtitle": "공과대학 학생회",
@@ -65,17 +61,16 @@
       "category": "ETC",
       "location_detail": "팔정도 중앙 보행로 북측 4번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": 11,
+      "map_y": -3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 117,
-      "operation": { "open_at": "12:00", "close_at": "22:00" },
-      "coordinates": { "x": 11, "y": 0.1, "z": -3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "12:00", "close_at": "22:00" }
     },
     {
-      "id": 205,
       "booth_id": 205,
       "name": "팔정도 라이브 주점",
       "subtitle": "예술대학 실용음악과",
@@ -83,17 +78,16 @@
       "category": "ALCOHOL",
       "location_detail": "팔정도 중앙 보행로 남측 1번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": -4,
+      "map_y": 3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 156,
-      "operation": { "open_at": "17:00", "close_at": "22:00" },
-      "coordinates": { "x": -4, "y": 0.1, "z": 3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "17:00", "close_at": "22:00" }
     },
     {
-      "id": 206,
       "booth_id": 206,
       "name": "팔정도 리필 스테이션",
       "subtitle": "동빛/에코코 캠페인팀",
@@ -101,17 +95,16 @@
       "category": "ECO",
       "location_detail": "팔정도 중앙 보행로 남측 2번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": 4,
+      "map_y": 3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 73,
-      "operation": { "open_at": "12:00", "close_at": "17:00" },
-      "coordinates": { "x": 4, "y": 0.1, "z": 3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "12:00", "close_at": "17:00" }
     },
     {
-      "id": 207,
       "booth_id": 207,
       "name": "팔정도 협업 포토존",
       "subtitle": "사진 동아리 셔터 x 축제 기획단",
@@ -119,14 +112,14 @@
       "category": "COLLAB",
       "location_detail": "팔정도 중앙 보행로 남측 3번 부스",
       "zone": "팔정도",
-      "map_x": null,
-      "map_y": null,
+      "map_x": 11,
+      "map_y": 3.75,
       "map_elevation": 0.1,
       "rotation": 0,
       "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
       "lantern_count": 102,
-      "operation": { "open_at": "12:00", "close_at": "22:00" },
-      "coordinates": { "x": 11, "y": 0.1, "z": 3.75, "rotation": 0 }
+      "has_my_lantern": false,
+      "operation": { "open_at": "12:00", "close_at": "22:00" }
     }
   ]
 }

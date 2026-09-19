@@ -22,6 +22,10 @@ import boothData from './zone3-booths.sample.json'
 // glb 최적화: 다른 구역과 동일한 gltf-transform 파이프라인(meshopt 압축 + 정점 양자화 + WebP 텍스처 +
 // 같은 재질 메시 병합 + 수목 GPU 인스턴싱) 적용, 5.17MB → 0.85MB. 자세한 내용은 zones/README.md 참고.
 // 로더 추가 설정은 필요 없다(drei useGLTF 기본 MeshoptDecoder + three r180 EXT_texture_webp).
+//
+// 2026-09-19(3차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
+//   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
+//     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
 export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
   const { scene } = useGLTF('/models/zone3.glb')
 
@@ -38,7 +42,7 @@ export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      <ZoneBooths places={boothData.places} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }

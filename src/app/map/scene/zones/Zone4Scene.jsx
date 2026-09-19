@@ -23,6 +23,10 @@ import boothData from './zone4-booths.sample.json'
 // MeshoptDecoder를 로더에 붙여주고(디코더는 drei에 번들, 외부 CDN 불필요), three r180 GLTFLoader는
 // EXT_texture_webp를 지원하므로 추가 설정 없이 그대로 로드된다. 메시가 재질 단위로 병합돼 있어서
 // glb 안의 오브젝트 이름으로 건물/시설물을 찾는 코드는 쓸 수 없다(부스 좌표는 JSON 기반이라 무관).
+//
+// 2026-09-19(2차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
+//   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
+//     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
 export default function Zone4Scene({ brightnessLevel = null, onBoothClick }) {
   const { scene } = useGLTF('/models/hangnimgwan.glb')
 
@@ -39,7 +43,7 @@ export default function Zone4Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      <ZoneBooths places={boothData.places} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }

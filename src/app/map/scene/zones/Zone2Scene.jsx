@@ -17,6 +17,10 @@ import boothData from './zone2-booths.sample.json'
 // 좌표계 메모: 블렌더 원본(paljeongdo_zone.blend)은 광장 중심이 (0,0), +y가 북쪽. glTF export(+Y up)에서
 // (x, y, z) → (x, z, -y)로 바뀌므로 three 기준 북쪽 코끼리 받침대가 z≈-15, 남쪽 불상 기단이 z≈+15,
 // 법학관이 x 29~47, 명진관이 z 36~61 쪽에 있고 보행로 상면은 y≈0.1이다.
+//
+// 2026-09-19(2차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
+//   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
+//     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
 export default function Zone2Scene({ brightnessLevel = null, onBoothClick }) {
   const { scene } = useGLTF('/models/zone2.glb')
 
@@ -34,7 +38,7 @@ export default function Zone2Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      <ZoneBooths places={boothData.places} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }
