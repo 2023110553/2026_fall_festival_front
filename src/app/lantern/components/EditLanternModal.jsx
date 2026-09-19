@@ -3,28 +3,41 @@ import * as S from './EditLanternModal.styles'
 import { formatLanternDateTime } from '../utils/formatLanternDateTime'
 
 export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
-    const [content, setContent] = useState('')
+    const [nickname, setNickname] = useState('')
+    const [message, setMessage] = useState('')
 
     useEffect(() => {
         if (lantern) {
-        setContent(lantern.message || lantern.content || '')
+        setNickname(lantern.nickname || '')
+        setMessage(lantern.message || lantern.content || '')
         }
     }, [lantern])
 
     if (!isOpen) return null
 
-    const handleChange = (e) => {
+    const handleNicknameChange = (e) => {
+        const value = e.target.value
+        if (value.length <= 5) {
+        setNickname(value)
+        }
+    }
+
+    const handleMessageChange = (e) => {
         const value = e.target.value
         if (value.length <= 30) {
-        setContent(value)
+        setMessage(value)
         }
     }
 
     // 완료 버튼 클릭 시 변경 사항 전달 후 닫기
     const handleSubmit = () => {
-        if (!content.trim()) return
+        if (!message.trim()) return
         if (onSubmit && lantern) {
-        onSubmit(lantern.id, content)
+        // 닉네임은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback
+        onSubmit(lantern.id, {
+            nickname: nickname.trim(),
+            message,
+        })
         }
         onClose()
     }
@@ -32,20 +45,27 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
     return (
         <S.Overlay onClick={onClose}>
         <S.Container onClick={(e) => e.stopPropagation()}>
-            <S.Header>
-            <S.Nickname>{lantern?.nickname || '익명의 코끼리'}</S.Nickname>
-            <S.MoreButton type="button">⋮</S.MoreButton>
-            </S.Header>
+            {lantern?.boothName && <S.BoothLabel>{lantern.boothName}</S.BoothLabel>}
 
-            <S.InputWrapper>
-            <S.TextArea
-                value={content}
-                onChange={handleChange}
-                placeholder="등불 내용을 입력해 주세요"
+            <S.InputBox>
+            <S.NicknameInput
+                value={nickname}
+                onChange={handleNicknameChange}
+                placeholder="닉네임을 입력해주세요"
+                maxLength={5}
+            />
+            <S.CharCount>{nickname.length}/5</S.CharCount>
+            </S.InputBox>
+
+            <S.InputBox>
+            <S.MessageTextArea
+                value={message}
+                onChange={handleMessageChange}
+                placeholder="응원의 한마디를 남겨주세요"
                 maxLength={30}
             />
-            <S.CharCount>{content.length}/30</S.CharCount>
-            </S.InputWrapper>
+            <S.CharCount>{message.length}/30</S.CharCount>
+            </S.InputBox>
 
             <S.Footer>
             <S.Time>{formatLanternDateTime(lantern?.createdAt)}</S.Time>

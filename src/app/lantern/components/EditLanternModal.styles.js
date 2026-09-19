@@ -16,53 +16,53 @@ export const Overlay = styled.div`
 export const Container = styled.div`
     display: flex;
     flex-direction: column;
+    gap: 10px;
     width: 305px;
     padding: 16px;
     border-radius: 20px;
-    background-color: #dcdcdc;
+    background-color: #ffffff;
     box-sizing: border-box;
     text-align: left;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        0 3px 6px 0 rgba(255, 161, 161, 0.25),
+        0 -4px 6px 0 rgba(194, 255, 175, 0.25),
+        0 0 6px 0 rgba(243, 246, 188, 0.75);
 `
 
-export const Header = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding: 0 2px;
+export const BoothLabel = styled.span`
+    align-self: flex-end;
+    font-size: 11px;
+    font-weight: 500;
+    color: #999999;
 `
 
-export const Nickname = styled.span`
-    font-size: 15px;
-    font-weight: 700;
-    color: #111111;
-`
-
-export const MoreButton = styled.button`
-    border: none;
-    background: none;
-    cursor: pointer;
-    padding: 0 2px;
-    font-size: 16px;
-    color: #777777;
-    line-height: 1;
-`
-
-export const InputWrapper = styled.div`
+export const InputBox = styled.div`
     position: relative;
     width: 100%;
-    height: 52px;
     background-color: #ffffff;
     border-radius: 14px;
-    padding: 12px 14px 28px 14px;
+    border: 1px solid #e0e0e0;
+    padding: 10px 14px 20px 14px;
     box-sizing: border-box;
-    border: 1px solid #c8c8c8;
 `
 
-export const TextArea = styled.textarea`
+export const NicknameInput = styled.input`
     width: 100%;
-    height: 64px;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-family: inherit;
+    color: #222222;
+    background: transparent;
+
+    &::placeholder {
+        color: #aaaaaa;
+    }
+`
+
+export const MessageTextArea = styled.textarea`
+    width: 100%;
+    height: 44px;
     border: none;
     outline: none;
     resize: none;
@@ -81,7 +81,7 @@ export const CharCount = styled.span`
     position: absolute;
     bottom: 8px;
     right: 12px;
-    font-size: 11px;
+    font-size: 10px;
     color: #aaaaaa;
 `
 
@@ -89,13 +89,13 @@ export const Footer = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 14px;
+    margin-top: 4px;
     padding: 0 2px;
 `
 
 export const Time = styled.span`
     font-size: 11px;
-    color: #888888;
+    color: #999999;
     font-weight: 400;
 `
 
@@ -105,24 +105,24 @@ export const ButtonGroup = styled.div`
 `
 
 export const CancelButton = styled.button`
-    padding: 7px 16px;
+    padding: 8px 18px;
     border: none;
-    border-radius: 8px;
-    background-color: #ffffff;
+    border-radius: 10px;
+    background-color: #f0f0f0;
     font-size: 12px;
     font-weight: 600;
     color: #444444;
     cursor: pointer;
 
     &:hover {
-        background-color: #f0f0f0;
+        background-color: #e5e5e5;
     }
 `
 
 export const SubmitButton = styled.button`
-    padding: 7px 16px;
+    padding: 8px 18px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     background-color: #111111;
     font-size: 12px;
     font-weight: 600;
