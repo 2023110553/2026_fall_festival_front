@@ -24,12 +24,16 @@ export default function CreateLanternModal({
   const [selectedBooth, setSelectedBooth] = useState('');
   const [nickname, setNickname] = useState('');
   const [content, setContent] = useState('');
+  const [boothError, setBoothError] = useState(false);
+  const [contentError, setContentError] = useState(false);
 
   // 폼 초기화
   const resetForm = () => {
     setSelectedBooth('');
     setNickname('');
     setContent('');
+    setBoothError(false);
+    setContentError(false);
   };
 
   const handleClose = () => {
@@ -37,12 +41,27 @@ export default function CreateLanternModal({
     onClose();
   };
 
-  // 입력값 검증: 부스 선택 + 축제 한마디 작성 시에만 버튼 활성화
-  const isValid = selectedBooth !== '' && content.trim().length > 0;
+  const handleBoothChange = (e) => {
+    setSelectedBooth(e.target.value);
+    if (e.target.value !== '') setBoothError(false);
+  };
+
+  const handleContentChange = (e) => {
+    setContent(e.target.value);
+    if (e.target.value.trim().length > 0) setContentError(false);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!isValid) return;
+
+    const isBoothEmpty = selectedBooth === '';
+    const isContentEmpty = content.trim().length === 0;
+
+    if (isBoothEmpty || isContentEmpty) {
+      setBoothError(isBoothEmpty);
+      setContentError(isContentEmpty);
+      return;
+    }
 
     // 닉네임 안 적은 경우 '익명의 코끼리' 적용
     const finalNickname = nickname.trim() || '익명의 코끼리';
@@ -82,7 +101,7 @@ export default function CreateLanternModal({
           </label>
           <select
             value={selectedBooth}
-            onChange={(e) => setSelectedBooth(e.target.value)}
+            onChange={handleBoothChange}
             style={{
               width: '100%',
               padding: '10px 12px',
@@ -95,9 +114,7 @@ export default function CreateLanternModal({
               color: selectedBooth ? '#111' : '#aaa',
             }}
           >
-            <option value="" disabled hidden>
-              부스를 선택해주세요
-            </option>
+            <option value="" disabled hidden></option>
             {boothList.length > 0 ? (
               boothList.map((booth) => (
                 <option key={booth.id} value={booth.id} style={{ color: '#111' }}>
@@ -113,6 +130,11 @@ export default function CreateLanternModal({
               </>
             )}
           </select>
+          {boothError && (
+            <p style={{ fontSize: '10px', color: '#e33e3e', margin: '4px 0 0' }}>
+              부스를 선택해주세요.
+            </p>
+          )}
         </div>
 
         {/* 닉네임 입력 */}
@@ -128,7 +150,6 @@ export default function CreateLanternModal({
             maxLength={5}
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            placeholder="입력 안 한 경우 → 익명의 코끼리"
             style={{
               width: '100%',
               padding: '10px 12px',
@@ -153,8 +174,7 @@ export default function CreateLanternModal({
             maxLength={30}
             rows={3}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="축제 한 마디를 적어주세요"
+            onChange={handleContentChange}
             style={{
               width: '100%',
               padding: '10px 12px',
@@ -166,11 +186,35 @@ export default function CreateLanternModal({
               boxSizing: 'border-box',
             }}
           />
+          {contentError && (
+            <p style={{ fontSize: '10px', color: '#e33e3e', margin: '4px 0 0' }}>
+              축제 한마디를 입력해주세요.
+            </p>
+          )}
         </div>
 
-        <p style={{ fontSize: '10px', color: '#aaa', lineHeight: '1.3', margin: 0 }}>
-          ⓘ 등불은 하루 최대 3개까지 달 수 있어요. 삭제한 등불도 횟수에 포함돼요.
-        </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', width: '100%', textAlign: 'left' }}>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ flexShrink: 0, marginTop: '1px' }}
+          >
+            <path d="M5.5 3.5H6.5V6.5H5.5V3.5ZM5.5 7.5H6.5V8.5H5.5V7.5Z" fill="#9F9C99" />
+            <path
+              d="M6 11C8.755 11 11 8.755 11 6C11 3.245 8.755 1 6 1C3.245 1 1 3.245 1 6C1 8.755 3.245 11 6 11ZM6 2C8.205 2 10 3.795 10 6C10 8.205 8.205 10 6 10C3.795 10 2 8.205 2 6C2 3.795 3.795 2 6 2Z"
+              fill="#9F9C99"
+            />
+          </svg>
+          <p style={{ fontFamily: 'Pretendard', fontSize: '8px', color: '#9F9C99', fontWeight: 400, margin: 0 }}>
+            등불은 하루 최대 3개까지 달 수 있어요. 삭제한 등불도 횟수에 포함돼요.
+            <br />
+            욕설 및 타인을 비방하는 글은 삭제조치 될 수 있어요. 지난 일자의 등불은 삭제만 가능하며
+            수정은 불가해요.
+          </p>
+        </div>
 
         {/* Footer 버튼 */}
         <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
@@ -194,17 +238,16 @@ export default function CreateLanternModal({
           
           <button
             type="submit"
-            disabled={!isValid}
             style={{
               flex: 1,
               padding: '12px',
-              backgroundColor: isValid ? '#1e1e1e' : '#ccc',
+              backgroundColor: '#1e1e1e',
               border: 'none',
               borderRadius: '14px',
               fontWeight: 'bold',
               fontSize: '14px',
               color: '#ffffff',
-              cursor: isValid ? 'pointer' : 'not-allowed',
+              cursor: 'pointer',
               transition: 'background-color 0.2s',
             }}
           >
