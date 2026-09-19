@@ -1,0 +1,37 @@
+import { useEffect } from 'react'
+import { useGLTF } from '@react-three/drei'
+
+// 구역 3(만해광장 + 후문쪽 거리) 씬 — 지형/구조물 .glb 로드.
+//
+// 2026-09-19: public/models/zone3.glb 최초 연결. 현재 glb는 만해광장 본체(살몬톤 콘크리트 코트 +
+// 곡선 계단식 관람석/석재 옹벽 + 목재 데크 무대 정자 + 수목/바위 라인)까지 반영된 상태고,
+// "후문쪽 거리" 부분은 재원이 모델링을 추가하면 같은 파일명으로 재-export해서 교체한다(로더는 그대로).
+// 아직 부스 좌표 데이터가 없어서 Zone2/4와 같이 지형만 렌더링한다 — 부스 사양/좌표가 확정되면
+// Zone1Scene 패턴(zone3-booths.*.json + BoothMarker map, brightnessLevel/onBoothClick props)으로
+// 여기에 추가하면 된다.
+//
+// 좌표계 메모: 블렌더 원본(manhae_square_modeling.blend)은 광장 중심이 (0,0)이고 glTF export(+Y up)에서
+// (x, y, z) → (x, z, -y)로 바뀐다. three 기준 실측 bbox: x -20.8~21.0, z -15.4~14.2, 코트 바닥 윗면
+// y≈0.04, 관람석 최고부 y≈4.5(수목 포함 y≈7.1). 무대 정자는 z +9~+13 쪽, 수목/바위 라인은
+// z -13~-15.4 쪽(관람석 능선 위)에 있다.
+//
+// glb 최적화: 다른 구역과 동일한 gltf-transform 파이프라인(meshopt 압축 + 정점 양자화 + WebP 텍스처 +
+// 같은 재질 메시 병합 + 수목 GPU 인스턴싱) 적용, 5.17MB → 0.85MB. 자세한 내용은 zones/README.md 참고.
+// 로더 추가 설정은 필요 없다(drei useGLTF 기본 MeshoptDecoder + three r180 EXT_texture_webp).
+export default function Zone3Scene() {
+  const { scene } = useGLTF('/models/zone3.glb')
+
+  // Zone1/2/4Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요).
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+      }
+    })
+  }, [scene])
+
+  return <primitive object={scene} />
+}
+
+useGLTF.preload('/models/zone3.glb')
