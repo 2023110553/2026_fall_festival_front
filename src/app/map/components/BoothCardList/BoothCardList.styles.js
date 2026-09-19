@@ -29,7 +29,7 @@ export const Info = styled.div`
     
 `
 export const Title = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 16px;
     line-height: 100%;
@@ -37,7 +37,7 @@ export const Title = styled.span`
     padding-bottom: 5px;
 `
 export const Department = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 400;
     font-size: 12px;
     line-height: 100%;
@@ -47,7 +47,7 @@ export const Department = styled.span`
 ;
 `
 export const Location = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 12px;
     line-height: 100%;
@@ -66,7 +66,7 @@ export const LanternImg = styled.img`
     height: 20px;
 `
 export const LanternCount = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 500;
     font-size: 12px;
     color: ${({ $hasMyLantern }) =>

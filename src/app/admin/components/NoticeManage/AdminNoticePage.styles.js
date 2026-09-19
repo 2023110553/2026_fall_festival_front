@@ -50,7 +50,7 @@ export const TypeTag = styled.span`
   font-size: 10px;
   font-weight: 400;
   white-space: nowrap;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const Title = styled.p`
@@ -62,7 +62,7 @@ export const Title = styled.p`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const Preview = styled.p`
@@ -73,7 +73,7 @@ export const Preview = styled.p`
   overflow: hidden;
   font-weight: 400;
   text-overflow: ellipsis;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const BottomBar = styled.div`
@@ -97,5 +97,5 @@ export const PrimaryButton = styled.button`
   font-size: 17px;
   font-weight: 500;
   cursor: pointer;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `

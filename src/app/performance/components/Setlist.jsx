@@ -47,7 +47,7 @@ const Song = styled.li`
     font-size: 14px;
     font-weight: 400;
     line-height: normal;
-    font-family: Pretendard;
+    font-family: var(--font-pretendard);
 `
 
 const EmptyText = styled.p`

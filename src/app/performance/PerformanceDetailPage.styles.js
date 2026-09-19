@@ -14,7 +14,7 @@ export const Page = styled.main`
 
     background: #fdfdfd;
 
-    font-family: Pretendard, sans-serif;
+    font-family: var(--font-pretendard);
 `
 
 export const DetailHeader = styled.header`

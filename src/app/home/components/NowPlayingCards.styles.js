@@ -15,30 +15,47 @@ export const Header = styled.div`
 export const TitleGroup = styled.div`
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
 `
 
-export const Marker = styled.img`
+/* 섹션 제목 앞 글로우 점 — blur가 10px 박스 밖으로 번지면서 빛나는 느낌을 낸다 */
+export const Marker = styled.span`
     width: 10px;
     height: 10px;
+    flex: 0 0 10px;
+    aspect-ratio: 1 / 1;
+
+    border-radius: 99px;
+
+    /* aurora_orange */
+    background: #dc7054;
+
+    opacity: 0.7;
+    filter: blur(2.5px);
 `
 
+/* semi20 */
 export const Title = styled.h2`
     margin: 0;
 
-    color: #ffffff;
+    color: #000;
 
     font-size: 20px;
     font-weight: 600;
+    line-height: normal;
 `
 
 export const MoreLink = styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+
     padding: 0;
 
     border: 0;
     background: transparent;
 
-    color: #ffffff;
+    color: #9f9c99;
 
     font-size: 12px;
     font-weight: 400;

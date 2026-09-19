@@ -1,11 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import titleMarker from '../../../assets/top-header/title-marker.svg'
-
-// TODO(API): 전체 등불 수 추후에 등불 집계 API로 교체 필요함
-const TOTAL_LANTERN_COUNT = 100
-
 const Wrapper = styled.section`
   display: flex;
   flex-direction: column;
@@ -15,44 +10,28 @@ const Wrapper = styled.section`
 const Header = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 `
 
-const TitleGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`
-
-const MarkerBox = styled.span`
-  position: relative;
+// 섹션 제목 앞 글로우 점 — blur가 10px 박스 밖으로 번지면서 빛나는 느낌을 낸다
+const Marker = styled.span`
   width: 10px;
   height: 10px;
   flex: 0 0 10px;
+  aspect-ratio: 1 / 1;
+  border-radius: 99px;
+  opacity: 0.7;
+  /* aurora_orange */
+  background: #dc7054;
+  filter: blur(2.5px);
 `
 
-const Marker = styled.img`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  transform: translate(-50%, -50%);
-`
-
+/* semi20 */
 const Title = styled.h2`
   margin: 0;
-  color: #fff;
+  color: #000;
   font-size: 20px;
   font-weight: 600;
-  line-height: normal;
-`
-
-const Total = styled.span`
-  color: #9f9c99;
-  font-size: 12px;
-  font-weight: 400;
   line-height: normal;
 `
 
@@ -63,8 +42,13 @@ const Card = styled.div`
   align-items: flex-start;
   gap: 8px;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 0 14px 0 rgba(243, 246, 188, 0.75);
+  /* aurora_white */
+  background: #fdfdfd;
+  /* aurora_light */
+  box-shadow:
+    0 3px 6px 0 rgba(255, 161, 161, 0.25),
+    0 -4px 6px 0 rgba(194, 255, 175, 0.25),
+    0 0 6px 0 rgba(243, 246, 188, 0.75);
 `
 
 // TODO(3D): 지도 미리보기
@@ -91,13 +75,8 @@ export default function LanternPreview({ children }) {
   return (
     <Wrapper>
       <Header>
-        <TitleGroup>
-          <MarkerBox>
-            <Marker src={titleMarker} alt="" aria-hidden="true" />
-          </MarkerBox>
-          <Title>등불 밝히기</Title>
-        </TitleGroup>
-        <Total>전체 등불 {TOTAL_LANTERN_COUNT}개</Total>
+        <Marker aria-hidden="true" />
+        <Title>현재 인기</Title>
       </Header>
 
       <Card>

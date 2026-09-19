@@ -39,7 +39,7 @@ export const ReportBadge = styled.span`
   border-radius: 999px;
   background: #FFB2B2;
   color: #AD0000;
-  font-family: 'Pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   font-size: 8px;
   font-style: normal;
   font-weight: 500;
@@ -75,7 +75,7 @@ export const MessageBox = styled.p`
   font-size: 14px;
   text-align: center;
   word-break: keep-all;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   font-weight: 500;
 `
 
@@ -92,7 +92,7 @@ const BaseButton = styled.button`
   border-radius: 10px;
   font-size: 15px;
   font-weight: 500;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   cursor: pointer;
 `
 

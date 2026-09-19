@@ -73,7 +73,7 @@ export const TypeTag = styled.span`
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const ContentCard = styled.article`
@@ -97,7 +97,7 @@ export const Content = styled.p`
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: keep-all;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const DangerButton = styled.button`
@@ -110,6 +110,6 @@ export const DangerButton = styled.button`
   color: #AD0000;
   font-size: 18px;
   font-weight: 600;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   cursor: pointer;
 `
