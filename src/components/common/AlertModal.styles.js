@@ -1,49 +1,54 @@
 import styled from 'styled-components'
 
+export const modalStyle = {
+    boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.15)',
+}
+
 export const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 260px;
-    margin: 0 auto;
-    padding: 8px 4px 4px 4px;
+    margin: 4px 0 -8px 0;
 `
 
 export const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 20px;
+    gap: 8px;
     text-align: center;
+    margin-bottom: 12px;
 `
 
 export const Title = styled.h2`
+    font-family: Pretendard;
     margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: #111111;
+    font-size: 20px;
+    font-weight: 600;
+    color: #100B0B;
     word-break: keep-all;
 `
 
 export const SubTitle = styled.p`
+    font-family: Pretendard;
     margin: 0;
-    font-size: 13px;
-    font-weight: 500;
-    color: #555555;
+    font-size: 12px;
+    font-weight: 400;
+    color: #100B0B;
     word-break: keep-all;
 `
 
 export const CloseBtn = styled.button`
     width: 100%;
-    padding: 12px 0;
+    padding: 10px 0;
     border: none;
-    border-radius: 12px;
-    background: #ededed;
+    border-radius: 8px;
+    background: #EEE;
+    font-family: Pretendard;
     font-size: 14px;
-    font-weight: 600;
-    color: #666666;
+    font-weight: 500;
+    color: #696666;
     cursor: pointer;
     transition: background 0.15s ease;
 
