@@ -4,12 +4,14 @@ export const HeaderRow = styled.div`
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 28px;
+    gap: 8px;
+    align-self: stretch;
     margin: 0 8px 14px 8px;
 `
 
 export const Header = styled.div`
     text-align: left;
+    width: 100%;
 `
 
 export const Title = styled.h2`
@@ -22,14 +24,10 @@ export const Title = styled.h2`
 
 export const SubTitle = styled.p`
     margin: 6px 0 0 0;
-
     color: var(--aurora_black, #100B0B);
-
-font-family: Pretendard;
-font-size: 12px;
-font-style: normal;
-font-weight: 400;
-line-height: normal;
+    font-family: Pretendard;
+    font-size: 12px;
+    font-weight: 400;
 `
 
 export const DayPicker = styled.div`
