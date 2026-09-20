@@ -1,25 +1,8 @@
 import { useState, useEffect } from 'react'
 import * as S from './EditLanternModal.styles'
+import { formatLanternDateTime } from '../utils/formatLanternDateTime'
 
-function formatTime24(timeStr) {
-    if (!timeStr) return ''
-    if (!timeStr.includes('오전') && !timeStr.includes('오후')) return timeStr
-
-    const isPM = timeStr.includes('오후')
-    const cleanStr = timeStr.replace(/오전|오후/g, '').trim()
-    const parts = cleanStr.split(':')
-    if (parts.length < 2) return timeStr
-
-    let hours = parseInt(parts[0], 10)
-    const minutes = parts[1]
-
-    if (isPM && hours < 12) hours += 12
-    else if (!isPM && hours === 12) hours = 0
-
-    return `${String(hours).padStart(2, '0')}:${minutes}`
-    }
-
-    export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
+export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
     const [content, setContent] = useState('')
 
     useEffect(() => {
@@ -65,7 +48,7 @@ function formatTime24(timeStr) {
             </S.InputWrapper>
 
             <S.Footer>
-            <S.Time>{formatTime24(lantern?.createdAt)}</S.Time>
+            <S.Time>{formatLanternDateTime(lantern?.createdAt)}</S.Time>
             <S.ButtonGroup>
                 <S.CancelButton type="button" onClick={onClose}>
                 취소

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
-import BoothMarker from './BoothMarker'
+import ZoneBooths from './ZoneBooths'
 import boothData from './zone1-booths.sample.json'
 
 // 구역 1(경영관·혜화관 거리) 씬 — 지형/건물 .glb 로드 + 부스 좌표 JSON을 기반으로
@@ -21,14 +21,25 @@ import boothData from './zone1-booths.sample.json'
 //     이 변환을 빠뜨리면 부스가 항상 앞뒤로 뒤집혀 나타나므로 반드시 확인할 것.
 //   → 이 구역은 지면이 평지가 아니라 단(段)이 있는 대지라, y(표고)를 0으로 고정하면
 //     안 되고 각 부스가 실제로 놓이는 바닥면의 blender.z 값을 그대로 넘겨줘야 한다
-//     (zone1-booths.sample.json의 coordinates.y가 그 값).
+//     (zone1-booths.sample.json의 map_elevation이 그 값).
 //
-// 2026-09-13(3차): brightnessLevel prop 추가 — 부스 밝기 단계(등불 개수 기반, 0~4) 임시
-// 미리보기 값을 MapCanvas로부터 그대로 받아 모든 BoothMarker에 동일하게 전달한다.
-// 아직 부스별 lantern_count 데이터가 없어서 전체에 같은 값을 넣는 임시 상태 — 나중에
-// boothData.places[i].lanternCount 같은 필드가 생기면 각 BoothMarker마다 그 값 기반으로
-// 계산한 개별 단계를 넘기도록 이 자리만 바꾸면 된다(MapCanvas/MapShell 쪽 계약은 유지 가능).
-export default function Zone1Scene({ brightnessLevel = 0, onBoothClick }) {
+// 2026-09-13(3차): brightnessLevel prop 추가 — 부스 밝기 단계(등불 개수 기반,
+// 0~MAX_LANTERN_TIER — constants/lanternTiers.js, 2026-09-18부터 6단계) 임시 미리보기 값을
+// MapCanvas로부터 그대로 받아 모든 BoothMarker에 동일하게 전달했었다.
+//
+// 2026-09-19: 부스별 밝기 자동 계산 + 부스 배치 코드 공통화.
+//   - 밝기 단계는 이제 BoothMarker가 booth.lantern_count로 직접 계산한다(BoothMarker.jsx 19번 항목).
+//     여기서 받는 brightnessLevel은 개발용 override(기본 null = 자동)로만 남아 있고, MapCanvas/MapProvider
+//     계약은 그대로다.
+//   - places.map → <BoothMarker/> 블록은 ZoneBooths.jsx로 옮겼다. 팔정도/만해광장/학림관 씬에도 같은
+//     부스 배치가 들어가면서 네 군데 복사되는 걸 피하기 위함 — 구역 씬은 "지형 glb + ZoneBooths" 두 줄이면 끝.
+//   - zone1-booths.sample.json에 부스 8개 추가(105~112, 보행로 B 빈 슬롯 + 경영관 앞 광장 줄) — 좌표
+//     근거는 그 파일의 _placement_note_2 참고.
+//
+// 2026-09-19(2차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
+//   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
+//     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
+export default function Zone1Scene({ brightnessLevel = null, onBoothClick }) {
   const { scene } = useGLTF('/models/zone1.glb')
 
   // 2026-09-13: 낮/노을/밤 그림자(PCFSoft, directionalLight) 적용을 위해
@@ -46,16 +57,7 @@ export default function Zone1Scene({ brightnessLevel = 0, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      {boothData.places.map((place) => (
-        <BoothMarker
-          key={place.id}
-          position={[place.coordinates.x, place.coordinates.y, place.coordinates.z]}
-          rotationY={(place.coordinates.rotation * Math.PI) / 180}
-          label={place.name}
-          brightnessLevel={brightnessLevel}
-          onClick={() => onBoothClick?.(place.id)}
-        />
-      ))}
+      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }

@@ -50,6 +50,7 @@ export const TypeTag = styled.span`
   font-size: 10px;
   font-weight: 400;
   white-space: nowrap;
+  font-family: 'pretendard', sans-serif;
 `
 
 export const Title = styled.p`
@@ -61,6 +62,7 @@ export const Title = styled.p`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: 'pretendard', sans-serif;
 `
 
 export const Preview = styled.p`
@@ -69,7 +71,9 @@ export const Preview = styled.p`
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
+  font-weight: 400;
   text-overflow: ellipsis;
+  font-family: 'pretendard', sans-serif;
 `
 
 export const BottomBar = styled.div`
@@ -93,4 +97,5 @@ export const PrimaryButton = styled.button`
   font-size: 17px;
   font-weight: 500;
   cursor: pointer;
+  font-family: 'pretendard', sans-serif;
 `

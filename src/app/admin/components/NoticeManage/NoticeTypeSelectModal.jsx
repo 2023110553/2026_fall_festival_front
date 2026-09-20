@@ -38,12 +38,12 @@ const TypeButton = styled.button`
   height: 52px;
   border: none;
   border-radius: 8px;
-  background: ${({ $urgent }) => ($urgent ? '#EDB5B5' : '#7A7A7A')};
-  color: ${({ $urgent }) => ($urgent ? '#B71C1C' : '#FFF')};
-  font-size: 14px;
+  background: ${({ $urgent }) => ($urgent ? '#FFB2B2' : '#737373')};
+  color: ${({ $urgent }) => ($urgent ? '#AD0000' : '#FFF')};
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-
+  font-family: 'pretendard', sans-serif;
   & + & {
     margin-top: 12px;
   }

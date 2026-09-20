@@ -1,12 +1,15 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { EffectComposer, Selection, SelectiveBloom } from '@react-three/postprocessing'
+import { EffectComposer, Selection, SelectiveBloom, ToneMapping } from '@react-three/postprocessing'
+import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import Zone1Scene from './zones/Zone1Scene'
 import Zone2Scene from './zones/Zone2Scene'
+import Zone3Scene from './zones/Zone3Scene'
 import Zone4Scene from './zones/Zone4Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
+import { TimeOfDayContext } from './environment/TimeOfDayContext'
 
 // 재원 담당 — 구역별 3D 씬(터레인+건물+부스 앵커)을 감싸는 진입 컴포넌트.
 // 프론트1은 이 컴포넌트를 지도 메인 레이아웃 안에 그대로 끼워 넣기만 하면 된다.
@@ -14,10 +17,11 @@ import SceneEnvironment from './environment/SceneEnvironment'
 // props 계약(map-section-scope-and-roles.md에서 합의):
 //   - zoneId: 'zone1' | 'zone2' | 'zone3' — 어느 구역 씬을 불러올지
 //   - timeOfDay: 'day' | 'sunset' | 'night' — 낮/노을/밤 전환
-//   - boothBrightnessPreview: 0~4 — 부스 밝기 단계 임시 미리보기 값(2026-09-13 추가).
-//     실제 등불 개수(lantern_count) 연동 전까지 MapShell 버튼으로 전체 부스에 동일하게
-//     적용해보는 값 — 나중에 부스별 실제 값으로 교체될 자리(그때는 이 prop 자체가 없어지고
-//     Zone1Scene이 boothData에서 직접 lantern_count를 읽어 계산할 가능성이 높음).
+//   - boothBrightnessPreview: (선택) 부스 밝기 단계 override, null이면 자동. 2026-09-13에 "실제 등불 개수
+//     연동 전 전체 부스에 같은 단계를 넣어보는 임시 미리보기"로 추가했고(2026-09-18 구간 0/1/10/30/50/100개
+//     → 6단계 확장), 2026-09-19부터는 부스별 lantern_count로 BoothMarker가 단계를 스스로 계산하므로
+//     기본값이 0 → null(자동)로 바뀌었다. 숫자를 넣으면 네 구역 모든 부스가 그 단계로 강제되는 개발용
+//     스위치로만 남아 있다(BoothMarker.jsx 19번 항목).
 //   - onBoothClick(boothId): 3D 씬에서 부스 앵커를 레이캐스팅으로 클릭했을 때 호출
 //
 // 핀 라벨(등불아이콘+개수+부스명)은 여기서 그리지 않는다 — B안 합의대로
@@ -36,6 +40,34 @@ import SceneEnvironment from './environment/SceneEnvironment'
 // (drei useGLTF 기본 MeshoptDecoder + three r180의 EXT_texture_webp 지원). 자세한 파이프라인은
 // zones/README.md 참고. 카메라 위치/타깃은 아직 zone1 기준 임시값이라 zone4에선 건물이 화면
 // 위쪽에 치우쳐 보일 수 있음 — 구역 전환 카메라 연출을 정할 때 함께 조정 예정.
+//
+// 2026-09-16(2차, 이슈 #37): 톤매핑 복구 — 재원 피드백 "낮은 너무 쨍하고 밤은 너무 어둡다"의 근본 원인.
+// @react-three/postprocessing의 <EffectComposer>는 마운트되는 동안 renderer.toneMapping을
+// NoToneMapping으로 강제한다(HDR 버퍼에서 효과를 계산하려는 라이브러리 설계). 그래서 블룸을 넣은
+// 2026-09-13 이후로 씬이 톤매핑 없이 화면에 나가고 있었음 → 밝은 값은 1.0에서 딱 잘리고(하이라이트가
+// 하얗게 날아가 "쨍한" 느낌), 어두운 값은 눌린 채 그대로. 해결은 파이프라인 마지막에 <ToneMapping>
+// 효과를 넣어 블룸까지 계산된 HDR 결과를 한 번에 ACES Filmic 커브로 내리는 것. 조명 세기/환경광은
+// environment/timeOfDayPresets.js에서 같이 손봤다(그 파일 주석 참고).
+// 순서가 중요: SelectiveBloom(HDR에서 빛 번짐 계산) → ToneMapping(LDR로 내림). 반대로 두면 블룸이 죽는다.
+// 같이 고친 것 — SelectiveBloom에 ignoreBackground 추가. SelectiveBloom은 "선택한 오브젝트의 깊이 == 씬 깊이"인
+// 픽셀만 번지게 하는데, 기본값에서는 아무것도 안 그려진 배경 픽셀(깊이 최대)도 "일치"로 쳐서 배경 전체가 블룸에
+// 들어가고 있었다. 낮 배경(#f5f5f5)은 밝기 임계값(0.15)을 훌쩍 넘으니 화면 전체에 뿌연 안개 + 배경이 하얗게 날아가는
+// 결과 → 이것도 "쨍함"의 큰 원인이었음(헤드리스 렌더에서 확인). ignoreBackground를 켜면 배경은 블룸 계산에서 빠지고
+// 랜턴/조명끈 같은 실제 선택 오브젝트만 번진다.
+//
+// 2026-09-19: zone3(만해광장) 연결(이슈 #63) — 이로써 확정 3구역 + 학림관까지 모든 구역 씬이 연결됐다.
+// 현재 zone3.glb는 만해광장 본체까지이고 "후문쪽 거리"는 모델링이 추가되면 같은 파일명으로
+// 재-export해서 교체한다. 만해광장은 중심이 원점 근처(x -21~21, z -15~14)라 zone1 기준 고정
+// 카메라([10,140,90] → target [10,3,-30])에서는 꽤 멀리/위에서 보인다 — 구역 전환 카메라 연출을
+// 정할 때 zone4와 함께 조정 예정.
+//
+// 2026-09-19(2차): 네 구역 모두 부스 목데이터 연결(zoneN-booths.sample.json + zones/ZoneBooths.jsx).
+// 그래서 Zone2/3/4Scene도 Zone1Scene과 같은 props(brightnessLevel/onBoothClick)를 받게 됐고, 이 컴포넌트는
+// 네 구역에 똑같은 값을 넘긴다. 부스 밝기는 이제 각 부스의 lantern_count로 자동 계산되므로(BoothMarker.jsx
+// 19번 항목) boothBrightnessPreview는 null(자동)이 기본이다.
+// 같이 추가된 것 — <TimeOfDayContext.Provider>: 부스가 시간대를 알아야 낮에 바닥 글로우를 눌러줄 수 있어서
+// (BoothMarker.jsx 20번 항목) timeOfDay를 씬 안쪽 컨텍스트로도 흘려보낸다. SceneEnvironment는 기존대로
+// prop으로 받는다(바꿀 이유가 없어서 그대로 둠).
 //
 // 2026-09-13(2차): timeOfDay(낮/노을/밤 라이팅·하늘 전환) 구현.
 // 실제 하늘/조명/그림자 값은 전부 environment/SceneEnvironment.jsx +
@@ -60,33 +92,42 @@ import SceneEnvironment from './environment/SceneEnvironment'
 // 번지도록 했다. 예전(4번 항목, 부스 지붕/처마가 emissive였던 시절)에는 이 정도로 올리면
 // 지붕 색이 하얗게 날아가는 문제가 있었지만, 지금은 지붕/처마가 emissive를 아예 안 쓰므로
 // (BoothMarker.jsx 9번 항목) 그 부작용 없이 광원만 극적으로 밝힐 수 있다.
-export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = 0, onBoothClick }) {
+export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, onBoothClick }) {
   return (
     <Canvas
       camera={{ position: [10, 140, 90], fov: 45, near: 1, far: 2000 }}
       shadows={{ type: THREE.PCFSoftShadowMap }}
     >
-      <Selection>
-        <SceneEnvironment timeOfDay={timeOfDay} />
-        <Suspense fallback={null}>
-          {zoneId === 'zone1' ? (
-            <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
-          ) : zoneId === 'zone2' ? (
-            <Zone2Scene />
-          ) : zoneId === 'zone4' ? (
-            <Zone4Scene />
-          ) : (
-            // TODO: zone3(만해광장+후문쪽 거리) 씬 연결
-            null
-          )}
-        </Suspense>
-        {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
-        {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
-        <OrbitControls target={[10, 3, -30]} />
-        <EffectComposer>
-          <SelectiveBloom mipmapBlur luminanceThreshold={0.15} luminanceSmoothing={0.4} intensity={1.4} radius={0.6} />
-        </EffectComposer>
-      </Selection>
+      <TimeOfDayContext.Provider value={timeOfDay}>
+        <Selection>
+          <SceneEnvironment timeOfDay={timeOfDay} />
+          <Suspense fallback={null}>
+            {zoneId === 'zone1' ? (
+              <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+            ) : zoneId === 'zone2' ? (
+              <Zone2Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+            ) : zoneId === 'zone3' ? (
+              <Zone3Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+            ) : zoneId === 'zone4' ? (
+              <Zone4Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+            ) : null}
+          </Suspense>
+          {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
+          {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
+          <OrbitControls target={[10, 3, -30]} />
+          <EffectComposer>
+            <SelectiveBloom
+              mipmapBlur
+              ignoreBackground
+              luminanceThreshold={0.15}
+              luminanceSmoothing={0.4}
+              intensity={1.4}
+              radius={0.6}
+            />
+            <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+          </EffectComposer>
+        </Selection>
+      </TimeOfDayContext.Provider>
     </Canvas>
   )
 }

@@ -12,8 +12,15 @@ import { useMapContext } from '../context/MapProvider'
 // "filtered.map is not a function"류 에러로 크래시했음(BoothCardList에서 실제 발생).
 // 응답이 배열이 아니면 빈 배열로 무시하고, 요청 자체가 실패해도(.catch) 에러 상태만
 // 남기고 렌더는 항상 안전한 값(배열)으로 유지되게 함.
-export function useMapZoneBooths() {
-  const { zoneId } = useMapContext()
+//
+// 2026-09-18 리팩토링: BoothListPanel이 boothResponses.json을 직접 import해서 쓰던 걸
+// 이 훅으로 통일함(중복 로직 제거 + zone 필터 자동 적용). zoneId/selectedDate는 지도
+// 전체에서 공유하는 MapProvider 상태를 그대로 쓰지만, timeSlot('day'|'night')은
+// 컨텍스트에서 가져오지 않고 인자로 받는다 — MapProvider의 timeOfDay는 3D 씬 조명용
+// 3단계(day/sunset/night) 상태라서, 부스 운영시간 필터(주간/야간 2단계)와 의미가 다르기
+// 때문. 호출부(BoothListPanel)가 자기 로컬 주간/야간 토글 값을 그대로 넘겨주면 됨.
+export function useMapZoneBooths({ timeSlot = 'day' } = {}) {
+  const { zoneId, selectedDate } = useMapContext()
   const [booths, setBooths] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
@@ -22,11 +29,9 @@ export function useMapZoneBooths() {
     let ignore = false
     setIsLoading(true)
     setIsError(false)
-    getZoneBooths(zoneId)
+    getZoneBooths(zoneId, { selectedDate, timeSlot })
       .then((res) => {
         if (ignore) return
-        // 정상 응답이면 배열이어야 한다 — 아니면(백엔드 미연결 시 HTML 폴백 등)
-        // 화면을 깨뜨리지 않도록 빈 배열 + 에러 상태로 처리.
         if (Array.isArray(res.data)) {
           setBooths(res.data)
         } else {
@@ -47,7 +52,7 @@ export function useMapZoneBooths() {
     return () => {
       ignore = true
     }
-  }, [zoneId])
+  }, [zoneId, selectedDate, timeSlot])
 
   return { booths, isLoading, isError }
 }

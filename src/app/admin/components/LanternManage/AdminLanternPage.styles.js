@@ -77,14 +77,20 @@ export const Nickname = styled.p`
 `
 
 export const ReportBadge = styled.span`
-
-  padding: 2px 10px;
-  border-radius: 99px;
+  display: flex;
+  height: 14px;
+  justify-content: center;
+  padding: 2px 5px;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
   background: #F2D6D6;
   color: #D62525;
-  font-size: 9px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 8px;
+  font-style: normal;
   font-weight: 500;
-  white-space: nowrap;
+  line-height: normal;
 `
 
 export const Message = styled.p`

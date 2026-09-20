@@ -10,12 +10,14 @@ export default function PlaceSelector({ zoneId, onSelectPlace }) {
         <S.Wrapper>
         {isOpen && (
             <S.Menu>
+            {/* 2026-09-19: zone3(만해광장) 씬이 연결되면서 하드코딩(disabled={id === 'zone3'}) 제거.
+                준비 중인 구역은 zones.js에서 comingSoon: true로 표시하면 여기서 자동으로 비활성화된다. */}
             {MAP_ZONES.filter((place) => place.id !== zoneId).map((place) => (
                 <S.PlaceButton
                 key={place.id}
                 type="button"
-                disabled={place.id === 'zone3'}
-                title={place.id === 'zone3' ? '지도 준비 중' : place.label}
+                disabled={Boolean(place.comingSoon)}
+                title={place.comingSoon ? '지도 준비 중' : place.label}
                 onClick={() => {
                     setIsOpen(false)
                     onSelectPlace(place.id)

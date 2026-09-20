@@ -3,7 +3,7 @@ import styled from 'styled-components'
 export const Stack = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 `
 
 export const SearchWrap = styled.label`
@@ -14,25 +14,26 @@ export const SearchWrap = styled.label`
 export const SearchIcon = styled.span`
   position: absolute;
   top: 50%;
-  left: 12px;
-  color: #777;
-  font-size: 18px;
+  left: 10px;
+  color: #737373;
+  font-size: 16px;
   transform: translateY(-54%);
 `
 
 export const Search = styled.input`
   width: 100%;
-  height: 40px;
-  padding: 0 12px 0 36px;
-  border: 1px solid #b8a09a;
+  height: 38px;
+  padding: 0 10px 0 34px;
+  border: 0.6px solid #737373;
   border-radius: 8px;
   outline: none;
   background: transparent;
-  color: ${({ theme }) => theme.color.text};
-  font: inherit;
+  color: #100b0b;
+  font-size: 14px;
+  font-weight: 400;
 
   &::placeholder {
-    color: #8b8b8b;
+    color: #737373;
   }
 
   &:focus {
@@ -44,7 +45,7 @@ export const FilterRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 `
 
 export const DateFilters = styled.div`
@@ -53,39 +54,44 @@ export const DateFilters = styled.div`
 `
 
 export const DateFilter = styled.button`
-  min-width: 42px;
+  min-width: 43px;
   height: 26px;
-  padding: 0 8px;
-  border: 0;
+  padding: 6px 8px;
+  border: ${({ $selected }) => ($selected ? '0' : '0.5px solid #d8d8d8')};
   border-radius: 4px;
-  background: ${({ $selected }) => ($selected ? '#676767' : '#8a8a8a')};
-  color: #fff;
-  font-size: 10px;
+  background: ${({ $selected }) => ($selected ? '#100b0b' : '#fdfdfd')};
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  color: ${({ $selected }) => ($selected ? '#fdfdfd' : '#737373')};
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0.9;
 `
 
 export const FilterHint = styled.span`
-  color: #9a8b87;
-  font-size: 9px;
+  color: #9f9c99;
+  font-size: 8px;
+  font-weight: 500;
 `
 
 export const List = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 `
 
 export const Card = styled.button`
   width: 100%;
-  min-height: 68px;
+  height: 72px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border: 1px solid ${({ theme }) => theme.color.border};
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 0;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
-  color: ${({ theme }) => theme.color.text};
+  background: rgba(253, 253, 253, 0.8);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  color: #100b0b;
   text-align: left;
 `
 
@@ -94,7 +100,8 @@ export const Body = styled.span`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  max-width: 230px;
+  gap: 12px;
 `
 
 export const TitleRow = styled.span`
@@ -105,7 +112,10 @@ export const TitleRow = styled.span`
 
   strong {
     overflow: hidden;
-    font-size: 13px;
+    max-width: 187px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -113,38 +123,47 @@ export const TitleRow = styled.span`
 
 export const DateBadge = styled.span`
   flex: 0 0 auto;
+  width: 35px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: #6d6d6d;
-  color: #fff;
-  font-size: 9px;
+  background: #9f9c99;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  color: #fdfdfd;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
 `
 
 export const Hashtags = styled.span`
   display: flex;
-  gap: 4px;
+  gap: 6px;
   overflow: hidden;
 
   span {
     flex: 0 0 auto;
-    padding: 2px 5px;
+    height: 16px;
+    padding: 2px 8px;
+    border: 0.5px solid #d8d8d8;
     border-radius: 999px;
-    background: #f6f6f6;
-    color: #333;
-    font-size: 9px;
+    background: rgba(253, 253, 253, 0.8);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+    color: #272727;
+    font-size: 10px;
+    line-height: 11px;
   }
 `
 
 export const Thumbnail = styled.span`
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 6px;
-  background: #0d0708;
+  border-radius: 5px;
+  background: #100b0b;
   color: #fff;
   font-size: 9px;
 
