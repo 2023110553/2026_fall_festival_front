@@ -28,7 +28,7 @@ export default function TopHeader({
 }) {
   const navigate = useNavigate()
   const { isLoggedIn: authIsLoggedIn, logout } = useAuth()
-  const { requestLanternList } = useLanterns()
+  const { requestLanternList, requestCoupon } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
@@ -64,8 +64,8 @@ export default function TopHeader({
   }, [isLanguageOpen, isProfileMenuOpen])
 
   const closeProfileMenu = () => setIsProfileMenuOpen(false)
-  const openMyPage = (section) => {
-    navigate(`/mypage?section=${section}`)
+  const openMyCouponModal = () => {
+    requestCoupon()
     closeProfileMenu()
   }
 
@@ -155,7 +155,7 @@ export default function TopHeader({
 
         {isLoggedIn && isProfileMenuOpen && (
           <S.Menu id={profileMenuId} role="menu">
-            <S.MenuItem type="button" role="menuitem" onClick={() => openMyPage('coupons')}>
+            <S.MenuItem type="button" role="menuitem" onClick={openMyCouponModal}>
               나의 쿠폰
             </S.MenuItem>
             <S.MenuItem type="button" role="menuitem" onClick={openMyLanternListModal}>
