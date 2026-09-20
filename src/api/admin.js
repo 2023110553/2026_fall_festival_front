@@ -14,7 +14,11 @@ export const updateAdminNotice = (noticeId, payload) => apiClient.put(`/api/admi
 export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/admin/notices/${noticeId}`)
 
 // 분실물 관리
-export const getAdminLostFound = () => apiClient.get('/api/admin/lost-found')
+// 목록 조회 — found_date 미지정 시 전체, page는 0부터, size는 최대 100 (기본 20)
+// 응답 data: { total_count, page, size, has_next, items: [{ lost_item_id, title, found_date, thumbnail_url, tags, created_at }] }
+// tags는 작성(sort_order) 순 상위 3개, thumbnail_url은 이미지 없으면 null
+export const getAdminLostItems = ({ foundDate, page = 0, size = 20 } = {}) =>
+  apiClient.get('/api/lost-items/', { params: { found_date: foundDate, page, size } })
 export const createAdminLostFound = (payload) => apiClient.post('/api/admin/lost-found', payload)
 export const updateAdminLostFound = (itemId, payload) => apiClient.put(`/api/admin/lost-found/${itemId}`, payload)
 export const deleteAdminLostFound = (itemId) => apiClient.delete(`/api/admin/lost-found/${itemId}`)

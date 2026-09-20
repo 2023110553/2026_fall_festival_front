@@ -5,7 +5,7 @@ import performanceThumbnail from '../../performance/assets/performance-thumbnail
 
 import {
   MOCK_NOW_RESPONSE,
-} from '../../performance/mocks/performanceMock'develop
+} from '../../performance/mocks/performanceMock'
 
 import formatTime from '../utils/formatTime'
 
