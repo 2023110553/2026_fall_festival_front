@@ -17,9 +17,9 @@ export const Text = styled.strong`
   width: max-content;
   min-width: 100%;
   margin: 0;
-  font-size: ${({ $variant }) => ($variant === 'detail' ? '14px' : '13px')};
-  font-weight: 700;
-  line-height: 20px;
+  font-size: ${({ $variant }) => ($variant === 'detail' ? '16px' : '14px')};
+  font-weight: 600;
+  line-height: 1;
   --overflow-distance: ${({ $distance }) => $distance};
 
   ${({ $distance }) =>
