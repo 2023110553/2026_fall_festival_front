@@ -49,6 +49,9 @@ npx @gltf-transform/cli meshopt <out.glb> <out.glb>
 - `--join`: 같은 재질의 메시를 병합한다 → **glb 안의 오브젝트 이름이 사라진다.** 부스 좌표는 JSON 기반이라 영향이 없지만,
   나중에 "건물 클릭" 같은 이름 기반 기능이 필요해지면 그때 `--join false`로 다시 export하면 된다.
 - 결과(2026-09-16): zone1 12.4 MB → 2.98 MB(메시 1,533 → 91), zone2 10.2 MB → 3.25 MB(224 → 37), 학림관 7.8 MB → 1.75 MB(39 → 28).
+- 결과(2026-09-20): zone5(원흥관) 40.6 MB → 1.86 MB. 원본 .blend 가 블렌더 5.2 라서 클라우드의 5.0.1 로 열면
+  "newer Blender binary" 경고가 뜨지만 export 결과에는 문제가 없었다(라운드트립 검증 완료). 퀄리티 패스 스크립트는
+  `C:\workspace\campus-map\blender\wonheung_quality_pass\` 에 있다.
 - 결과(2026-09-19): zone3(만해광장) 5.17 MB → 0.85 MB. 4)단계가 없으면 0.98 MB + meshopt 미적용 상태가 된다 —
   기존 세 구역 glb도 같은 이유로 meshopt가 빠져 있을 수 있으니, 다음 재-export 때 4)단계까지 돌리면 용량이 더 줄어들 여지가 있다.
 - 블렌더 쪽 주의(2026-09-19): 나무 에셋(tree_X12_+X1 Rock Pack)의 잎/수피 머티리얼이 Diffuse BSDF 노드라서
