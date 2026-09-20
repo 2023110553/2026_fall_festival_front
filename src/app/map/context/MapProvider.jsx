@@ -24,14 +24,23 @@ export function MapProvider({ children }) {
   // const [selectedBoothId, setSelectedBoothId] = useState(null)
   // const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [sheetTab, setSheetTab] = useState('info') // 'info' | 'lantern'
-  // 2026-09-13(3차): 부스 밝기 단계(0~4) 임시 미리보기 상태.
+  // 2026-09-13(3차): 부스 밝기 단계 임시 미리보기 상태 — 0~MAX_LANTERN_TIER(constants/lanternTiers.js).
   // 원래 설계(final-plan-team-share.md 2-3절)는 부스마다 실제 등불 개수(lantern_count)를
-  // 기준으로 0~4단계를 "각 부스별로 다르게" 계산해야 하는데, 아직 백엔드가 그 값을 내려주지
+  // 기준으로 단계를 "각 부스별로 다르게" 계산해야 하는데, 아직 백엔드가 그 값을 내려주지
   // 않아서(부스 데이터 미확정 단계) 지금은 전체 부스에 같은 값을 임시로 넣어보는 미리보기용
-  // 버튼(MapShell)만 만들어둔 것 — timeOfDay와 동일하게 "정하는 로직"(지금은 버튼, 나중엔
-  // lantern_count 기반 계산 함수)과 "그리는 로직"(BoothMarker의 brightnessLevel prop)을
+  // 상태만 만들어둔 것 — timeOfDay와 동일하게 "정하는 로직"(지금은 이 상태값, 나중엔
+  // lantern_count 기반 getLanternTier())과 "그리는 로직"(BoothMarker의 brightnessLevel prop)을
   // 분리해뒀으니, 실제 데이터가 들어와도 이 자리만 교체하면 됨.
-  const [boothBrightnessPreview, setBoothBrightnessPreview] = useState(0) // 0~4
+  //
+  // 2026-09-18: 팀 합의로 등불 구간을 0/1/5/10/50개(0~4단계) → 0/1/10/30/50/100개(0~5단계, 6단계)로
+  // 확장 + 단계별 밝기 차이 강화(BoothMarker.jsx 18번 항목). 이 값의 상한도 4 → MAX_LANTERN_TIER(현재 5).
+  //
+  // 2026-09-19: 부스별 lantern_count → getLanternTier() 자동 계산으로 전환(BoothMarker.jsx 19번 항목).
+  // 이제 이 값은 "null이면 자동(부스마다 등불 개수 기준), 숫자면 네 구역 전체 부스를 그 단계로 강제"하는
+  // 개발용 override다. 지도 UI 리스타일 이후 MapShell의 순환 버튼이 빠져서 setBoothBrightnessPreview를
+  // 부르는 곳은 현재 없다 — 기본값이 null이라 앱에서는 항상 자동 계산으로 동작하고, 단계별 비교가 필요할
+  // 때만 개발용 버튼을 달아 0~MAX_LANTERN_TIER 값을 넣어보면 된다.
+  const [boothBrightnessPreview, setBoothBrightnessPreview] = useState(null) // null(자동) | 0~MAX_LANTERN_TIER(현재 5)
 
   const value = useMemo(
     () => ({

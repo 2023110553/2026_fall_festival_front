@@ -3,6 +3,8 @@ import { Html } from '@react-three/drei'
 import { Select } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import PinLabel from '../../components/PinLabel/PinLabel'
+import { useTimeOfDay } from '../environment/TimeOfDayContext'
+import { MAX_LANTERN_TIER, getLanternTier } from '../../../../constants/lanternTiers'
 
 // 재사용 가능한 부스(천막) 오브젝트 — 실제 부스 3D 템플릿(.glb)이 아직 없어서
 // 좌표 소환 테스트 겸 시각적 데모용으로 만든 캐노피(가젤보) 천막 메시.
@@ -21,12 +23,13 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 //      순수 장식 요소 — 유리 패널을 emissive(자체발광)로 처리해서, 밤에 조명이 어두워져도
 //      광원 자체는 항상 은은하게 빛나 보이게 했다(과제 요구사항: "크지 않게, 광원은 보이도록").
 //   4) 부스별 밝기 단계(brightnessLevel) 추가 — final-plan-team-share.md 2-3절 "등불 밝히기"
-//      기획의 "개별 부스 — 천막 밝기/장식 단계 조절" 표를 반영. 등불 개수 구간(0/1/5/10/50개)에
-//      따라 0~4단계로 나뉘는데, 아직 백엔드가 lantern_count를 내려주지 않아서(부스 데이터
-//      미확정) 지금은 MapShell의 임시 "밝기 미리보기" 버튼으로 brightnessLevel을 수동으로
-//      넘겨서 시안만 확인하는 단계다. 나중에 실제 등불 개수가 연동되면
-//      getBoothBrightnessLevel(lanternCount) 같은 순수 함수로 교체해서 여기 넘기는 값만
-//      바꾸면 되고, 이 컴포넌트(그리는 로직)는 손댈 필요 없다 — timeOfDay와 동일한 원칙.
+//      기획의 "개별 부스 — 천막 밝기/장식 단계 조절" 표를 반영. 등불 개수 구간에 따라 단계가
+//      나뉘는데(당시 0/1/5/10/50개 → 0~4단계, 현재 구간은 18번 항목 참고), 아직 백엔드가
+//      lantern_count를 내려주지 않아서(부스 데이터 미확정) 지금은 MapProvider의 임시
+//      boothBrightnessPreview 상태로 brightnessLevel을 수동으로 넘겨서 시안만 확인하는 단계다.
+//      나중에 실제 등불 개수가 연동되면 constants/lanternTiers.js의 getLanternTier(lanternCount)
+//      (순수 함수)로 계산한 값을 여기 넘기기만 하면 되고, 이 컴포넌트(그리는 로직)는 손댈 필요
+//      없다 — timeOfDay와 동일한 원칙.
 //      지붕뿐 아니라 처마 밑 천(valance)에도 같은 emissive를 줘서 천막 전체가 같이
 //      밝아지도록 했다(재원 피드백 반영 — 처음엔 지붕에만 적용해서 어색했음).
 //   5) 빛 확산(블룸) 효과 추가 — 재원 피드백("색상만 밝아지는 게 아니라 빛이 번지는
@@ -50,7 +53,7 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 //      항상 고정값으로 뒀었는데, 재원이 오히려 인기 부스가 더 확실히 부각되길 원해서
 //      opacity(밝기)와 radius(반경)를 둘 다 brightnessLevel에 비례해서 커지도록 바꿈
 //      (0단계에서도 완전히 안 보이진 않게 최소값은 유지). 지금은 다른 밝기 효과들과
-//      마찬가지로 MapShell의 임시 미리보기 버튼으로 확인 가능.
+//      마찬가지로 MapProvider의 임시 boothBrightnessPreview 값으로 확인 가능.
 //   8) 지붕 조명끈(RoofLightStrings) 추가 — 재원이 공유한 참고 사진(밤에 텐트 지붕의
 //      각진 라인을 따라 전구 조명이 쭉 이어진 캠핑/웨딩 텐트 사진)을 보고 요청한 장식 요소.
 //      지붕의 "각진 부분" = 용마루(능선)와, 용마루 양 끝에서 앞/뒤 처마 모서리로 뻗는
@@ -102,9 +105,9 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 //      brightnessLevel에 살짝 반응하도록 바꿨다(getTentLightIntensityScale) — 정확히는
 //      "유지"가 아니라 이번에 새로 추가한 동작인데(예전엔 둘 다 밝기 단계와 무관한 고정
 //      장식이었음, 8/10번 항목 참고), 재원이 원하는 결과가 그거라 판단해서 반영함. 0단계에서도
-//      "설치된 조명"이 완전히 꺼져 보이면 어색하니 최소 50%(TENT_LIGHT_MIN_SCALE) 밝기는
-//      유지하고 4단계에서 100%까지 밝아진다 — 바닥 글로우(GroundGlow)는 기존과 동일하게
-//      0~100%로 그대로 둠(원래도 연동돼 있었음).
+//      "설치된 조명"이 완전히 꺼져 보이면 어색하니 최소 밝기는 유지하고 단계가 올라갈수록
+//      밝아진다(당시엔 50%→100% 선형, 현재 값은 18번 항목/BRIGHTNESS_TIERS.lightScale 참고)
+//      — 바닥 글로우(GroundGlow)는 기존과 동일하게 연동 유지(원래도 연동돼 있었음).
 //  16) 14/15번 항목을 헤드리스 렌더로 미리보기해서 보여준 뒤 재원 피드백 2건 반영.
 //      (a) "천막이 너무 납작해보여" — roofRise(처마 대비 용마루 높이)를 0.55→1로 올림
 //      (경사각 약 17°→30°). 히프지붕/조명끈 좌표가 전부 roofRise 하나로 계산되는 구조라
@@ -127,6 +130,39 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 //      아예 버리고 컴포넌트를 새로 짰다(CanopyLightSwags → CanopyRidgeLights로 개명) —
 //      지금은 용마루를 따라 나란히 늘어선 조명 4개가 전부인 훨씬 단순한 구조. 대각선/처짐
 //      계산이 사라져서 코드도 짧아졌다. 자세한 최종 설계는 컴포넌트 자체 주석 참고.
+//  18) 2026-09-18: 밝기 단계 6단계(0~5)로 확장 + 단계별 차이 강화 — 팀(3D/기획) 제안으로 등불 개수
+//      구간을 0/1/5/10/50개(0~4단계) → 0/1/10/30/50/100개(0~5단계)로 바꾸고, "밝기 차이를 좀 더
+//      드라마틱하게" 요청을 함께 반영했다.
+//      (a) 구간 정의는 constants/lanternTiers.js(LANTERN_TIERS/getLanternTier/MAX_LANTERN_TIER)가
+//          단일 출처. 이 파일은 단계 번호만 받아 그리므로, 구간 숫자를 다시 바꿔도 여기선 표의
+//          줄 수(BRIGHTNESS_TIERS.length === MAX_LANTERN_TIER + 1)만 맞추면 된다.
+//      (b) 단계별 값을 수식(0.35 + g*0.5 같은 선형 보간)에서 BRIGHTNESS_TIERS 표(글로우 opacity/
+//          radius/intensity + 조명끈 lightScale)로 바꿨다 — 디자이너/기획이 "3단계만 조금 더 밝게"처럼
+//          특정 단계만 손보기 쉽고, 리뷰할 때 숫자가 한눈에 보인다.
+//      (c) 예전에 차이가 안 느껴졌던 원인: 바닥 글로우가 opacity 0.35→0.85, 반경 4.5→5.5로 밖에 안
+//          변했고 조명끈도 50%→100%라 폭이 좁았다. 이번엔 글로우 셰이더에 uIntensity(HDR 색 배율,
+//          1.0→1.55)를 추가해 단계가 오를수록 "더 진해지는" 게 아니라 "더 세게 빛나며 번지는" 방향으로
+//          바꿨고, 조명끈은 12%→150%로 폭을 넓혔다. 반경은 옆 부스와 겹치는 문제 때문에 7.5까지만.
+//          값 자체는 실제 MapCanvas 카메라 거리(y=140)에서 부스 6개를 한 줄로 놓고 헤드리스 렌더로
+//          비교해서 골랐다 — uIntensity를 2.4까지 올린 첫 후보는 5단계가 하얀 원판으로 날아가 노란 톤이
+//          사라졌고(1.9쯤부터 허옇게 됨), 1.55에서 멈춰야 최대 단계도 "따뜻한 노란빛"으로 남는다.
+//      (d) 지붕/처마(천막 자체) 밝기 효과는 여전히 넣지 않는다(9번 항목, 재원 요청) — 드라마틱하게
+//          만드는 수단은 바닥 글로우 + 조명끈 두 가지로 한정.
+//  19) 2026-09-19: 밝기 단계를 부스별 등불 개수(lanternCount)로 자동 계산 — 재원 요청("맵마다 부스
+//      목데이터 추가, 팔정도는 가장 높은 단계 위주")을 받으면서, 그동안 MapProvider의 임시 미리보기 값
+//      (boothBrightnessPreview, 전체 부스 동일)만 받던 brightnessLevel을 "명시하지 않으면(null/undefined)
+//      lanternCount → getLanternTier()로 스스로 계산"하도록 바꿨다. 이미 PinLabel용으로 lanternCount를
+//      받고 있었으니 props 추가 없이 그 값을 같이 쓴다. brightnessLevel은 개발용 override로 남겨둠 —
+//      숫자를 주면 등불 개수와 무관하게 그 단계로 강제(전 부스 같은 단계로 놓고 비교할 때 유용).
+//      "정하는 로직"(lanternTiers.js) / "그리는 로직"(BRIGHTNESS_TIERS) 분리는 그대로 — 이 파일은
+//      getLanternTier()를 호출만 할 뿐 구간 숫자는 여전히 모른다.
+//  20) 2026-09-19(2차): 낮 시간대 바닥 글로우 게이팅 — 19번으로 부스마다 진짜 단계가 들어오자, 낮(timeOfDay
+//      'day') 화면에서도 4~5단계 글로우가 그대로 번져서 팔정도처럼 5단계가 몰린 구역은 광장 가운데가 하얀
+//      구름처럼 덮였다(헤드리스 렌더로 확인). 원래 기획(final-plan-team-share.md 2-3)도 "밤엔 밝기, 낮엔
+//      채도·장식"이라 낮에 빛이 번지는 건 의도가 아니다. 그래서 environment/TimeOfDayContext로 시간대를 받아
+//      낮에는 바닥 글로우를 0단계 값(위치 식별용 최소 원판, 6번 항목)으로 고정하고 조명끈(lightScale)만 단계를
+//      반영한다 — 전구는 작아서 낮에도 "장식이 더 달렸다" 정도로만 보이고 화면을 덮지 않는다. 노을/밤은 그대로.
+//      낮 전용 채도·장식 단계 표현은 아직 없음(후속) — 필요해지면 이 자리에서 isDaytime 분기로 붙이면 된다.
 //
 // 좌표/앵커 규칙(팀 합의, map-section-scope-and-roles.md B안):
 //   - 이 컴포넌트는 "부스 오브젝트 + 라벨 앵커 좌표"만 제공한다.
@@ -139,25 +175,56 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 //   - label: 부스 이름 — 라벨 앵커 그룹 이름에만 사용(실제 텍스트 렌더링은 프론트A 담당)
 //   - color: 캐노피(지붕+처마) 색상 — 카테고리 구분용, 기본값은 실제 천막 사진 기준 파란색
 //   - accentColor: 용마루 포인트 컬러
-//   - brightnessLevel: 0~4 (등불 개수 기반 밝기 단계, 기본값 0=등불 없음). 지금은 MapShell의
-//     임시 미리보기 버튼값이 그대로 들어오지만, 원래는 부스별 lantern_count에서 계산된 값.
+//   - lanternCount: 이 부스에 달린 등불 개수(place.lantern_count) — PinLabel의 숫자 표시와 밝기 단계
+//     계산(19번 항목, getLanternTier)에 같이 쓰인다. 없으면 0개로 취급.
+//   - brightnessLevel: (선택) 0~MAX_LANTERN_TIER(현재 5) 밝기 단계 override. null/undefined(기본)면
+//     lanternCount로 자동 계산하고, 숫자를 주면 그 단계로 강제한다(개발용 미리보기 — MapProvider의
+//     boothBrightnessPreview가 이 자리로 내려온다). 범위 밖 값/문자열이 와도 내부에서 clamp하므로
+//     크래시는 나지 않는다.
 //
 // 주의: 이 컴포넌트를 사용하는 화면(MapCanvas.jsx)은 반드시 <Selection> 컨텍스트 안에서
 // 렌더링돼야 한다 — 그래야 아래 <Select enabled>들이 EffectComposer의 SelectiveBloom에
 // 정상적으로 인식된다. <Selection> 없이 이 컴포넌트만 단독으로 쓰면 <Select>가 그냥
 // 평범한 <group>처럼만 동작해서(블룸 없이) 에러 없이 조용히 무시된다.
 
-// 등불 개수 구간별 밝기 단계 — final-plan-team-share.md 표 그대로(0개/1개/5개/10개/50개 → 0~4단계).
-// emissiveIntensity만 다르게 줘서, 단계가 올라갈수록 지붕/처마가 등불 톤(주황빛)으로 은은하게
-// 밝아지도록 했다. toneMapped=false라 시간대(주간/노을/야간) 조명 밝기와 무관하게 항상
-// 같은 강도로 보인다 — 랜턴(PoleLantern)과 같은 원리.
+// 등불 개수 단계별 "그리는 값" 표(18번 항목) — 단계 번호(0~MAX_LANTERN_TIER)는 constants/lanternTiers.js가
+// 정하고(등불 몇 개부터 몇 단계인지 = "정하는 로직"), 여기서는 그 단계 번호를 어떤 밝기/반경으로
+// 그릴지만 정한다("그리는 로직"). 그래서 팀에서 구간(0/1/10/30/50/100개)을 다시 바꿔도 이 파일은
+// 표의 줄 수만 MAX_LANTERN_TIER + 1에 맞춰주면 된다 — 줄 수가 모자라면 아래 MAX_BRIGHTNESS_LEVEL이
+// 표 길이로 상한을 잡아서 배열 밖을 참조하는 크래시는 안 나지만, 그 위 단계는 전부 마지막 줄로
+// 보이니 반드시 같이 맞춰야 한다.
+//
+// 각 필드의 의미:
+//   - glowOpacity: 바닥 글로우(GroundGlow) 최대 투명도(중심부 기준). 0단계도 0이 아닌 이유는
+//     "부스가 여기 있다"는 위치 식별 기능(6번 항목)은 등불이 없어도 항상 유지해야 하기 때문.
+//   - glowRadius: 바닥 글로우 반지름(m). 실제 zone1 부스들은 서로 바짝 붙어 있어서(zone1-booths.*.json)
+//     너무 키우면 옆 부스 글로우와 겹쳐 한 덩어리로 보인다 — 그래서 최대 7.5까지만 키우고, 대신
+//     "얼마나 밝고 진하게 보이는지"는 아래 glowIntensity가 담당한다.
+//   - glowIntensity: 바닥 글로우 색 배율(셰이더 uIntensity). toneMapped=false + EffectComposer의
+//     HalfFloat 버퍼 덕분에 1을 넘는 값이 그대로 HDR로 남아 SelectiveBloom에 더 큰 빛 에너지를 넘긴다
+//     — 그래서 단계가 올라갈수록 opacity만 진해지는 게 아니라 글로우 자체가 "빛나면서 번지는" 느낌으로
+//     바뀐다. 1.55를 상한으로 둔 건 실제 지도 카메라 거리 렌더에서 그 이상(1.9~2.4)은 ACES 톤매핑에
+//     하얗게 뭉개져 노란 톤이 사라졌기 때문 — 값을 더 키우고 싶으면 이 상한부터 다시 렌더로 확인할 것.
+//   - lightScale: 조명끈(TentLightOutline+CanopyRidgeLights) emissiveIntensity 배율. 예전(15번 항목)엔
+//     50%→100% 선형이었는데 "차이가 안 느껴진다"는 피드백으로 12%→150%로 폭을 넓혔다. 1.5(=강도 12)를
+//     상한으로 둔 건 그 이상에서는 전구가 개별로 안 보이고 한 덩어리 빛으로 뭉개지던 이전 경험 때문.
+//     아래쪽을 0.12까지 내린 이유: 전구는 기본 강도(8)가 이미 블룸에 포화돼 있어서 0.35 이상에선
+//     배율을 올려도 화면상 차이가 거의 없다 — "어둡다↔밝다" 차이는 사실상 아래 단계를 낮춰야 생긴다.
+//
+// 값들은 선형이 아니라 위로 갈수록 폭이 커지는 곡선으로 잡았다 — 사람 눈은 밝기 차이를 비율로
+// 느끼기 때문에(0.25→0.4는 확 느껴지지만 0.85→1.0은 잘 안 느껴짐) 위 단계 간격을 더 벌려야
+// 단계마다 "한 칸 올라갔다"는 게 고르게 보인다. 실제 단계별 결과는 헤드리스 렌더로 확인했음.
 const BRIGHTNESS_TIERS = [
-  { emissiveIntensity: 0 }, // 0단계(기본) — 등불 0개, 평상시 톤
-  { emissiveIntensity: 0.18 }, // 1단계 — 등불 1개 이상, 은은하게 밝아짐
-  { emissiveIntensity: 0.4 }, // 2단계 — 등불 5개 이상, 눈에 띄게 밝아짐
-  { emissiveIntensity: 0.65 }, // 3단계 — 등불 10개 이상, 확실히 밝고 따뜻한 톤
-  { emissiveIntensity: 1 }, // 4단계 — 등불 50개 이상, 가장 밝고 화려한 톤
+  { glowOpacity: 0.22, glowRadius: 4.5, glowIntensity: 1.0, lightScale: 0.12 }, // 0단계 — 등불 0개, 위치 식별만
+  { glowOpacity: 0.38, glowRadius: 5.0, glowIntensity: 1.08, lightScale: 0.3 }, // 1단계 — 1개 이상, 은은하게
+  { glowOpacity: 0.55, glowRadius: 5.6, glowIntensity: 1.18, lightScale: 0.55 }, // 2단계 — 10개 이상, 눈에 띄게
+  { glowOpacity: 0.72, glowRadius: 6.2, glowIntensity: 1.3, lightScale: 0.85 }, // 3단계 — 30개 이상, 확실히 밝게
+  { glowOpacity: 0.88, glowRadius: 6.9, glowIntensity: 1.42, lightScale: 1.2 }, // 4단계 — 50개 이상, 강하게 번짐
+  { glowOpacity: 1.0, glowRadius: 7.5, glowIntensity: 1.55, lightScale: 1.5 }, // 5단계 — 100개 이상, 최대(축제 중심 부스)
 ]
+// brightnessLevel clamp 상한 — 원칙적으로 MAX_LANTERN_TIER(현재 5)와 표 길이-1이 같아야 하고,
+// 혹시 어긋나도(누가 한쪽만 고친 경우) 배열 밖 참조로 크래시 나지 않도록 둘 중 작은 값을 쓴다.
+const MAX_BRIGHTNESS_LEVEL = Math.min(MAX_LANTERN_TIER, BRIGHTNESS_TIERS.length - 1)
 const GROUND_GLOW_COLOR = '#ffdca0' // 바닥 글로우 색 — 랜턴(PoleLantern)과 같은 따뜻한 노란빛으로 통일
 const LIGHT_STRING_COLOR = '#ffdca0' // 지붕 조명끈 색 — 랜턴/바닥 글로우와 동일한 따뜻한 노란빛으로 통일
 // 광원(랜턴+조명끈) emissiveIntensity — 재원 요청("광원 정도를 극단적으로 올려줄 수 있어?")으로
@@ -182,13 +249,8 @@ const TENT_LIGHT_STRING_INTENSITY = 8
 // 음수(지붕이 뒤집힘)가 되지 않도록 방어했다.
 const ROOF_HIP_INSET = 2
 
-// 조명끈(TentLightOutline+CanopyRidgeLights) 밝기 배율 — 재원 요청("등불 단계에 따라 조명
-// 밝기도 올라가는 것 유지하자", 15번 항목)에 맞춰 추가. 0단계에서도 "설치된 조명"이 완전히
-// 꺼져 보이면 부자연스러우니 최소 50%는 유지하고, 단계가 올라갈수록 100%까지 밝아진다.
-const TENT_LIGHT_MIN_SCALE = 0.5
-function getTentLightIntensityScale(safeLevel, maxLevel) {
-  return TENT_LIGHT_MIN_SCALE + (1 - TENT_LIGHT_MIN_SCALE) * (safeLevel / maxLevel)
-}
+// (18번 항목: 예전에 여기 있던 TENT_LIGHT_MIN_SCALE/getTentLightIntensityScale(50%→100% 선형 배율)은
+// BRIGHTNESS_TIERS의 lightScale 필드로 흡수했다 — 조명끈 배율도 단계별로 표에서 직접 읽는다.)
 
 // 바닥 글로우 링 — 중심이 가장 밝고 가장자리로 갈수록 부드럽게 사라지는 원형 그라디언트.
 // 이미지 텍스처 없이 셰이더로 원형 falloff만 계산한다(프로젝트의 "이미지 에셋 안 늘리기" 방침과 동일,
@@ -200,14 +262,18 @@ const GROUND_GLOW_VERTEX_SHADER = `
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
+// uIntensity(18번 항목): 색에 곱하는 밝기 배율. toneMapped=false인 재질이라 1을 넘는 값이 그대로
+// HDR로 남아, 같은 색·같은 opacity라도 SelectiveBloom이 더 강하게 번지게 만든다 — 단계별 "드라마틱한"
+// 차이의 핵심. alpha(투명도)는 그대로 uOpacity가 담당하므로 둘은 독립적으로 조절 가능.
 const GROUND_GLOW_FRAGMENT_SHADER = `
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform float uIntensity;
   varying vec2 vUv;
   void main() {
     float dist = distance(vUv, vec2(0.5));
     float alpha = smoothstep(0.5, 0.0, dist) * uOpacity;
-    gl_FragColor = vec4(uColor, alpha);
+    gl_FragColor = vec4(uColor * uIntensity, alpha);
   }
 `
 
@@ -216,12 +282,18 @@ const GROUND_GLOW_FRAGMENT_SHADER = `
 // color 기본값은 GROUND_GLOW_COLOR(랜턴과 같은 따뜻한 노란빛) — 필요하면 개별 호출부에서 override 가능.
 //
 // 2026-09-13(2차): opacity를 밝기 단계(brightnessLevel)에 연동 — 재원 요청("등불 개수에
-// 연동해서, 일단 버튼으로 미리 볼 수 있게"). 지도/처마와 마찬가지로 지금은 MapShell의
-// 임시 "밝기 미리보기" 버튼값이 그대로 들어온다(실제 데이터 연동은 나중 단계, timeOfDay와
+// 연동해서, 일단 버튼으로 미리 볼 수 있게"). 지금은 MapProvider의 boothBrightnessPreview 상태값이
+// MapCanvas → Zone1Scene을 거쳐 그대로 들어온다(실제 lantern_count 연동은 나중 단계, timeOfDay와
 // 동일한 원칙). uniforms는 <shaderMaterial uniforms={...}>로 매번 새 객체를 넘기는 대신
-// ref로 материал를 잡아 uOpacity.value만 직접 갱신 — three.js 셰이더 유니폼을 리액트
+// ref로 material을 잡아 uniform .value만 직접 갱신 — three.js 셰이더 유니폼을 리액트
 // 상태에 반응해서 바꿀 때 흔히 쓰는 패턴(매 프레임 재생성 없이 값만 갱신되어 더 안전함).
-function GroundGlow({ color = GROUND_GLOW_COLOR, radius = 4.5, opacity = 0.55 }) {
+//
+// 2026-09-18(18번 항목): intensity prop 추가 — 셰이더 uIntensity(색 배율)로 넘어간다. opacity는
+// "얼마나 진하게 깔리는지", intensity는 "얼마나 세게 빛나서 번지는지"를 각각 담당해서, 단계가
+// 올라갈수록 두 축이 같이 커지도록 BRIGHTNESS_TIERS에서 값을 받는다.
+// radius는 circleGeometry args로 들어가므로 값이 바뀌면 지오메트리가 재생성된다 — 단계 전환은
+// 드문 이벤트(등불 개수 갱신 시)라 비용 문제는 없지만, 매 프레임 바뀌는 값을 넣으면 안 된다.
+function GroundGlow({ color = GROUND_GLOW_COLOR, radius = 4.5, opacity = 0.55, intensity = 1 }) {
   const materialRef = useRef(null)
 
   useEffect(() => {
@@ -229,7 +301,8 @@ function GroundGlow({ color = GROUND_GLOW_COLOR, radius = 4.5, opacity = 0.55 })
     if (!material) return
     material.uniforms.uColor.value.set(color)
     material.uniforms.uOpacity.value = opacity
-  }, [color, opacity])
+    material.uniforms.uIntensity.value = intensity
+  }, [color, opacity, intensity])
 
   return (
     <Select enabled>
@@ -239,7 +312,11 @@ function GroundGlow({ color = GROUND_GLOW_COLOR, radius = 4.5, opacity = 0.55 })
           ref={materialRef}
           vertexShader={GROUND_GLOW_VERTEX_SHADER}
           fragmentShader={GROUND_GLOW_FRAGMENT_SHADER}
-          uniforms={{ uColor: { value: new THREE.Color(color) }, uOpacity: { value: opacity } }}
+          uniforms={{
+            uColor: { value: new THREE.Color(color) },
+            uOpacity: { value: opacity },
+            uIntensity: { value: intensity },
+          }}
           transparent
           depthWrite={false}
           toneMapped={false}
@@ -496,7 +573,7 @@ export default function BoothMarker({
   lanternCount = 0,
   color = '#1d5fa8',
   accentColor = '#123f75',
-  brightnessLevel = 0,
+  brightnessLevel = null,
   onClick,
 }) {
   const width = 6 // 부스 폭 — 통로와 나란한 긴 변(정면이 넓게 보이는 방향), 캐노피 천막 표준 규격
@@ -520,13 +597,22 @@ export default function BoothMarker({
   const halfRun = Math.max(halfRidge - ROOF_HIP_INSET, 0.3) // 용마루 절반 길이(14번 항목, 최소 0.3 보장)
   const ridgeRun = halfRun * 2 // 용마루 전체 길이 — 처마(ridgeSpan)보다 짧아진 실제 용마루
 
-  // 0~4 범위로 안전하게 clamp(잘못된 값이 들어와도 배열 밖을 참조하지 않도록)
-  // glowIntensity는 바닥 글로우(GroundGlow)의 밝기/반경 계산에 쓰인다 — 지붕/처마 자체는
-  // 여전히 이 값에 반응하지 않음(9번 항목 참고).
-  const safeLevel = Math.min(Math.max(Math.round(brightnessLevel), 0), BRIGHTNESS_TIERS.length - 1)
-  const { emissiveIntensity: glowIntensity } = BRIGHTNESS_TIERS[safeLevel]
-  // 조명끈(TentLightOutline+CanopyRidgeLights) 밝기 배율 — 15번 항목, 등불 단계에 따라 50%~100%.
-  const lightIntensityScale = getTentLightIntensityScale(safeLevel, BRIGHTNESS_TIERS.length - 1)
+  // 밝기 단계 결정(19번 항목): brightnessLevel이 명시되면(개발용 override) 그 값을, 아니면 이 부스의
+  // 등불 개수로 getLanternTier()가 정한 단계를 쓴다. lanternCount도 Number()로 감싸는 이유는 API 응답이
+  // 문자열("32")이나 null로 올 수 있어서(NaN/null → 0개 → 0단계).
+  const resolvedLevel = brightnessLevel ?? getLanternTier(Number(lanternCount) || 0)
+  // 0~MAX_BRIGHTNESS_LEVEL(현재 5) 범위로 안전하게 clamp — 잘못된 값(음수, 범위 초과, 문자열,
+  // undefined/NaN)이 들어와도 배열 밖을 참조하지 않도록. Number()로 한 번 감싸는 이유는 나중에
+  // API 응답값이 문자열("3")로 들어오는 경우까지 방어하기 위함(NaN이면 || 0으로 0단계 처리).
+  // 표에서 꺼낸 값들은 바닥 글로우(GroundGlow)와 조명끈(TentLightOutline+CanopyRidgeLights)에만
+  // 쓰인다 — 지붕/처마 자체는 여전히 밝기 단계에 반응하지 않음(9번 항목 참고, 재원 요청 유지).
+  const safeLevel = Math.min(Math.max(Math.round(Number(resolvedLevel) || 0), 0), MAX_BRIGHTNESS_LEVEL)
+  // 낮 게이팅(20번 항목): 낮에는 바닥 글로우를 0단계 값으로 고정(위치 식별만), 조명끈만 단계 반영.
+  // 노을/밤(그리고 Provider 없이 단독 렌더할 때의 기본값 'night')은 표 값을 그대로 쓴다.
+  const isDaytime = useTimeOfDay() === 'day'
+  const tierValues = BRIGHTNESS_TIERS[safeLevel]
+  const { glowOpacity, glowRadius, glowIntensity } = isDaytime ? BRIGHTNESS_TIERS[0] : tierValues
+  const { lightScale } = tierValues
 
   // 다리 6개 — 긴 변(X축)마다 3개씩 2줄로 배치 (실제 3m x 6m 캐노피 천막 프레임과 동일)
   const poleOffsets = [
@@ -542,10 +628,12 @@ export default function BoothMarker({
     <group position={position} rotation={[0, rotationY, 0]} onClick={onClick}>
       {/* 바닥 글로우 링 — 부스 위치 자체를 카메라 거리와 무관하게 눈에 띄게 하는 마커.
           색은 카테고리색이 아니라 랜턴과 같은 따뜻한 노란빛(GROUND_GLOW_COLOR)으로 통일.
-          brightnessLevel(등불 개수 단계)이 올라갈수록 밝기(opacity)와 반경이 같이 커지도록
-          연동했다 — 재원 요청("등불 개수에 연동, 일단 버튼으로 미리보기"). 0단계에서도
-          완전히 안 보이진 않게 최소 opacity는 남겨둠(위치 식별 기능 자체는 항상 유지). */}
-      <GroundGlow opacity={0.35 + glowIntensity * 0.5} radius={4.5 + glowIntensity} />
+          brightnessLevel(등불 개수 단계)이 올라갈수록 진하기(opacity)·반경(radius)·빛 세기
+          (intensity, HDR 배율 → 블룸 번짐)가 같이 커지도록 연동했다 — 재원 요청("등불 개수에
+          연동, 일단 버튼으로 미리보기") + 18번 항목("단계 차이를 드라마틱하게"). 0단계에서도
+          완전히 안 보이진 않게 최소 opacity는 남겨둠(위치 식별 기능 자체는 항상 유지).
+          단계별 실제 값은 전부 BRIGHTNESS_TIERS 표에 있다 — 여기서 수식으로 계산하지 않음. */}
+      <GroundGlow opacity={glowOpacity} radius={glowRadius} intensity={glowIntensity} />
 
       {/* 다리(프레임) 6개 — 은색 알루미늄 톤 + 기둥마다 장식용 랜턴 1개씩 */}
       {poleOffsets.map(([signX, signZ], i) => (
@@ -583,7 +671,8 @@ export default function BoothMarker({
           윤곽이 빛으로 드러나도록 한다(재원 피드백: "천막이 밋밋하다" + "깃발보다는 빛 효과로
           부각"). 16번 항목: 지붕 위 능선 조명은 이제 CanopyRidgeLights가 전담하므로
           여기서는 뺐다(재원 피드백 "조명이 난잡해" — 같은 모서리에 두 세트가 겹치던 문제 해소).
-          15번 항목부터는 brightnessLevel에 따라 50%~100% 밝기로 반응한다(완전히 꺼지진 않음). */}
+          15번 항목부터 brightnessLevel에 반응하고, 18번 항목에서 폭을 12%~150%(BRIGHTNESS_TIERS의
+          lightScale)로 넓혔다 — 0단계도 완전히 꺼지진 않고, 최고 단계에선 기본 강도보다 더 세게 빛난다. */}
       <TentLightOutline
         ridgeSpan={ridgeSpan}
         slopeSpan={slopeSpan}
@@ -591,19 +680,19 @@ export default function BoothMarker({
         poleOffsets={poleOffsets}
         poleInsetX={poleInsetX}
         poleInsetZ={poleInsetZ}
-        intensityScale={lightIntensityScale}
+        intensityScale={lightScale}
       />
 
       {/* 캐노피 위 용마루 조명(15번 항목, 17번 항목에서 지금 형태로 재정리) — 재원이 공유한
           참고 사진처럼 지붕 "위"에 조명을 설치하되(용마루보다 높은 지점에 띄워서 지붕 표면에
           가려지지 않음), 재원이 최종적으로 요청한 대로 대각선 교차 없이 용마루를 따라
           일렬로 배치했다(컴포넌트 자체 주석에 전체 변경 이력 정리). TentLightOutline과
-          마찬가지로 brightnessLevel에 따라 50%~100% 밝기로 반응. */}
+          같은 lightScale 배율을 받아 brightnessLevel에 따라 12%~150% 밝기로 반응(18번 항목). */}
       <CanopyRidgeLights
         halfRun={halfRun}
         poleHeight={poleHeight}
         roofRise={roofRise}
-        intensityScale={lightIntensityScale}
+        intensityScale={lightScale}
       />
 
       {/* 처마 밑으로 늘어지는 천(valance) — 긴 변 2면 + 짧은 변 2면, 처마 둘레를 감싸는 형태.

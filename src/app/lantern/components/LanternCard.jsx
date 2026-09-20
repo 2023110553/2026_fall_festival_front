@@ -42,8 +42,8 @@ export default function LanternCard({
 
         <S.Content>{lantern.message || lantern.content}</S.Content>
 
-        {/* 24시간 형식으로 변환된 시간 표시 */}
-        <S.Time>{formatLanternDateTime(lantern.createdAt)}</S.Time>
+        {/* 수정된 적 있으면 수정 시각, 없으면 작성 시각 */}
+        <S.Time>{formatLanternDateTime(lantern.updatedAt ?? lantern.createdAt)}</S.Time>
 
         {isMenuOpen && (
             <S.DropdownMenu ref={menuRef}>
