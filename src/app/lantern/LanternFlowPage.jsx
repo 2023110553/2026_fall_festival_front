@@ -20,12 +20,12 @@ export default function LanternFlowPage() {
   const { isLoggedIn } = useAuth()
 
   // --- 상태 관리 --- (등불 리스트는 LanternProvider로 전역 공유 — MyPage 등 다른 화면과 같은 목록을 본다)
-  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers } = useLanterns()
+  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers, coupon, setCoupon } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
 
   // 쿠폰 플로우: null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
-  const [coupon, setCoupon] = useState(null)
+  const [isNoCouponModalOpen, setIsNoCouponModalOpen] = useState(false)
 
   const {
     isCreateModalOpen,
@@ -41,7 +41,8 @@ export default function LanternFlowPage() {
     onCreated: addLantern,
     onFirstLantern: (created) => {
       // 1번째 등불: 스크래치 복권 생성 및 모달 오픈
-      setCoupon({ id: created.id, status: 'unscratched' })
+      const isWin = Math.random() < 0.5
+      setCoupon({ id: created.id, status: 'unscratched', isWin, reward: isWin ? '야간부스 30% 할인' : undefined })
       setCouponFlow('scratch')
     },
   })
@@ -73,12 +74,23 @@ export default function LanternFlowPage() {
     }
   }
 
+  const handleOpenCouponFlow = () => {
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+    } else if (!coupon) {
+      setIsNoCouponModalOpen(true)
+    } else {
+      setCouponFlow(coupon.status === 'unscratched' ? 'scratch' : 'result')
+    }
+  }
+
   // 위 두 함수를 LanternProvider(Context)에 등록 — BottomNav/TopHeader는 형제 컴포넌트라
   // 이 페이지의 로컬 상태를 직접 못 건드리므로, window 커스텀 이벤트 대신 이 등록 방식으로 연결한다.
   useEffect(() => {
     registerTriggers({
       openCreateModal: handleOpenCreateFlow,
       openLanternList: handleOpenListFlow,
+      openCoupon: handleOpenCouponFlow,
     })
   })
 
@@ -86,8 +98,7 @@ export default function LanternFlowPage() {
   const handleScratchReveal = () => {
     setCoupon((prev) => ({
       ...prev,
-      status: 'win',
-      reward: '야간부스 30% 할인',
+      status: prev.isWin ? 'win' : 'lose',
     }))
     setCouponFlow('result')
   }
@@ -95,7 +106,7 @@ export default function LanternFlowPage() {
   // 3. 현장 코드 검증 핸들러
   const handleVerifyCode = (code) =>
     new Promise((resolve, reject) => {
-      if (code === '1234') {
+      if (coupon?.status === 'win' && code.trim() === '1234') {
         setCoupon((prev) => ({ ...prev, status: 'used' }))
         setCouponFlow('result')
         resolve()
@@ -124,6 +135,7 @@ export default function LanternFlowPage() {
         isOpen={couponFlow === 'scratch'}
         onClose={() => setCouponFlow(null)}
         onReveal={handleScratchReveal}
+        coupon={coupon}
       />
 
       {/* 3. 쿠폰 결과/당첨 모달 */}
@@ -171,6 +183,12 @@ export default function LanternFlowPage() {
         isOpen={isNoLanternModalOpen}
         onClose={() => setIsNoLanternModalOpen(false)}
         title="등불이 아직 없습니다"
+        subTitle="첫 등불을 달고 스크래치 쿠폰을 받아보세요"
+      />
+      <AlertModal
+        isOpen={isNoCouponModalOpen}
+        onClose={() => setIsNoCouponModalOpen(false)}
+        title="쿠폰이 아직 없습니다"
         subTitle="첫 등불을 달고 스크래치 쿠폰을 받아보세요"
       />
     </>
