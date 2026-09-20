@@ -26,6 +26,16 @@ export const getAdminLostItems = ({ foundDate, page = 0, size = 20 } = {}) =>
 export const getAdminLostItemDetail = (lostItemId) =>
   apiClient.get(`/api/lost-items/${lostItemId}/`)
 
+// 이미지 업로드 — multipart(field name: file), jpg/jpeg/png/webp · 5MB 이하
+// 성공 201 → data: { image_url }. 이 URL을 등록/수정의 image_urls에 담아 보낸다
+// (업로드만 하고 저장하지 않으면 고아 파일이 남는 구조 — 서버에서 일괄 정리)
+export const uploadAdminLostItemImage = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
+  return apiClient.post('/api/lost-items/images/', formData)
+}
+
 // 등록/수정 공통 body — tags, image_urls 모두 배열 순서가 sort_order가 되므로 순서를 바꾸지 않는다
 const toLostItemBody = ({ title, foundDate, tags, imageUrls }) => ({
   title,

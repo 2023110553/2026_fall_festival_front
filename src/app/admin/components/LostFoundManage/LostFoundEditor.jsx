@@ -3,8 +3,17 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import * as S from './LostFoundEditor.styles'
 import ConfirmLeaveModal from '../NoticeManage/ConfirmLeaveModal'
 import { DEFAULT_FESTIVAL_DATE, FESTIVAL_DATES, isFestivalDate } from './lostFoundDates'
+import { uploadAdminLostItemImage } from '../../../../api/admin'
 
 const TOAST_DURATION = 2500
+
+// 업로드 제약(jpg/jpeg/png/webp, 5MB)을 서버와 같은 기준으로 먼저 검사해서 413/415를 줄인다
+const IMAGE_ACCEPT = '.jpg,.jpeg,.png,.webp'
+const IMAGE_EXTENSION_PATTERN = /\.(jpe?g|png|webp)$/i
+const IMAGE_MAX_BYTES = 5 * 1024 * 1024
+const IMAGE_TOO_LARGE_MESSAGE = '이미지 용량은 5MB 이하여야 합니다.'
+const IMAGE_TYPE_MESSAGE = 'jpg, jpeg, png, webp만 업로드 가능합니다.'
+const IMAGE_UPLOADING_MESSAGE = '이미지 업로드가 끝난 뒤에 저장해주세요.'
 
 // 서버 검증(INVALID_INPUT)과 같은 기준으로 먼저 걸러서 불필요한 요청을 막는다
 const TITLE_MAX_LENGTH = 100
@@ -29,8 +38,11 @@ export default function LostFoundEditor({
   // date는 API가 받는 ISO 형식(2026-09-29)으로 들고 있다가 그대로 보낸다
   const [date, setDate] = useState(isFestivalDate(initialDate) ? initialDate : DEFAULT_FESTIVAL_DATE)
   const [title, setTitle] = useState(initialTitle)
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(initialImageUrl ?? '')
+  // 사진은 고른 즉시 업로드해서 URL을 확보한다 (등록/수정 요청에는 URL만 담긴다)
+  const [imageUrl, setImageUrl] = useState(initialImageUrl ?? '')
+  const [isUploading, setIsUploading] = useState(false)
+  // 업로드가 끝나기 전까지 보여줄 로컬 미리보기(objectURL)
+  const [localPreview, setLocalPreview] = useState('')
   const [keywords, setKeywords] = useState(initialKeywords)
   const [isAddingKeyword, setIsAddingKeyword] = useState(false)
   const [keywordDraft, setKeywordDraft] = useState('')
@@ -42,6 +54,9 @@ export default function LostFoundEditor({
   const titleRef = useRef(null)
   const fileInputRef = useRef(null)
 
+  // 업로드 중에는 로컬 미리보기, 끝나면 서버가 준 URL
+  const previewSrc = localPreview || imageUrl
+
   useLayoutEffect(() => {
     const el = titleRef.current
     if (!el) return
@@ -50,22 +65,41 @@ export default function LostFoundEditor({
   }, [title])
 
   useEffect(() => {
-    if (!imageFile) return
-    const url = URL.createObjectURL(imageFile)
-    setImagePreview(url)
-    return () => URL.revokeObjectURL(url)
-  }, [imageFile])
-
-  useEffect(() => {
     if (!toastMessage) return
     const timer = setTimeout(() => setToastMessage(''), TOAST_DURATION)
     return () => clearTimeout(timer)
   }, [toastMessage])
 
-  const handleFileChange = (e) => {
+  // 고른 사진을 바로 업로드해서 URL만 들고 있는다 (413/415는 토스트로 안내)
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0]
-    if (file) setImageFile(file)
     e.target.value = ''
+    if (!file || isUploading) return
+
+    if (!IMAGE_EXTENSION_PATTERN.test(file.name)) {
+      setToastMessage(IMAGE_TYPE_MESSAGE)
+      return
+    }
+    if (file.size > IMAGE_MAX_BYTES) {
+      setToastMessage(IMAGE_TOO_LARGE_MESSAGE)
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(file)
+    setLocalPreview(previewUrl)
+    setIsUploading(true)
+    try {
+      const res = await uploadAdminLostItemImage(file)
+      setImageUrl(res.data?.data?.image_url ?? '')
+    } catch (err) {
+      const data = err.response?.data
+      setToastMessage(data?.errors?.file ?? data?.message ?? '이미지 업로드에 실패했습니다.')
+    } finally {
+      setIsUploading(false)
+      // 업로드 결과(성공: 받은 URL / 실패: 직전 이미지)로 미리보기를 되돌린다
+      setLocalPreview('')
+      URL.revokeObjectURL(previewUrl)
+    }
   }
 
   // "#"은 저장하지 않고, 중복은 추가 단계에서 걸러서 tags 배열 순서를 그대로 sort_order로 쓸 수 있게 한다
@@ -92,6 +126,11 @@ export default function LostFoundEditor({
   // onSubmit이 실패 메시지(문자열)를 돌려주면 토스트로 띄운다 (서버 400의 errors/message)
   const handleSubmit = async () => {
     if (isSubmitting) return
+    // 업로드 중에 저장하면 사진이 빠진 채로 저장되므로 끝날 때까지 막는다
+    if (isUploading) {
+      setToastMessage(IMAGE_UPLOADING_MESSAGE)
+      return
+    }
 
     // 키워드 입력 중에 저장을 누르면 blur 커밋이 아직 반영 전이므로 작성 중인 값도 포함한다
     const draft = normalizeKeyword(keywordDraft)
@@ -111,7 +150,8 @@ export default function LostFoundEditor({
         date,
         title: trimmedTitle,
         keywords: finalKeywords,
-        imageFile,
+        // 화면은 사진 1장 기준이라 URL도 1개 — image_urls 배열로 그대로 전달된다
+        imageUrls: imageUrl ? [imageUrl] : [],
       })
       if (failureMessage) setToastMessage(failureMessage)
     } finally {
@@ -155,12 +195,21 @@ export default function LostFoundEditor({
         </S.TitleRow>
 
         <S.ImageArea>
-          {imagePreview && <S.Image src={imagePreview} alt="" />}
-          <S.ImageButton type="button" onClick={() => fileInputRef.current?.click()}>
-            {imagePreview ? '사진 수정' : '사진 등록'}
+          {previewSrc && <S.Image src={previewSrc} alt="" />}
+          <S.ImageButton
+            type="button"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {isUploading ? '업로드 중...' : previewSrc ? '사진 수정' : '사진 등록'}
           </S.ImageButton>
         </S.ImageArea>
-        <S.HiddenFileInput ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} />
+        <S.HiddenFileInput
+          ref={fileInputRef}
+          type="file"
+          accept={IMAGE_ACCEPT}
+          onChange={handleFileChange}
+        />
 
         <S.KeywordSection>
           <S.KeywordList>

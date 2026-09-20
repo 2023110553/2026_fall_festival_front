@@ -18,10 +18,10 @@ export default function AdminLostFoundCreatePage() {
   const [searchParams] = useSearchParams()
 
   // 실패 시 에디터가 토스트로 띄울 메시지를 돌려준다 (성공하면 목록으로)
-  const handleCreate = async ({ date, title, keywords }) => {
+  const handleCreate = async ({ date, title, keywords, imageUrls }) => {
     try {
-      // TODO: 이미지 업로드 API 명세 확정 후 imageFile을 올려서 받은 URL을 imageUrls로 전달
-      await createAdminLostItem({ title, foundDate: date, tags: keywords })
+      // imageUrls는 에디터에서 사진을 고를 때 이미 업로드가 끝난 URL
+      await createAdminLostItem({ title, foundDate: date, tags: keywords, imageUrls })
       navigate(LIST_PATH)
     } catch (error) {
       return toErrorMessage(error)

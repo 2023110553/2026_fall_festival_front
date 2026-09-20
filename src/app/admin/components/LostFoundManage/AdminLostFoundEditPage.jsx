@@ -52,12 +52,18 @@ export default function AdminLostFoundEditPage() {
   }, [itemId])
 
   // 이미지/태그는 replace-all이라 화면의 최종 배열을 그대로 보낸다
-  const handleSave = async ({ date, title, keywords }) => {
+  const handleSave = async ({ date, title, keywords, imageUrls }) => {
     try {
-      // TODO: 이미지 업로드 API 명세 확정 후 imageFile 업로드 결과를 imageUrls로 전달.
-      // 지금은 기존 이미지 URL을 그대로 다시 보내서 replace-all에 기존 사진이 지워지지 않게만 한다
-      const imageUrls = sortBySortOrder(item.images).map((image) => image.image_url)
-      await updateAdminLostItem(itemId, { title, foundDate: date, tags: keywords, imageUrls })
+      // 에디터는 사진 1장만 다루므로, 사진을 바꾸지 않았다면 기존 목록을 그대로 다시 보낸다
+      // (2장 이상 등록된 항목의 나머지 사진이 replace-all로 지워지지 않게)
+      const originalUrls = sortBySortOrder(item.images).map((image) => image.image_url)
+      const isImageUnchanged = imageUrls[0] === originalUrls[0]
+      await updateAdminLostItem(itemId, {
+        title,
+        foundDate: date,
+        tags: keywords,
+        imageUrls: isImageUnchanged ? originalUrls : imageUrls,
+      })
       navigate(detailPath)
     } catch (err) {
       return toErrorMessage(err)
