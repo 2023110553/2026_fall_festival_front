@@ -5,7 +5,7 @@ import performanceThumbnail from '../../performance/assets/performance-thumbnail
 
 import {
   MOCK_NOW_RESPONSE,
-} from '../../performance/mocks/performanceMock'develop
+} from '../../performance/mocks/performanceMock'
 
 import formatTime from '../utils/formatTime'
 
@@ -97,15 +97,8 @@ export default function NowPlayingCards() {
             navigate('/performance')
           }
         >
-        <S.MoreLink
-          type="button"
-          onClick={() =>
-            navigate('/performance')
-          }
-        >
           전체 일정 보기
           <ChevronRightIcon />
-        </S.MoreLink>
         </S.MoreLink>
       </S.Header>
 
