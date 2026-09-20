@@ -21,9 +21,14 @@ export const Card = styled.div`
 export const Thumbnail = styled.img`
     width: 66px;
     height: 66px;
+    flex-shrink: 0;
+    object-fit: cover;
     border-radius: 8px;
 `
 export const Info = styled.div`
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
     display: flex;
     flex-direction: column;
     
@@ -55,11 +60,40 @@ export const Location = styled.span`
     color: #9F9C99;
 `
 export const LanternWrapper = styled.div`
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 5px;
     margin-left: auto;
+`
+export const CollabBadge = styled.span`
+    gap: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 5px;
+    border-radius: 4px;
+    background: #DC7054;
+    color: #FDFDFD;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+
+    img {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+        object-fit: contain;
+    }
+`
+
+export const Directions = styled.span`
+    color: #9F9C99;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
 `
 export const LanternImg = styled.img`
     width: 14px;

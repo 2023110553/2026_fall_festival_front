@@ -95,23 +95,6 @@
           }
         },
         {
-          "booth_id": 9,
-          "name": "29일 주간 화장실 1번",
-          "subtitle": "명진관 1층",
-          "place_type": "FACILITY",
-          "category": "TOILET",
-          "location_detail": "명진관 1층 동쪽 출입구",
-          "zone": "팔정도",
-          "map_x": 110,
-          "map_y": 95,
-          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
-          "lantern_count": 0,
-          "operation": {
-            "open_at": "11:00",
-            "close_at": "16:30"
-          }
-        },
-        {
           "booth_id": 8,
           "name": "29일 주간 동빛/에코코 3번",
           "subtitle": "환경 캠페인 운영팀",
@@ -121,6 +104,23 @@
           "zone": "만해광장",
           "map_x": 195,
           "map_y": 120,
+          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+          "lantern_count": 0,
+          "operation": {
+            "open_at": "11:00",
+            "close_at": "16:30"
+          }
+        },
+        {
+          "booth_id": 9,
+          "name": "29일 주간 화장실 1번",
+          "subtitle": "명진관 1층",
+          "place_type": "FACILITY",
+          "category": "TOILET",
+          "location_detail": "명진관 1층 동쪽 출입구",
+          "zone": "팔정도",
+          "map_x": 110,
+          "map_y": 95,
           "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
           "lantern_count": 0,
           "operation": {
@@ -176,7 +176,7 @@
           }
         },
         {
-          "booth_id": 5,
+          "booth_id": 15,
           "name": "29일 야간 협업 1번",
           "subtitle": "사진 동아리 협업 부스",
           "place_type": "BOOTH",
@@ -210,7 +210,7 @@
           }
         },
         {
-          "booth_id": 7,
+          "booth_id": 16,
           "name": "29일 야간 동빛/에코코 1번",
           "subtitle": "축제 운영위원회",
           "place_type": "BOOTH",
@@ -227,7 +227,7 @@
           }
         },
         {
-          "booth_id": 3,
+          "booth_id": 17,
           "name": "29일 야간 주야간부스 1번",
           "subtitle": "문과대학 국어국문학과",
           "place_type": "BOOTH",
@@ -244,7 +244,7 @@
           }
         },
         {
-          "booth_id": 9,
+          "booth_id": 18,
           "name": "29일 야간 화장실 1번",
           "subtitle": "명진관 1층",
           "place_type": "FACILITY",
@@ -261,7 +261,7 @@
           }
         },
         {
-          "booth_id": 10,
+          "booth_id": 19,
           "name": "29일 야간 화장실 2번",
           "subtitle": "혜화관 1층",
           "place_type": "FACILITY",
@@ -291,7 +291,7 @@
       "total_count": 6,
       "booths": [
         {
-          "booth_id": 4,
+          "booth_id": 20,
           "name": "30일 주간 주야간부스 1번",
           "subtitle": "문과대학 문예창작학과",
           "place_type": "BOOTH",
@@ -308,7 +308,7 @@
           }
         },
         {
-          "booth_id": 3,
+          "booth_id": 21,
           "name": "30일 주간 주야간부스 2번",
           "subtitle": "문과대학 국어국문학과",
           "place_type": "BOOTH",
@@ -325,24 +325,7 @@
           }
         },
         {
-          "booth_id": 9,
-          "name": "30일 주간 화장실 1번",
-          "subtitle": "명진관 1층",
-          "place_type": "FACILITY",
-          "category": "TOILET",
-          "location_detail": "명진관 1층 동쪽 출입구",
-          "zone": "팔정도",
-          "map_x": 110,
-          "map_y": 95,
-          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
-          "lantern_count": 0,
-          "operation": {
-            "open_at": "11:00",
-            "close_at": "16:30"
-          }
-        },
-        {
-          "booth_id": 8,
+          "booth_id": 23,
           "name": "30일 주간 동빛/에코코 1번",
           "subtitle": "환경 캠페인 운영팀",
           "place_type": "BOOTH",
@@ -376,7 +359,24 @@
           }
         },
         {
-          "booth_id": 10,
+          "booth_id": 22,
+          "name": "30일 주간 화장실 1번",
+          "subtitle": "명진관 1층",
+          "place_type": "FACILITY",
+          "category": "TOILET",
+          "location_detail": "명진관 1층 동쪽 출입구",
+          "zone": "팔정도",
+          "map_x": 110,
+          "map_y": 95,
+          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+          "lantern_count": 0,
+          "operation": {
+            "open_at": "11:00",
+            "close_at": "16:30"
+          }
+        },
+        {
+          "booth_id": 24,
           "name": "30일 주간 화장실 2번",
           "subtitle": "혜화관 1층",
           "place_type": "FACILITY",
@@ -406,7 +406,7 @@
       "total_count": 8,
       "booths": [
         {
-          "booth_id": 1,
+          "booth_id": 25,
           "name": "30일 야간 주류 1번",
           "subtitle": "사회과학대학 광고홍보학과",
           "place_type": "BOOTH",
@@ -423,7 +423,7 @@
           }
         },
         {
-          "booth_id": 2,
+          "booth_id": 26,
           "name": "30일 야간 주류 2번",
           "subtitle": "경영대학 경영학과",
           "place_type": "BOOTH",
@@ -440,7 +440,7 @@
           }
         },
         {
-          "booth_id": 7,
+          "booth_id": 27,
           "name": "30일 야간 동빛/에코코 1번",
           "subtitle": "축제 운영위원회",
           "place_type": "BOOTH",
@@ -457,7 +457,7 @@
           }
         },
         {
-          "booth_id": 4,
+          "booth_id": 28,
           "name": "30일 야간 주야간부스 1번",
           "subtitle": "문과대학 문예창작학과",
           "place_type": "BOOTH",
@@ -491,24 +491,7 @@
           }
         },
         {
-          "booth_id": 9,
-          "name": "30일 야간 화장실 1번",
-          "subtitle": "명진관 1층",
-          "place_type": "FACILITY",
-          "category": "TOILET",
-          "location_detail": "명진관 1층 동쪽 출입구",
-          "zone": "팔정도",
-          "map_x": 110,
-          "map_y": 95,
-          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
-          "lantern_count": 0,
-          "operation": {
-            "open_at": "17:30",
-            "close_at": "22:00"
-          }
-        },
-        {
-          "booth_id": 6,
+          "booth_id": 30,
           "name": "30일 야간 협업 1번",
           "subtitle": "학생회 협업 부스",
           "place_type": "BOOTH",
@@ -525,7 +508,24 @@
           }
         },
         {
-          "booth_id": 10,
+          "booth_id": 29,
+          "name": "30일 야간 화장실 1번",
+          "subtitle": "명진관 1층",
+          "place_type": "FACILITY",
+          "category": "TOILET",
+          "location_detail": "명진관 1층 동쪽 출입구",
+          "zone": "팔정도",
+          "map_x": 110,
+          "map_y": 95,
+          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+          "lantern_count": 0,
+          "operation": {
+            "open_at": "17:30",
+            "close_at": "22:00"
+          }
+        },
+        {
+          "booth_id": 31,
           "name": "30일 야간 화장실 2번",
           "subtitle": "혜화관 1층",
           "place_type": "FACILITY",
@@ -555,7 +555,7 @@
       "total_count": 10,
       "booths": [
         {
-          "booth_id": 14,
+          "booth_id": 32,
           "name": "1일 주간 동빛/에코코 1번",
           "subtitle": "환경 동아리와 학생회 공동 운영",
           "place_type": "BOOTH",
@@ -572,7 +572,7 @@
           }
         },
         {
-          "booth_id": 5,
+          "booth_id": 33,
           "name": "1일 주간 협업 1번",
           "subtitle": "사진 동아리 협업 부스",
           "place_type": "BOOTH",
@@ -589,7 +589,7 @@
           }
         },
         {
-          "booth_id": 7,
+          "booth_id": 34,
           "name": "1일 주간 동빛/에코코 2번",
           "subtitle": "축제 운영위원회",
           "place_type": "BOOTH",
@@ -623,7 +623,7 @@
           }
         },
         {
-          "booth_id": 4,
+          "booth_id": 35,
           "name": "1일 주간 주야간부스 1번",
           "subtitle": "문과대학 문예창작학과",
           "place_type": "BOOTH",
@@ -640,7 +640,7 @@
           }
         },
         {
-          "booth_id": 3,
+          "booth_id": 36,
           "name": "1일 주간 주야간부스 2번",
           "subtitle": "문과대학 국어국문학과",
           "place_type": "BOOTH",
@@ -657,24 +657,7 @@
           }
         },
         {
-          "booth_id": 9,
-          "name": "1일 주간 화장실 1번",
-          "subtitle": "명진관 1층",
-          "place_type": "FACILITY",
-          "category": "TOILET",
-          "location_detail": "명진관 1층 동쪽 출입구",
-          "zone": "팔정도",
-          "map_x": 110,
-          "map_y": 95,
-          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
-          "lantern_count": 0,
-          "operation": {
-            "open_at": "11:00",
-            "close_at": "16:30"
-          }
-        },
-        {
-          "booth_id": 8,
+          "booth_id": 38,
           "name": "1일 주간 동빛/에코코 3번",
           "subtitle": "환경 캠페인 운영팀",
           "place_type": "BOOTH",
@@ -691,7 +674,7 @@
           }
         },
         {
-          "booth_id": 6,
+          "booth_id": 39,
           "name": "1일 주간 협업 3번",
           "subtitle": "학생회 협업 부스",
           "place_type": "BOOTH",
@@ -708,7 +691,24 @@
           }
         },
         {
-          "booth_id": 10,
+          "booth_id": 37,
+          "name": "1일 주간 화장실 1번",
+          "subtitle": "명진관 1층",
+          "place_type": "FACILITY",
+          "category": "TOILET",
+          "location_detail": "명진관 1층 동쪽 출입구",
+          "zone": "팔정도",
+          "map_x": 110,
+          "map_y": 95,
+          "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+          "lantern_count": 0,
+          "operation": {
+            "open_at": "11:00",
+            "close_at": "16:30"
+          }
+        },
+        {
+          "booth_id": 40,
           "name": "1일 주간 화장실 2번",
           "subtitle": "혜화관 1층",
           "place_type": "FACILITY",
@@ -755,7 +755,7 @@
           }
         },
         {
-          "booth_id": 1,
+          "booth_id": 41,
           "name": "1일 야간 주류 2번",
           "subtitle": "사회과학대학 광고홍보학과",
           "place_type": "BOOTH",
@@ -772,7 +772,7 @@
           }
         },
         {
-          "booth_id": 2,
+          "booth_id": 42,
           "name": "1일 야간 주류 3번",
           "subtitle": "경영대학 경영학과",
           "place_type": "BOOTH",
@@ -789,7 +789,7 @@
           }
         },
         {
-          "booth_id": 7,
+          "booth_id": 43,
           "name": "1일 야간 동빛/에코코 1번",
           "subtitle": "축제 운영위원회",
           "place_type": "BOOTH",
@@ -806,7 +806,7 @@
           }
         },
         {
-          "booth_id": 4,
+          "booth_id": 44,
           "name": "1일 야간 주야간부스 1번",
           "subtitle": "문과대학 문예창작학과",
           "place_type": "BOOTH",
@@ -823,7 +823,7 @@
           }
         },
         {
-          "booth_id": 3,
+          "booth_id": 45,
           "name": "1일 야간 주야간부스 2번",
           "subtitle": "문과대학 국어국문학과",
           "place_type": "BOOTH",
@@ -840,7 +840,7 @@
           }
         },
         {
-          "booth_id": 13,
+          "booth_id": 46,
           "name": "1일 야간 주야간부스 3번",
           "subtitle": "문과대학 사학과",
           "place_type": "BOOTH",
@@ -857,7 +857,7 @@
           }
         },
         {
-          "booth_id": 9,
+          "booth_id": 47,
           "name": "1일 야간 화장실 1번",
           "subtitle": "명진관 1층",
           "place_type": "FACILITY",
@@ -874,7 +874,7 @@
           }
         },
         {
-          "booth_id": 10,
+          "booth_id": 48,
           "name": "1일 야간 화장실 2번",
           "subtitle": "혜화관 1층",
           "place_type": "FACILITY",

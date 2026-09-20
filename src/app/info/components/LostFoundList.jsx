@@ -2,9 +2,9 @@ import EmptyState from '../../../components/common/EmptyState'
 import * as S from './LostFoundList.styles'
 
 const DATES = [
-  { value: '9/29', label: '9/29' },
-  { value: '9/30', label: '9/30' },
-  { value: '10/1', label: '10/1' },
+  { value: '2026-09-29', label: '9/29' },
+  { value: '2026-09-30', label: '9/30' },
+  { value: '2026-10-01', label: '10/1' },
 ]
 
 export default function LostFoundList({
@@ -42,26 +42,32 @@ export default function LostFoundList({
             </S.DateFilter>
           ))}
         </S.DateFilters>
-        <S.FilterHint>*습득된 날짜입니다.</S.FilterHint>
+        <S.FilterHint>*날짜는 취득날짜입니다.</S.FilterHint>
       </S.FilterRow>
 
       {items.length ? (
         <S.List>
           {items.map((item) => (
-            <S.Card key={item.id} type="button" onClick={() => onSelect(item.id)}>
+            <S.Card
+              key={item.lost_item_id}
+              type="button"
+              onClick={() => onSelect(item.lost_item_id)}
+            >
               <S.Body>
                 <S.TitleRow>
-                  <S.DateBadge>{item.date}</S.DateBadge>
+                  <S.DateBadge>
+                    {item.found_date.slice(5).replace(/^0/, '').replace('-', '/')}
+                  </S.DateBadge>
                   <strong>{item.title}</strong>
                 </S.TitleRow>
                 <S.Hashtags>
-                  {item.hashtags?.map((hashtag) => (
-                    <span key={hashtag}>{hashtag}</span>
+                  {item.tags?.map((tag) => (
+                    <span key={tag}>#{tag}</span>
                   ))}
                 </S.Hashtags>
               </S.Body>
               <S.Thumbnail>
-                {item.imageUrl ? <img src={item.imageUrl} alt="" /> : <span>사진</span>}
+                {item.thumbnail_url ? <img src={item.thumbnail_url} alt="" /> : <span>사진</span>}
               </S.Thumbnail>
             </S.Card>
           ))}

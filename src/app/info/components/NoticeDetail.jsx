@@ -10,19 +10,22 @@ export default function NoticeDetail({ notice, onBack }) {
     <S.Page>
       <InfoDetailHeader title="공지" onBack={onBack} />
 
-      <S.Article>
-        <S.TitleRow>
-          <Tag tone={notice.isUrgent ? 'danger' : 'default'}>
-            {notice.isUrgent ? '긴급 공지' : '일반 공지'}
-          </Tag>
-          <OverflowMarquee as="h3" variant="detail">
-            {notice.title}
-          </OverflowMarquee>
-        </S.TitleRow>
+      <S.TitleRow>
+        <Tag tone={notice.type === 'URGENT' ? 'danger' : 'default'} size="detail">
+          {notice.type === 'URGENT' ? '긴급 공지' : '일반 공지'}
+        </Tag>
+        <OverflowMarquee as="h3" variant="detail">
+          {notice.title}
+        </OverflowMarquee>
+      </S.TitleRow>
 
-        {notice.imageUrl && <S.Image src={notice.imageUrl} alt="" />}
+      <S.Article>
+        {notice.image_url && <S.Image src={notice.image_url} alt="" />}
         <S.Content>
-          <time>{notice.date}</time> {notice.content}
+          <time dateTime={notice.created_at}>
+            {notice.created_at.slice(5, 10).replace('-', '.')}
+          </time>{' '}
+          {notice.content}
         </S.Content>
       </S.Article>
     </S.Page>

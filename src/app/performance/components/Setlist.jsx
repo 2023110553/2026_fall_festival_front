@@ -1,16 +1,28 @@
-// 공연 상세(선택 시) — 출연진 소개, 공연순서(셋리스트) 표시
 import styled from 'styled-components'
 
-export default function Setlist({ songs = [] }) {
+export default function Setlist({
+  songs = [],
+}) {
   if (songs.length === 0) {
-    return <EmptyText>등록된 공연순서가 없어요.</EmptyText>
+    return (
+      <EmptyText>
+        등록된 공연 순서가 없습니다.
+      </EmptyText>
+    )
   }
+
+  const sortedSongs = [...songs].sort(
+    (a, b) =>
+      a.sort_order - b.sort_order
+  )
 
   return (
     <List>
-      {songs.map((song, index) => (
-        <Song key={`${song}-${index}`}>
-          {song}
+      {sortedSongs.map((song) => (
+        <Song key={song.song_id}>
+          {song.artist
+            ? `${song.title} - ${song.artist}`
+            : song.title}
         </Song>
       ))}
     </List>
@@ -18,42 +30,55 @@ export default function Setlist({ songs = [] }) {
 }
 
 const List = styled.ol`
-    width: 100%;
+  width: 100%;
 
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 
-    list-style: none;
+  list-style: none;
 `
 
 const Song = styled.li`
-    width: 100%;
+  width: 100%;
 
-    padding: 8px 12px;
+  padding: 8px 12px;
 
-    box-sizing: border-box;
+  box-sizing: border-box;
 
-    border-radius: 8px;
+  border-radius: 8px;
 
-    background: rgba(255, 255, 255, 0.70);
-    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
+  background: rgba(
+    255,
+    255,
+    255,
+    0.7
+  );
+
+  box-shadow:
+    0 0 2px 0
+    rgba(0, 0, 0, 0.15);
+
+  color: #100b0b;
 
     font-size: 14px;
     color: #100B0B;
     font-weight: 400;
     line-height: normal;
     font-family: var(--font-pretendard);
+
 `
 
 const EmptyText = styled.p`
-    margin: 0;
+  margin: 20px 0 0;
 
-    color: #747474;
+  color: #999999;
 
-    font-size: 12px;
-    font-weight: 400;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
 `

@@ -7,7 +7,10 @@ export const Header = styled.header`
 
   h2 {
     margin: 0;
-    font-size: 16px;
+    color: #100b0b;
+    font-size: ${({ $compact }) => ($compact ? '14px' : '18px')};
+    font-weight: ${({ $compact }) => ($compact ? 400 : 600)};
+    line-height: 1;
     text-align: center;
   }
 `
@@ -18,7 +21,7 @@ export const Back = styled.button`
   padding: 0;
   border: 0;
   background: transparent;
-  color: #111;
+  color: #100b0b;
   font-size: 30px;
   line-height: 20px;
 `

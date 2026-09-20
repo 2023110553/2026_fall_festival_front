@@ -20,12 +20,14 @@ export default function MapShell() {
   }
 
   return (
-    <div>
+    <S.Shell>
+      <S.HeaderArea>
       <TopHeader title="지도" appearance="light" />
       <S.DateArea data-sheet-collapse-ignore>
         <FestivalDateTabs value={selectedDate ?? '2026-09-29'} onChange={setSelectedDate} />
       </S.DateArea>
-      <div style={{ position: 'relative', height: '55vh' }}>
+      </S.HeaderArea>
+      <S.MapArea>
         <MapCanvas
           zoneId={zoneId}
           timeOfDay={timeOfDay}
@@ -33,9 +35,9 @@ export default function MapShell() {
           onBoothClick={handleBoothClick}
         />
         <PinLabel />
-      </div>
+      </S.MapArea>
       <PlaceSelector zoneId={zoneId} onSelectPlace={setZoneId} />
       <BottomSheet />
-    </div>
+    </S.Shell>
   )
 }
