@@ -8,7 +8,10 @@ import NoticeDetail from './components/NoticeDetail'
 import LostFoundList from './components/LostFoundList'
 import LostFoundDetail from './components/LostFoundDetail'
 import DevTeamList from './components/DevTeamList'
-import { COLLAB_MOCKS, LOST_FOUND_MOCKS, NOTICE_MOCKS } from './info.mock'
+import { COLLAB_MOCKS } from './info.mock'
+import { getLostItemDetailMock, getLostItemListMock } from './lostFound.mock'
+import { getNoticeDetailMock, NOTICE_LIST_MOCK_RESPONSE } from './notice.mock'
+import { DEV_TEAM_MOCKS } from './devTeam.mock'
 import * as S from './InfoPage.styles'
 
 const INFO_TABS = [
@@ -20,25 +23,29 @@ const INFO_TABS = [
 
 export default function InfoPage() {
   const [tab, setTab] = useState('collab')
-  const [lostDate, setLostDate] = useState('9/29')
+  const [lostDate, setLostDate] = useState('2026-09-29')
   const [keyword, setKeyword] = useState('')
   const [selection, setSelection] = useState(null)
+  const notices = NOTICE_LIST_MOCK_RESPONSE.data.items
 
   const lostItems = useMemo(() => {
-    const query = keyword.trim().toLowerCase()
-    return LOST_FOUND_MOCKS.filter((item) => {
-      const matchesDate = item.date === lostDate
-      const searchableText = `${item.title} ${item.location} ${item.hashtags.join(' ')}`.toLowerCase()
-      return matchesDate && (!query || searchableText.includes(query))
-    })
+    return getLostItemListMock({
+      found_date: lostDate,
+      keyword,
+    }).data.items
   }, [keyword, lostDate])
 
   const selectedItem = useMemo(() => {
     if (!selection) return null
+    if (selection.type === 'notice') {
+      return getNoticeDetailMock(selection.id).data ?? null
+    }
+    if (selection.type === 'lostfound') {
+      return getLostItemDetailMock(selection.id).data ?? null
+    }
+
     const collections = {
       collab: COLLAB_MOCKS,
-      notice: NOTICE_MOCKS,
-      lostfound: LOST_FOUND_MOCKS,
     }
     return collections[selection.type]?.find((item) => item.id === selection.id) ?? null
   }, [selection])
@@ -73,7 +80,7 @@ export default function InfoPage() {
                 <CollabList collabs={COLLAB_MOCKS} onSelect={(id) => openDetail('collab', id)} />
               )}
               {tab === 'notice' && (
-                <NoticeList notices={NOTICE_MOCKS} onSelect={(id) => openDetail('notice', id)} />
+                <NoticeList notices={notices} onSelect={(id) => openDetail('notice', id)} />
               )}
               {tab === 'lostfound' && (
                 <LostFoundList
@@ -85,7 +92,7 @@ export default function InfoPage() {
                   onSelect={(id) => openDetail('lostfound', id)}
                 />
               )}
-              {tab === 'developer' && <DevTeamList teams={[]} />}
+              {tab === 'developer' && <DevTeamList teams={DEV_TEAM_MOCKS} />}
             </>
           )}
         </S.Section>
