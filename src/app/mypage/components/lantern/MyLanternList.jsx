@@ -183,7 +183,7 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
                       {isAdmin ? '관리자에 의해 삭제된 댓글입니다.' : '삭제한 댓글입니다'}
                     </S.DeletedMessage>
                     <S.DeletedTime $isAdmin={isAdmin}>
-                      {formatLanternDateTime(l.createdAt)}
+                      {formatLanternDateTime(l.updatedAt ?? l.createdAt)}
                     </S.DeletedTime>
                   </S.DeletedCard>
                 )

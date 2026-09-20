@@ -1,116 +1,40 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { useAuth } from '../../../hooks/useAuth'
-import { FESTIVAL_DATES } from '../../../constants/festivalDates'
-import {
-  createLantern as createLanternRequest,
-  deleteLantern as deleteLanternRequest,
-  getLanterns as getLanternsRequest,
-  updateLantern as updateLanternRequest,
-} from '../../../api/lantern'
 
 const LanternContext = createContext(null)
 
-// 목록 조회 응답엔 festival_date가 없으므로, 축제 3일치를 날짜별로 따로 조회해서
-// 조회에 쓴 날짜를 그대로 festivalDate로 태깅한다 (MyLanternList의 DAY 1/2/3 탭 필터 기준).
-const fetchAllFestivalDaysLanterns = async () => {
-  const responses = await Promise.all(
-    FESTIVAL_DATES.map((date) => getLanternsRequest({ mine: true, date }))
-  )
-  return responses.flatMap((res, index) =>
-    (res.data.data.items ?? []).map((item) => ({
-      id: item.lantern_id,
-      boothId: item.booth_id,
-      nickname: item.nickname,
-      message: item.message,
-      content: item.message,
-      status: item.status ?? 'active',
-      festivalDate: FESTIVAL_DATES[index],
-      createdAt: item.created_at,
-    }))
-  )
-}
+const STORAGE_KEY = 'my_lanterns'
 
 // 등불 리스트를 앱 전역에서 공유하기 위한 컨텍스트.
 // AppLayout에 항상 떠 있는 LanternFlowPage(작성/목록 모달)와 MyPage(마이페이지 버튼)가
 // 같은 리스트를 보게 하려고 도입 — 각자 로컬 상태로 따로 들고 있으면 서로 다른 등불 목록이 보이는 문제가 생긴다.
 export function LanternProvider({ children }) {
-  const { isLoggedIn } = useAuth()
-  const [lanterns, setLanterns] = useState([])
+  // 마운트 시 1회만 localStorage에서 초기값을 읽어온다 (읽기용 별도 useEffect보다
+  // lazy initializer가 더 단순하고, "쓰기 이펙트가 초기값을 덮어쓰는" 순서 문제도 없다)
+  const [lanterns, setLanterns] = useState(() => {
+    const savedLanterns = localStorage.getItem(STORAGE_KEY)
+    return savedLanterns ? JSON.parse(savedLanterns) : []
+  })
 
-  // 로그인 상태일 때만 본인 등불을 조회 — 로그아웃 시엔 목록을 비운다
+  // lanterns가 바뀔 때마다(추가/삭제/수정 전부 setLanterns를 거치므로) 자동으로 저장
   useEffect(() => {
-    if (!isLoggedIn) {
-      setLanterns([])
-      return
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lanterns))
+  }, [lanterns])
 
-    let cancelled = false
-    fetchAllFestivalDaysLanterns()
-      .then((items) => {
-        if (!cancelled) setLanterns(items)
-      })
-      .catch(() => {
-        // 조회 실패 시엔 빈 목록 유지 — 등록 시점에 서버가 다시 검증해준다
-      })
+  const addLantern = (lantern) => setLanterns((prev) => [...prev, lantern])
 
-    return () => {
-      cancelled = true
-    }
-  }, [isLoggedIn])
+  const deleteLantern = (id) =>
+    setLanterns((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, isDeleted: true } : item))
+    )
 
-  // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
-  const addLantern = async ({ boothId, boothName, nickname, message }) => {
-    const res = await createLanternRequest({ boothId, nickname, message })
-    const data = res.data.data
-    const created = {
-      id: data.lantern_id,
-      boothId: data.booth_id,
-      // 목록/생성 응답 모두 부스명은 안 내려주므로, 드롭다운에서 고를 때 본 이름을 그대로 들고 다닌다
-      boothName,
-      nickname: data.nickname,
-      message: data.message,
-      content: data.message,
-      status: 'active',
-      festivalDate: data.festival_date,
-      createdAt: data.created_at,
-    }
-    setLanterns((prev) => [...prev, created])
-    return created
-  }
-
-  // soft delete라 목록에서 지우지 않고 status만 바꾼다 (마이페이지 회색 처리용)
-  const deleteLantern = async (id) => {
-    try {
-      await deleteLanternRequest(id)
-      setLanterns((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, status: 'deleted_by_user' } : item))
+  const editLantern = (id, { nickname, message }) =>
+    setLanterns((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, nickname, message, content: message, updatedAt: new Date().toISOString() }
+          : item
       )
-    } catch {
-      // 실패(이미 삭제됨 등) 시엔 다음 새로고침에서 서버 기준으로 다시 맞춰진다
-    }
-  }
-
-  const editLantern = async (id, { nickname, message }) => {
-    try {
-      const res = await updateLanternRequest(id, { nickname, message })
-      const data = res.data.data
-      setLanterns((prev) =>
-        prev.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                nickname: data.nickname,
-                message: data.message,
-                content: data.message,
-                updatedAt: data.updated_at,
-              }
-            : item
-        )
-      )
-    } catch {
-      // 실패 시 기존 값 유지
-    }
-  }
+    )
 
   // BottomNav(+버튼)/TopHeader(나의 등불) 등은 LanternFlowPage와 형제 컴포넌트라 그 로컬 상태를
   // 직접 못 건드린다. 대신 LanternFlowPage가 마운트 시 자신의 오픈 함수를 여기에 등록해두고,
