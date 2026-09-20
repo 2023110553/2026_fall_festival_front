@@ -25,6 +25,16 @@ export const getAdminLostItems = ({ foundDate, page = 0, size = 20 } = {}) =>
 //              tags: [{ tag_id, keyword, sort_order }], created_at, updated_at }
 export const getAdminLostItemDetail = (lostItemId) =>
   apiClient.get(`/api/lost-items/${lostItemId}/`)
-export const createAdminLostFound = (payload) => apiClient.post('/api/admin/lost-found', payload)
+
+// 등록 — 필수값은 title / found_date / tags(1개 이상)
+// tags, image_urls 모두 배열 순서가 sort_order가 되므로 순서를 바꾸지 않고 그대로 보낸다
+// 성공 201 → data: { lost_item_id }
+export const createAdminLostItem = ({ title, foundDate, tags, imageUrls }) =>
+  apiClient.post('/api/lost-items/', {
+    title,
+    found_date: foundDate,
+    tags,
+    ...(imageUrls?.length ? { image_urls: imageUrls } : {}),
+  })
 export const updateAdminLostFound = (itemId, payload) => apiClient.put(`/api/admin/lost-found/${itemId}`, payload)
 export const deleteAdminLostFound = (itemId) => apiClient.delete(`/api/admin/lost-found/${itemId}`)
