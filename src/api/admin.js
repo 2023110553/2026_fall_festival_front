@@ -19,6 +19,12 @@ export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/admin/noti
 // tags는 작성(sort_order) 순 상위 3개, thumbnail_url은 이미지 없으면 null
 export const getAdminLostItems = ({ foundDate, page = 0, size = 20 } = {}) =>
   apiClient.get('/api/lost-items/', { params: { found_date: foundDate, page, size } })
+
+// 상세 조회 — 목록과 달리 tags는 개수 제한 없이 전체, images/tags 모두 객체 배열(sort_order 포함)
+// 응답 data: { lost_item_id, title, found_date, images: [{ image_id, image_url, sort_order }],
+//              tags: [{ tag_id, keyword, sort_order }], created_at, updated_at }
+export const getAdminLostItemDetail = (lostItemId) =>
+  apiClient.get(`/api/lost-items/${lostItemId}/`)
 export const createAdminLostFound = (payload) => apiClient.post('/api/admin/lost-found', payload)
 export const updateAdminLostFound = (itemId, payload) => apiClient.put(`/api/admin/lost-found/${itemId}`, payload)
 export const deleteAdminLostFound = (itemId) => apiClient.delete(`/api/admin/lost-found/${itemId}`)
