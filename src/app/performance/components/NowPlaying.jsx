@@ -1,8 +1,11 @@
 import * as S from './NowPlaying.styles'
 import { formatTime, getProgress } from '../../../utils/time'
 
-
 export default function NowPlaying({ performance, now }) {
+    if (!now) {
+        return null
+    }
+
     if (!performance) {
         return (
             <S.Card>
@@ -12,7 +15,8 @@ export default function NowPlaying({ performance, now }) {
     }
 
     const { team_name, affiliation, start_at, end_at } = performance
-    const progress = getProgress(now.toISOString(), start_at, end_at)
+    const progress = getProgress(now, start_at, end_at)
+
     return (
         <S.Card>
             <S.Row>
