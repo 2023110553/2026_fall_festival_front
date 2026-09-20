@@ -103,7 +103,10 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
               aria-haspopup="listbox"
               aria-expanded={isDayDropdownOpen}
             >
-              DAY {selectedDayIndex + 1}
+              <S.DayBadgeGap>
+                <S.DayBadgeLabel>DAY</S.DayBadgeLabel>
+                <S.DayBadgeNumber>{selectedDayIndex + 1}</S.DayBadgeNumber>
+              </S.DayBadgeGap>
               <S.DayBadgeChevron
                 width="6"
                 height="4"

@@ -37,17 +37,36 @@ export const DayPicker = styled.div`
 
 export const DayBadge = styled.button`
     display: inline-flex;
+    justify-content: center;
     align-items: center;
+    min-width: 54px;
     gap: 3px;
     padding: 6px 7px 6px 8px;
     border: none;
-    border-radius: 20px;
+    border-radius: 999px;
     background-color: #dc7054;
     color: var(--aurora_white, #FDFDFD);
     font-family: Pretendard;
     font-size: 10px;
     font-weight: 500;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
     cursor: pointer;
+`
+
+export const DayBadgeGap = styled.div`
+    display: flex;
+    gap: 1.5px;
+`
+
+export const DayBadgeLabel = styled.span`
+    flex-shrink: 0;
+`
+
+export const DayBadgeNumber = styled.span`
+    display: inline-block;
+    min-width: 7px;
+    text-align: center;
+    flex-shrink: 0;
 `
 
 export const DayBadgeChevron = styled.svg`

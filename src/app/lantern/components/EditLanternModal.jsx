@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import * as S from './EditLanternModal.styles'
-import { formatLanternDateTime } from '../utils/formatLanternDateTime'
+import { formatLanternTime } from '../utils/formatLanternDateTime'
 
 export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
     const [nickname, setNickname] = useState('')
@@ -44,41 +44,43 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
 
     return (
         <S.Overlay onClick={onClose}>
-        <S.Container onClick={(e) => e.stopPropagation()}>
-            {lantern?.boothName && <S.BoothLabel>{lantern.boothName}</S.BoothLabel>}
+            <S.Container onClick={(e) => e.stopPropagation()}>
+                {lantern?.boothName && <S.BoothLabel>{lantern.boothName}</S.BoothLabel>}
 
-            <S.InputBox>
-            <S.NicknameInput
-                value={nickname}
-                onChange={handleNicknameChange}
-                placeholder="닉네임을 입력해주세요"
-                maxLength={5}
-            />
-            <S.CharCount>{nickname.length}/5</S.CharCount>
-            </S.InputBox>
+                <S.InputGroup>
+                    <S.NicknameBox>
+                        <S.NicknameInput
+                            value={nickname}
+                            onChange={handleNicknameChange}
+                            placeholder="닉네임을 입력해주세요"
+                            maxLength={5}
+                        />
+                        <S.CharCount>{nickname.length}/5</S.CharCount>
+                    </S.NicknameBox>
 
-            <S.InputBox>
-            <S.MessageTextArea
-                value={message}
-                onChange={handleMessageChange}
-                placeholder="응원의 한마디를 남겨주세요"
-                maxLength={30}
-            />
-            <S.CharCount>{message.length}/30</S.CharCount>
-            </S.InputBox>
+                    <S.MessageBox>
+                        <S.MessageTextArea
+                            value={message}
+                            onChange={handleMessageChange}
+                            placeholder="응원의 한마디를 남겨주세요"
+                            maxLength={30}
+                        />
+                        <S.CharCount>{message.length}/30</S.CharCount>
+                    </S.MessageBox>
+                </S.InputGroup>
 
-            <S.Footer>
-            <S.Time>{formatLanternDateTime(lantern?.createdAt)}</S.Time>
-            <S.ButtonGroup>
-                <S.CancelButton type="button" onClick={onClose}>
-                취소
-                </S.CancelButton>
-                <S.SubmitButton type="button" onClick={handleSubmit}>
-                완료
-                </S.SubmitButton>
-            </S.ButtonGroup>
-            </S.Footer>
-        </S.Container>
+                <S.Footer>
+                    <S.Time>{formatLanternTime(lantern?.createdAt)}</S.Time>
+                    <S.ButtonGroup>
+                        <S.CancelButton type="button" onClick={onClose}>
+                        취소
+                        </S.CancelButton>
+                        <S.SubmitButton type="button" onClick={handleSubmit}>
+                        완료
+                        </S.SubmitButton>
+                    </S.ButtonGroup>
+                </S.Footer>
+            </S.Container>
         </S.Overlay>
     )
 }
