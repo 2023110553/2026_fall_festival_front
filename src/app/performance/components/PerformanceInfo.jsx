@@ -1,6 +1,5 @@
-import formatTime from '../../home/utils/formatTime'
-
 import * as S from './PerformanceInfo.styles'
+import { formatTime } from '../../../utils/time'
 
 export default function PerformanceInfo({
     performance,

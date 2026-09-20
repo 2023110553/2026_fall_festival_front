@@ -21,7 +21,8 @@ export const Tab = styled.button`
   background: ${({ $selected }) => ($selected ? "#DC7054" : "#FDFDFD")};
   color: ${({ $selected }) => ($selected ? "#FDFDFD" : "#737373")};
   font-size: 14px;
-  font-weight: ${({ $selected }) => ($selected ? 600 : 400)};  line-height: 1;
+  font-weight: ${({ $selected }) => ($selected ? 600 : 400)};  
+  line-height: 1;
   &:focus-visible {
     outline: 2px solid ${({ theme }) => theme.color.primary};
     outline-offset: -2px;

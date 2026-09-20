@@ -7,10 +7,9 @@ import {
   MOCK_NOW_RESPONSE,
 } from '../../performance/mocks/performanceMock'
 
-import formatTime from '../utils/formatTime'
-
-import useServerTime from '../hooks/useServerTime'
+import useServerTime from '../../../hooks/useServerTime'
 import { getPerformanceProgress } from '../utils/getPerformanceProgress'
+import { formatTime } from '../../../utils/time'
 
 import * as S from './NowPlayingCards.styles'
 
