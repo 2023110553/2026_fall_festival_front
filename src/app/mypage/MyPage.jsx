@@ -15,7 +15,7 @@ import CouponResultModal from '../lantern/components/CouponResultModal'
 import VerifyCodeModal from '../lantern/components/VerifyCodeModal'
 import { useCreateLanternFlow } from '../lantern/hooks/useCreateLanternFlow'
 import { useLanterns } from '../lantern/context/LanternProvider'
-import { getTodayLanternCount } from '../lantern/utils/getCurrentFestivalDate'
+import { getTodayLanternCount, getTodayUsedBoothIds } from '../lantern/utils/getCurrentFestivalDate'
 import { setMockToday } from '../lantern/utils/getToday'
 import { FESTIVAL_DATES } from '../../constants/festivalDates'
 import { revealCoupon, markCouponUsed } from '../lantern/utils/couponRules'
@@ -26,6 +26,7 @@ export default function MyPage() {
   // 등불 리스트는 LanternProvider로 전역 공유 (나의 등불 목록 모달은 AppLayout에 항상 떠 있는 LanternFlowPage가 렌더링)
   const { lanterns, addLantern, requestLanternList } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
+  const usedBoothIds = getTodayUsedBoothIds(lanterns) // 오늘 이미 등불을 단 부스 — 드롭다운 재선택 방지
 
   // --- 모달 상태 관리 ---
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false) // 로그아웃 확인 모달
@@ -184,6 +185,7 @@ export default function MyPage() {
         onClose={closeCreateModal}
         onSubmitSuccess={handleCreateLantern}
         currentCount={todayLanternCount}
+        usedBoothIds={usedBoothIds}
       />
 
       <ScratchCouponModal

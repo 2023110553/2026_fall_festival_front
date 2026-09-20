@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import Modal from '../../../components/common/Modal'
+import AlertModal from '../../../components/common/AlertModal'
 import * as S from './CreateLanternModal.styles'
 import { BOOTH_CATEGORIES } from '../../../constants/categories'
+import { getLanternBoothOptions } from '../../../api/lantern'
 
 // map 도메인 PinLabel.jsx와 동일한 방식 — 부스 category를 지도 마커와 같은 색으로 매핑
 const DEFAULT_BOOTH_DOT_COLOR = '#DC7054';
@@ -26,6 +28,7 @@ export default function CreateLanternModal({
   onClose,
   onSubmitSuccess,
   boothList = [],
+  usedBoothIds = [], // 오늘 이미 등불을 단 부스 ID 목록 — 드롭다운에서 재선택 방지용
   currentCount = 0, // 현재 작성한 등불 개수
 }) {
   const [selectedBooth, setSelectedBooth] = useState('');
@@ -34,16 +37,45 @@ export default function CreateLanternModal({
   const [boothError, setBoothError] = useState(false);
   const [contentError, setContentError] = useState(false);
   const [isBoothOpen, setIsBoothOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [isDuplicateBoothModalOpen, setIsDuplicateBoothModalOpen] = useState(false);
+  const [isForbiddenWordModalOpen, setIsForbiddenWordModalOpen] = useState(false);
+  const [fetchedBoothList, setFetchedBoothList] = useState([]);
+  const [isBoothListLoading, setIsBoothListLoading] = useState(false);
   const boothFieldRef = useRef(null);
 
-  const resolvedBoothList = boothList.length > 0
-    ? boothList
-    // 일단 부스 더미데이터로 넣어놓음
-    : [
-        { id: 'booth1', name: '맛있는 타코야키 부스', category: 'ETC' },
-        { id: 'booth2', name: '컴퓨터공학과 체험 부스', category: 'COLLAB' },
-        { id: 'booth3', name: '중앙 동아리 밴드 공연 부스', category: 'ETC' },
-      ];
+  // 모달이 열릴 때마다 당일 운영 부스 목록을 새로 받아온다 (지도팀 소관 GET /api/booths/,
+  // 여긴 부스 선택 드롭다운 전용으로만 사용 — place_type=BOOTH만 등불을 달 수 있음)
+  useEffect(() => {
+    if (!isOpen || boothList.length > 0) return;
+
+    let cancelled = false;
+    setIsBoothListLoading(true);
+
+    getLanternBoothOptions()
+      .then((res) => {
+        if (cancelled) return;
+        const booths = res.data?.data?.booths ?? [];
+        setFetchedBoothList(
+          booths
+            .filter((booth) => booth.place_type === 'BOOTH')
+            .map((booth) => ({ id: booth.booth_id, name: booth.name, category: booth.category }))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setFetchedBoothList([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsBoothListLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, boothList.length]);
+
+  const resolvedBoothList = boothList.length > 0 ? boothList : fetchedBoothList;
 
   const selectedBoothName = resolvedBoothList.find((booth) => booth.id === selectedBooth)?.name ?? '';
 
@@ -69,6 +101,7 @@ export default function CreateLanternModal({
     setBoothError(false);
     setContentError(false);
     setIsBoothOpen(false);
+    setSubmitError('');
   };
 
   const handleClose = () => {
@@ -76,7 +109,13 @@ export default function CreateLanternModal({
     onClose();
   };
 
+  // 이미 등불을 단 부스를 다시 고르려고 하면 선택 자체를 막고 안내 모달을 띄운다
   const handleSelectBooth = (boothId) => {
+    if (usedBoothIds.includes(Number(boothId))) {
+      setIsBoothOpen(false);
+      setIsDuplicateBoothModalOpen(true);
+      return;
+    }
     setSelectedBooth(boothId);
     setBoothError(false);
     setIsBoothOpen(false);
@@ -87,8 +126,11 @@ export default function CreateLanternModal({
     if (e.target.value.trim().length > 0) setContentError(false);
   };
 
-  const handleSubmit = (e) => {
+  // onSubmitSuccess는 부모(useCreateLanternFlow)에서 실제 등록 API를 호출하고,
+  // 실패 시 { field, code, message } 형태로 reject해서 인라인 에러/안내 모달로 보여준다.
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     const isBoothEmpty = selectedBooth === '';
     const isContentEmpty = content.trim().length === 0;
@@ -99,24 +141,37 @@ export default function CreateLanternModal({
       return;
     }
 
-    // 닉네임 안 적은 경우 '익명의 코끼리' 적용
-    const finalNickname = nickname.trim() || '익명의 코끼리';
+    if (!onSubmitSuccess) return;
 
+    // 닉네임 기본값("익명의 코끼리")은 백엔드가 명시적으로 채워준다 — 프론트는 입력값 그대로(빈 값 포함)만 전달
     const lanternData = {
       boothId: selectedBooth,
-      nickname: finalNickname,
-      content: content.trim(),
+      nickname: nickname.trim(),
+      message: content.trim(),
     };
 
-    if (onSubmitSuccess) {
-      onSubmitSuccess(lanternData);
-    }
+    setIsSubmitting(true);
+    setSubmitError('');
 
-    resetForm();
-    onClose();
+    try {
+      await onSubmitSuccess(lanternData);
+      resetForm();
+      onClose();
+    } catch (err) {
+      if (err?.code === 'DUPLICATE_BOOTH_LANTERN') {
+        setIsDuplicateBoothModalOpen(true);
+      } else if (err?.code === 'FORBIDDEN_WORD_DETECTED') {
+        setIsForbiddenWordModalOpen(true);
+      } else {
+        setSubmitError(err?.message || '등불 등록에 실패했어요. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
+    <>
     <Modal isOpen={isOpen} onClose={handleClose} style={largeModalStyle}>
       <S.Form onSubmit={handleSubmit}>
         <S.TopWrapper>
@@ -140,7 +195,7 @@ export default function CreateLanternModal({
                   onClick={() => setIsBoothOpen((prev) => !prev)}
                   $hasValue={selectedBooth !== ''}
                 >
-                  <span>{selectedBoothName}</span>
+                  <span>{isBoothListLoading ? '부스 목록을 불러오는 중...' : selectedBoothName}</span>
                   <S.Chevron
                     $isOpen={isBoothOpen}
                     width="10"
@@ -215,6 +270,8 @@ export default function CreateLanternModal({
               제만 가능하며 수정은 불가해요.
             </S.NoticeText>
           </S.NoticeWrapper>
+
+          {submitError && <S.ErrorText>{submitError}</S.ErrorText>}
         </S.TopWrapper>
         {/* Footer 버튼 */}
         <S.ButtonRow>
@@ -222,11 +279,26 @@ export default function CreateLanternModal({
             닫기
           </S.CloseButton>
 
-          <S.SubmitButton type="submit">
-            등불 달기
+          <S.SubmitButton type="submit" disabled={isSubmitting}>
+            {isSubmitting ? '등록 중...' : '등불 달기'}
           </S.SubmitButton>
         </S.ButtonRow>
       </S.Form>
     </Modal>
+
+    <AlertModal
+      isOpen={isDuplicateBoothModalOpen}
+      onClose={() => setIsDuplicateBoothModalOpen(false)}
+      title="이미 등불을 단 부스에요."
+      subTitle="부스 선택을 변경해주세요."
+    />
+
+    <AlertModal
+      isOpen={isForbiddenWordModalOpen}
+      onClose={() => setIsForbiddenWordModalOpen(false)}
+      title="부적절한 표현이 포함되어 있어요"
+      subTitle="내용을 수정한 후 다시 등불을 등록해주세요"
+    />
+    </>
   );
 }

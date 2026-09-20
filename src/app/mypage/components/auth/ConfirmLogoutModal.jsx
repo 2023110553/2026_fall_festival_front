@@ -8,7 +8,7 @@ export default function ConfirmLogoutModal({ isOpen, onClose, onConfirm }) {
           로그아웃 하시겠습니까?
         </h2>
         <p style={{ fontSize: '12px', color: '#666', marginTop: '6px', margin: '6px 0 0 0' }}>
-          등불을 달려면 다시 로그인해야 합니다.
+          등불을 달려면 다시 로그인해야 해요.
         </p>
       </div>
 

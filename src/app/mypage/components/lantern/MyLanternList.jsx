@@ -141,8 +141,8 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
             <EmptyState>이 날짜에 남긴 등불이 없습니다.</EmptyState>
           ) : (
             dayLanterns.map((l) => {
-              const isAdmin = l.status === 'DELETED_BY_ADMIN'
-              const isUserDeleted = l.isDeleted || l.status === 'DELETED_BY_USER'
+              const isAdmin = l.status === 'deleted_by_admin'
+              const isUserDeleted = l.status === 'deleted_by_user'
 
               if (isAdmin || isUserDeleted) {
                 return (
