@@ -1,9 +1,6 @@
-import * as S from './PerformanceInfo.styles'
+import formatTime from '../../home/utils/formatTime'
 
-function formatTime(dateTime) {
-    return dateTime
-        ?.slice(11, 16)
-}
+import * as S from './PerformanceInfo.styles'
 
 export default function PerformanceInfo({
     performance,
@@ -14,20 +11,16 @@ export default function PerformanceInfo({
                 {performance.team_name}
             </S.Name>
 
-            <S.Category>
-                {performance.affiliation}
-            </S.Category>
+            {performance.affiliation && (
+                <S.Category>
+                    {performance.affiliation}
+                </S.Category>
+            )}
 
             <S.Time>
-                {formatTime(
-                    performance.start_at
-                )}
-
+                {formatTime(performance.start_at)}
                 {' - '}
-
-                {formatTime(
-                    performance.end_at
-                )}
+                {formatTime(performance.end_at)}
             </S.Time>
         </S.Container>
     )
