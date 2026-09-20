@@ -118,6 +118,6 @@ export const Hint = styled.p`
   margin: 12px 0 0;
   color: #000;
   font-size: 12px;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   font-weight: 500;
 `

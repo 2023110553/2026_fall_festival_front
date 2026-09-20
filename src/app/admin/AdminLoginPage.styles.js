@@ -35,7 +35,7 @@ export const Logo = styled.div`
 
 export const Title = styled.h1`
     color: #000;
-    font-family: Pretendard;
+    font-family: var(--font-pretendard);
     font-size: 16px;
     font-style: normal;
     font-weight: 500;

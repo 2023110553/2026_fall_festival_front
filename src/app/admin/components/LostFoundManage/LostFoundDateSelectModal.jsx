@@ -44,7 +44,7 @@ const DateButton = styled.button`
   font-size: 17px;
   font-weight: 500;
   cursor: pointer;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 
   & + & {
     margin-top: 12px;

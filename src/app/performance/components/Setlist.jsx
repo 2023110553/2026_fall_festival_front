@@ -64,10 +64,12 @@ const Song = styled.li`
 
   color: #100b0b;
 
-  font-family: Pretendard;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: normal;
+    font-size: 14px;
+    color: #100B0B;
+    font-weight: 400;
+    line-height: normal;
+    font-family: var(--font-pretendard);
+
 `
 
 const EmptyText = styled.p`

@@ -99,7 +99,7 @@ export const Toast = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   color: #000;
   font-size: 10px;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 
   svg {
     flex-shrink: 0;
@@ -147,5 +147,5 @@ export const TypeTag = styled.span`
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `

@@ -43,7 +43,7 @@ const TypeButton = styled.button`
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   & + & {
     margin-top: 12px;
   }
