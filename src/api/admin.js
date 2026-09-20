@@ -42,4 +42,7 @@ export const createAdminLostItem = (payload) =>
 // (보내지 않은 항목은 지워지므로 부분 전송하면 안 됨). 성공 200 → data는 상세 조회와 같은 형태
 export const updateAdminLostItem = (lostItemId, payload) =>
   apiClient.put(`/api/lost-items/${lostItemId}/`, toLostItemBody(payload))
-export const deleteAdminLostFound = (itemId) => apiClient.delete(`/api/admin/lost-found/${itemId}`)
+
+// 삭제 — Soft Delete. 이미 삭제된 항목도 404로 온다
+export const deleteAdminLostItem = (lostItemId) =>
+  apiClient.delete(`/api/lost-items/${lostItemId}/`)

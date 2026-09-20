@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import * as S from './AdminLostFoundDetailPage.styles'
-import { getAdminLostItemDetail } from '../../../../api/admin'
+import { deleteAdminLostItem, getAdminLostItemDetail } from '../../../../api/admin'
 import { toDateLabel } from './lostFoundDates'
 import { sortBySortOrder } from './lostItemFields'
 import ConfirmDeleteModal from '../LanternManage/ConfirmDeleteModal'
@@ -11,6 +11,8 @@ export default function AdminLostFoundDetailPage() {
   const { itemId } = useParams()
   const navigate = useNavigate()
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   // GET /api/lost-items/{lost_item_id}/
   const [item, setItem] = useState(null)
@@ -46,10 +48,25 @@ export default function AdminLostFoundDetailPage() {
 
   const goToList = () => navigate('/admin/lost-found')
 
-  const handleDeleteConfirm = () => {
-    console.log('delete lost-found', itemId)
-    setIsDeleteOpen(false)
-    goToList()
+  const handleDeleteConfirm = async () => {
+    if (isDeleting) return
+    setIsDeleting(true)
+    setDeleteError('')
+    try {
+      await deleteAdminLostItem(itemId)
+      setIsDeleteOpen(false)
+      goToList()
+    } catch (err) {
+      // 404는 이미 삭제된 경우도 포함 — 어차피 없는 항목이니 목록으로 보낸다
+      if (err.response?.status === 404) {
+        setIsDeleteOpen(false)
+        goToList()
+        return
+      }
+      setDeleteError(err.response?.data?.message ?? '삭제에 실패했습니다.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -107,7 +124,12 @@ export default function AdminLostFoundDetailPage() {
 
       <ConfirmDeleteModal
         isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        onClose={() => {
+          setIsDeleteOpen(false)
+          setDeleteError('')
+        }}
         onConfirm={handleDeleteConfirm}
       />
     </S.Page>
