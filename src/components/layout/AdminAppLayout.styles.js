@@ -19,7 +19,7 @@ export const Title = styled.h1`
     text-align: center;
     font-size: 16px;
     font-weight: 500;
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
 
 `
 
@@ -50,7 +50,7 @@ export const Tab = styled.button`
     background:${({ $active }) => ($active ? '#D8D8D8': 'transparent')};
     color: ${({ $active }) => ($active ? '#100B0B': '#737373')};
     cursor: pointer;
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 500;
 `
 

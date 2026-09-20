@@ -52,7 +52,9 @@ function AccountLanternProvider({ children, userId }) {
   const editLantern = (id, newContent) =>
     setLanterns((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, message: newContent, content: newContent } : item
+        item.id === id
+          ? { ...item, message: newContent, content: newContent, updatedAt: new Date().toISOString() }
+          : item
       )
     )
 

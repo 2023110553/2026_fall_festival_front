@@ -64,7 +64,7 @@ export function useBoothSearch(booths, searchTerm) {
   if (!searchTerm) return list
   const keyword = searchTerm.trim().toLowerCase()
   return list.filter((booth) =>
-    [booth.name, booth.department, booth.category].some((field) =>
+    [booth.name, booth.subtitle, booth.location_detail, booth.category].some((field) =>
       field?.toLowerCase().includes(keyword)
     )
   )

@@ -1,18 +1,25 @@
 import * as S from './PerformanceInfo.styles'
+import { formatTime } from '../../../utils/time'
 
-export default function PerformanceInfo({ performance }) {
+export default function PerformanceInfo({
+    performance,
+}) {
     return (
         <S.Container>
             <S.Name>
-                {performance.name}
+                {performance.team_name}
             </S.Name>
 
-            <S.Category>
-                {performance.category}
-            </S.Category>
+            {performance.affiliation && (
+                <S.Category>
+                    {performance.affiliation}
+                </S.Category>
+            )}
 
             <S.Time>
-                {performance.time}
+                {formatTime(performance.start_at)}
+                {' - '}
+                {formatTime(performance.end_at)}
             </S.Time>
         </S.Container>
     )

@@ -31,7 +31,7 @@ export const DateTag = styled.span`
   font-size: 10px;
   font-weight: 400;
   white-space: nowrap;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const ItemCard = styled.li`
@@ -68,7 +68,7 @@ export const Keyword = styled.span`
   font-size: 10px;
   white-space: nowrap; 
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const Thumbnail = styled.div`

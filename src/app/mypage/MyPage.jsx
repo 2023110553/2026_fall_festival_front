@@ -19,6 +19,7 @@ import { useLanterns } from '../lantern/context/LanternProvider'
 import { getTodayLanternCount } from '../lantern/utils/getCurrentFestivalDate'
 import { setMockToday } from '../lantern/utils/getToday'
 import { FESTIVAL_DATES } from '../../constants/festivalDates'
+import { revealCoupon, markCouponUsed } from '../lantern/utils/couponRules'
 
 export default function MyPage() {
   const { user } = useAuth()
@@ -35,6 +36,7 @@ export default function MyPage() {
 
   // 쿠폰 플로우 — null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
+  const [isNewCoupon, setIsNewCoupon] = useState(false)
 
   const {
     isCreateModalOpen,
@@ -52,10 +54,12 @@ export default function MyPage() {
       // [1번째 등불] ➔ 새 쿠폰 발급 + 스크래치 모달 오픈
       // TODO: 실제로는 서버가 등록 순서로 이미 확정한 당첨 결과를 응답에 포함해서 내려줌
       const isWin = Math.random() < 0.5
+      setIsNewCoupon(true)
       setCoupon({
         id: created.id,
         status: 'unscratched',
-        reward: isWin ? '야간부스 30%할인' : undefined,
+        reward: isWin ? '야간부스 30% 할인' : undefined,
+        usageDescription: isWin ? '사과대 광홍 부스에서 사용 가능' : undefined,
         isWin,
       })
       setCouponFlow('scratch')
@@ -64,18 +68,18 @@ export default function MyPage() {
 
   // 스크래치 완료 시 화면 전환 — 당첨 결과는 쿠폰 발급 시점에 이미 확정되어 있으므로 여기선 상태만 전환
   const handleScratchReveal = () => {
-    setCoupon((prev) => ({
-      ...prev,
-      status: prev.isWin ? 'win' : 'lose',
-    }))
+    if (coupon?.status !== 'unscratched') return
+    setCoupon(revealCoupon(coupon))
     setCouponFlow('result')
   }
 
   // 쿠폰 사용 코드 검증
   const handleVerifyCode = (code) =>
     new Promise((resolve, reject) => {
-      if (code === '1234') {
-        setCoupon((prev) => ({ ...prev, status: 'used' }))
+      if (coupon?.status !== 'win') {
+        reject(new Error('사용할 수 없는 쿠폰이에요.'))
+      } else if (code.trim() === '1234') {
+        setCoupon(markCouponUsed(coupon))
         setCouponFlow('result')
         resolve()
       } else {
@@ -85,10 +89,12 @@ export default function MyPage() {
 
   // TEMP: 당첨/꽝 스크래치 결과를 강제로 확인하기 위한 테스트용 — 확인 끝나면 제거
   const handleTestScratch = (isWin) => {
+    setIsNewCoupon(false)
     setCoupon({
       id: Date.now(),
       status: 'unscratched',
-      reward: isWin ? '야간부스 30%할인' : undefined,
+      reward: isWin ? '야간부스 30% 할인' : undefined,
+      usageDescription: isWin ? '사과대 광홍 부스에서 사용 가능' : undefined,
       isWin,
     })
     setCouponFlow('scratch')
@@ -101,6 +107,7 @@ export default function MyPage() {
       return
     }
     if (!coupon) return
+    setIsNewCoupon(false)
     setCouponFlow(coupon.status === 'unscratched' ? 'scratch' : 'result')
   }
 
@@ -195,6 +202,7 @@ export default function MyPage() {
         onClose={() => setCouponFlow(null)}
         onReveal={handleScratchReveal}
         coupon={coupon}
+        isNewCoupon={isNewCoupon}
       />
 
       <CouponResultModal

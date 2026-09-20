@@ -21,15 +21,20 @@ export const Card = styled.div`
 export const Thumbnail = styled.img`
     width: 66px;
     height: 66px;
+    flex-shrink: 0;
+    object-fit: cover;
     border-radius: 8px;
 `
 export const Info = styled.div`
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
     display: flex;
     flex-direction: column;
     
 `
 export const Title = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 16px;
     line-height: 100%;
@@ -37,7 +42,7 @@ export const Title = styled.span`
     padding-bottom: 5px;
 `
 export const Department = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 400;
     font-size: 12px;
     line-height: 100%;
@@ -47,7 +52,7 @@ export const Department = styled.span`
 ;
 `
 export const Location = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 12px;
     line-height: 100%;
@@ -55,18 +60,47 @@ export const Location = styled.span`
     color: #9F9C99;
 `
 export const LanternWrapper = styled.div`
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 5px;
     margin-left: auto;
 `
+export const CollabBadge = styled.span`
+    gap: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 5px;
+    border-radius: 4px;
+    background: #DC7054;
+    color: #FDFDFD;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+
+    img {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+        object-fit: contain;
+    }
+`
+
+export const Directions = styled.span`
+    color: #9F9C99;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+`
 export const LanternImg = styled.img`
     width: 14px;
     height: 20px;
 `
 export const LanternCount = styled.span`
-    font-family: 'Pretendard', sans-serif;
+    font-family: var(--font-pretendard);
     font-weight: 500;
     font-size: 12px;
     color: ${({ $hasMyLantern }) =>

@@ -6,16 +6,22 @@ export default function NoticeList({ notices = [], onSelect }) {
   return (
     <S.List>
       {notices.map((item) => (
-        <S.Card key={item.id} type="button" onClick={() => onSelect(item.id)}>
+        <S.Card
+          key={item.notice_id}
+          type="button"
+          onClick={() => onSelect(item.notice_id)}
+        >
           <S.TitleRow>
-            <Tag tone={item.isUrgent ? 'danger' : 'default'}>
-              {item.isUrgent ? '긴급 공지' : '일반 공지'}
+            <Tag tone={item.type === 'URGENT' ? 'danger' : 'default'}>
+              {item.type === 'URGENT' ? '긴급 공지' : '일반 공지'}
             </Tag>
             <OverflowMarquee>{item.title}</OverflowMarquee>
           </S.TitleRow>
           <S.Summary>
-            <time>{item.date}</time>
-            <span>{item.content}</span>
+            <time dateTime={item.created_at}>
+              {item.created_at.slice(5, 10).replace('-', '.')}
+            </time>
+            <span>{item.preview_content}</span>
           </S.Summary>
         </S.Card>
       ))}

@@ -128,7 +128,7 @@ export default function BoothRanking() {
           </NameGroup>
           <CountGroup>
             <LanternDot aria-hidden="true" />
-            <Count aria-hidden="true">{booth.lanternCount}</Count>
+            <Count aria-hidden="true">{booth.lanternCount}개</Count>
             <ArrowBox>
               <ArrowRightIcon />
             </ArrowBox>

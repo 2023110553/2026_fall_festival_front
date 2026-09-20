@@ -12,12 +12,12 @@ export const Title = styled.h2`
   color: #000;
   font-size: 22px;
   font-weight: 600;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const Description = styled.p`
   margin: 8px 0 0;
   color: #000;
   font-size: 11px;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `

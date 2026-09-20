@@ -3,14 +3,14 @@ import styled from 'styled-components'
 export const Wrapper = styled.div`
     position: absolute;
     left: 16px;
-    bottom: 300px;
+    bottom: 620px;
     width: 96px;
     z-index: 1;
 `
 
 export const Menu = styled.div`
     position: absolute;
-    bottom: calc(100% + 8px);
+    top: calc(100% + 13px);
     left: 0;
     width: 100%;
     padding: 8px 0;
@@ -47,13 +47,15 @@ export const PlaceButton = styled.button`
 `
 
 export const Toggle = styled.button`
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    justify-content: center;
+    gap: 4px;
     width: 100%;
     min-height: 40px;
-    padding: 10px 12px;
+    padding: 10px 30px 10px 12px;
+    overflow-wrap: anywhere;
     border: 0;
     border-radius: 12px;
     background: rgba(244, 244, 244, 0.9);
@@ -63,6 +65,16 @@ export const Toggle = styled.button`
     font-family: inherit;
     font-size: 14px;
     font-weight: 600;
+
+    > svg {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        pointer-events: none;
+    }
 
     &:focus-visible {
         outline: 2px solid #DC7054;
