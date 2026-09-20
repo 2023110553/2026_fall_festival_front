@@ -4,10 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import * as S from './AdminLostFoundDetailPage.styles'
 import { getAdminLostItemDetail } from '../../../../api/admin'
 import { toDateLabel } from './lostFoundDates'
+import { sortBySortOrder } from './lostItemFields'
 import ConfirmDeleteModal from '../LanternManage/ConfirmDeleteModal'
-
-// sort_order 기준 정렬 — 이미지 노출 순서, 키워드 칩 작성 순서
-const bySortOrder = (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
 
 export default function AdminLostFoundDetailPage() {
   const { itemId } = useParams()
@@ -78,7 +76,7 @@ export default function AdminLostFoundDetailPage() {
             {/* 이미지가 없으면 빈 영역 하나만 보여준다 (등록 화면과 같은 정사각형 틀) */}
             <S.ImageList>
               {item.images?.length ? (
-                [...item.images].sort(bySortOrder).map((image) => (
+                sortBySortOrder(item.images).map((image) => (
                   <S.ImageArea key={image.image_id}>
                     <S.Image src={image.image_url} alt="" />
                   </S.ImageArea>
@@ -90,7 +88,7 @@ export default function AdminLostFoundDetailPage() {
             <S.KeywordSection>
               <S.KeywordList>
                 {/* 상세는 키워드 칩 전체 노출 (목록은 상위 3개만) */}
-                {[...(item.tags ?? [])].sort(bySortOrder).map((tag) => (
+                {sortBySortOrder(item.tags).map((tag) => (
                   <S.Keyword key={tag.tag_id}>#{tag.keyword}</S.Keyword>
                 ))}
               </S.KeywordList>

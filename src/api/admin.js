@@ -26,15 +26,20 @@ export const getAdminLostItems = ({ foundDate, page = 0, size = 20 } = {}) =>
 export const getAdminLostItemDetail = (lostItemId) =>
   apiClient.get(`/api/lost-items/${lostItemId}/`)
 
-// 등록 — 필수값은 title / found_date / tags(1개 이상)
-// tags, image_urls 모두 배열 순서가 sort_order가 되므로 순서를 바꾸지 않고 그대로 보낸다
-// 성공 201 → data: { lost_item_id }
-export const createAdminLostItem = ({ title, foundDate, tags, imageUrls }) =>
-  apiClient.post('/api/lost-items/', {
-    title,
-    found_date: foundDate,
-    tags,
-    ...(imageUrls?.length ? { image_urls: imageUrls } : {}),
-  })
-export const updateAdminLostFound = (itemId, payload) => apiClient.put(`/api/admin/lost-found/${itemId}`, payload)
+// 등록/수정 공통 body — tags, image_urls 모두 배열 순서가 sort_order가 되므로 순서를 바꾸지 않는다
+const toLostItemBody = ({ title, foundDate, tags, imageUrls }) => ({
+  title,
+  found_date: foundDate,
+  tags,
+  ...(imageUrls?.length ? { image_urls: imageUrls } : {}),
+})
+
+// 등록 — 필수값은 title / found_date / tags(1개 이상). 성공 201 → data: { lost_item_id }
+export const createAdminLostItem = (payload) =>
+  apiClient.post('/api/lost-items/', toLostItemBody(payload))
+
+// 수정 — 등록과 동일 스키마. 이미지/태그는 replace-all이라 최종 배열을 그대로 보낸다
+// (보내지 않은 항목은 지워지므로 부분 전송하면 안 됨). 성공 200 → data는 상세 조회와 같은 형태
+export const updateAdminLostItem = (lostItemId, payload) =>
+  apiClient.put(`/api/lost-items/${lostItemId}/`, toLostItemBody(payload))
 export const deleteAdminLostFound = (itemId) => apiClient.delete(`/api/admin/lost-found/${itemId}`)

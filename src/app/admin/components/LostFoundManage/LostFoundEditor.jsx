@@ -18,6 +18,8 @@ export default function LostFoundEditor({
   initialTitle = '',
   initialImageUrl = '',
   initialKeywords = [],
+  // 수정 화면에서만 true — tags 빈 배열은 400이라 마지막 남은 칩의 X를 막는다
+  lockLastKeyword = false,
   submitLabel,
   continueLabel,
   leaveDescription,
@@ -168,6 +170,7 @@ export default function LostFoundEditor({
                 <S.KeywordRemoveButton
                   type="button"
                   aria-label={`${keyword} 키워드 삭제`}
+                  disabled={lockLastKeyword && keywords.length === 1}
                   onClick={() => setKeywords((prev) => prev.filter((k) => k !== keyword))}
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
