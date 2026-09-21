@@ -22,4 +22,4 @@ export const getZoneBooths = (zoneId, mapState) =>
 export const getFestivalSchedule = () => apiClient.get('/api/map/schedule')
 
 // 부스 상세 (바텀시트/장소상세 공용)
-export const getBoothDetail = (boothId) => apiClient.get(`/api/map/booths/${boothId}`)
+export const getBoothDetail = (boothId) => apiClient.get(`/api/booths/${boothId}/`)

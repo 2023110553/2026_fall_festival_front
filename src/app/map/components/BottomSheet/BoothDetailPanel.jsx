@@ -1,8 +1,8 @@
-﻿import { useMapContext } from '../../context/MapProvider'
+import { useMapContext } from '../../context/MapProvider'
 import LanternViewTab from '../LanternViewTab/LanternViewTab'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../../../hooks/useAuth'
-import mockDetails from '../../mocks/boothDetailResponses.json'
-import mockBoothImage from '../../../performance/assets/performance-thumbnail.png'
+import { getBoothDetail } from '../../../../api/map'
 import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import * as S from './BoothDetailPanel.styles'
@@ -11,24 +11,43 @@ import * as S from './BoothDetailPanel.styles'
 export default function BoothDetailPanel({ boothId, onBack }) {
   const { sheetTab, setSheetTab } = useMapContext()
   const { isLoggedIn } = useAuth()
-  // 3D 테스트 핀의 임시 ID를 상세 목데이터 ID로 연결한다.
-  const pinIds = {
-    'test-booth-1': 3,
-    'test-booth-2': 5,
-    'test-booth-3': 4,
-    'test-booth-4': 7,
-  }
-  const id = pinIds[boothId] ?? Number(boothId)
-  const response = mockDetails.find((item) => item.data.booth_id === id)
-  const booth = response
-    ? {
-        ...response.data,
-        has_my_lantern: isLoggedIn && response.data.has_my_lantern,
-        image_url: response.data.image_url?.startsWith('/src/')
-          ? mockBoothImage
-          : response.data.image_url,
-      }
-    : null
+  const [detail, setDetail] = useState(null)
+  const currentDetail = detail?.boothId === boothId && detail?.isLoggedIn === isLoggedIn
+    ? detail : null
+  const booth = currentDetail?.booth ?? null
+  const isLoading = currentDetail == null
+
+  useEffect(() => {
+    let ignore = false
+    getBoothDetail(boothId)
+      .then(({ data: response }) => {
+        if (ignore) return
+        if (!response?.success || response.data?.booth_id !== Number(boothId)) {
+          throw new Error('Invalid booth detail response')
+        }
+        setDetail({
+          boothId,
+          isLoggedIn,
+          booth: {
+            ...response.data,
+            operations: response.data.operations ?? [],
+            menus: response.data.menus ?? [],
+          },
+        })
+      })
+      .catch((error) => {
+        if (ignore) return
+        setDetail({
+          boothId,
+          isLoggedIn,
+          booth: null,
+          error: error.response?.status === 404
+            ? '장소를 찾을 수 없습니다.'
+            : '장소 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
+        })
+      })
+    return () => { ignore = true }
+  }, [boothId, isLoggedIn])
   const simple =
     booth &&
     (booth.place_type === 'FACILITY' ||
@@ -81,8 +100,10 @@ export default function BoothDetailPanel({ boothId, onBack }) {
           </S.Tabs>
         )}
       </S.Toolbar>
-      {!booth ? (
-        <S.Message role="alert">장소를 찾을 수 없습니다.</S.Message>
+      {isLoading ? (
+        <S.Message role="status">장소 정보를 불러오는 중이에요...</S.Message>
+      ) : !booth ? (
+        <S.Message role="alert">{currentDetail.error}</S.Message>
       ) : (
         <>
           <S.Header>
