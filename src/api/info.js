@@ -1,14 +1,30 @@
 import { apiClient } from './client'
 
-// 안내(ABOUT) 하위 4개 탭 — 협업 / 공지 / 분실물 / 개발진
-export const getCollabList = () => apiClient.get('/api/info/collabs')
-export const getCollabDetail = (collabId) => apiClient.get(`/api/info/collabs/${collabId}`)
+export const getNoticeList = (
+  { type, page = 0, size = 20 } = {},
+  { signal } = {},
+) =>
+  apiClient.get('/api/notices/', {
+    params: { type: type || undefined, page, size },
+    signal,
+  })
 
-export const getNoticeList = () => apiClient.get('/api/info/notices')
-export const getNoticeDetail = (noticeId) => apiClient.get(`/api/info/notices/${noticeId}`)
+export const getNoticeDetail = (noticeId, { signal } = {}) =>
+  apiClient.get(`/api/notices/${noticeId}/`, { signal })
 
-export const getLostFoundList = (date, keyword) =>
-  apiClient.get('/api/info/lost-found', { params: { date, keyword } })
-export const getLostFoundDetail = (itemId) => apiClient.get(`/api/info/lost-found/${itemId}`)
+export const getLostItemList = (
+  { foundDate, keyword, page = 0, size = 20 } = {},
+  { signal } = {},
+) =>
+  apiClient.get('/api/lost-items/', {
+    params: {
+      found_date: foundDate || undefined,
+      keyword: keyword?.trim() || undefined,
+      page,
+      size,
+    },
+    signal,
+  })
 
-export const getDevTeamList = () => apiClient.get('/api/info/dev-team')
+export const getLostItemDetail = (lostItemId, { signal } = {}) =>
+  apiClient.get(`/api/lost-items/${lostItemId}/`, { signal })
