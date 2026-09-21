@@ -1,4 +1,3 @@
-import { useMapContext } from '../../context/MapProvider'
 import LanternViewTab from '../LanternViewTab/LanternViewTab'
 import { useEffect, useState } from 'react'
 import { useLanterns } from '../../../lantern/context/LanternProvider'
@@ -9,8 +8,7 @@ import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import * as S from './BoothDetailPanel.styles'
 
 // 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
-export default function BoothDetailPanel({ boothId, onBack }) {
-  const { sheetTab, setSheetTab, selectedDate } = useMapContext()
+export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTab, selectedDate }) {
   const { setActiveBooth } = useLanterns()
   const { isLoggedIn } = useAuth()
   const [detail, setDetail] = useState(null)

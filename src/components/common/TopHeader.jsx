@@ -36,7 +36,6 @@ export default function TopHeader({
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
   const [logoutPending, setLogoutPending] = useState(false)
-  const [logoutError, setLogoutError] = useState('')
   const headerRef = useRef(null)
   const languageMenuId = useId()
   const profileMenuId = useId()
@@ -80,19 +79,15 @@ export default function TopHeader({
   }
   const openLogoutModal = () => {
     closeProfileMenu()
-    setLogoutError('')
     setIsLogoutOpen(true)
   }
 
   const handleLogout = async () => {
     if (logoutPending) return
     setLogoutPending(true)
-    setLogoutError('')
     try {
       await logoutAccount()
       setIsLogoutOpen(false)
-    } catch {
-      setLogoutError('로그아웃에 실패했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setLogoutPending(false)
     }
@@ -192,7 +187,6 @@ export default function TopHeader({
         onClose={() => setIsLogoutOpen(false)}
         onConfirm={handleLogout}
         pending={logoutPending}
-        error={logoutError}
       />
     </>
   )

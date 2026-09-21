@@ -41,17 +41,23 @@ export const NavItem = styled.button`
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9f9c99;
+  color: ${({ $active }) => ($active ? '#dc7054' : '#9f9c99')};
+  transition: color 0.2s ease;
 `
 
 export const Icon = styled.img`
   width: 22px;
   height: 22px;
   object-fit: contain;
+  filter: ${({ $active }) =>
+    $active
+      ? 'invert(53%) sepia(42%) saturate(1113%) hue-rotate(323deg) brightness(93%) contrast(84%)'
+      : 'none'};
+  transition: filter 0.2s ease;
 `
 
 export const Label = styled.span`
-  color: #9f9c99;
+  color: inherit;
   font-size: 12px;
   font-weight: 400;
   line-height: 1;
@@ -69,6 +75,7 @@ export const LanternItem = styled.button`
   padding: 0;
   border: 0;
   background: transparent;
+  color: #9f9c99;
   transform: translateX(-50%);
 `
 
