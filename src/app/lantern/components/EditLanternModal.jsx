@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import * as S from './EditLanternModal.styles'
 import { formatLanternTime } from '../utils/formatLanternDateTime'
 import AlertModal from '../../../components/common/AlertModal'
@@ -9,6 +9,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
     const [messageError, setMessageError] = useState(false)
     const [submitError, setSubmitError] = useState('')
     const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false)
+    // 버튼은 항상 눌리게 두되, 응답 오기 전 연타로 같은 요청이 중복 전송되는 것만 막는다
+    const isSubmittingRef = useRef(false)
 
     useEffect(() => {
         if (lantern) {
@@ -51,6 +53,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
         return
         }
         if (!onSubmit || !lantern) return
+        if (isSubmittingRef.current) return
+        isSubmittingRef.current = true
 
         setSubmitError('')
         try {
@@ -62,6 +66,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
         onClose()
         } catch (err) {
         setSubmitError(err?.response?.data?.message || '등불 수정에 실패했어요. 다시 시도해주세요.')
+        } finally {
+        isSubmittingRef.current = false
         }
     }
 

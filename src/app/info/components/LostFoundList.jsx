@@ -11,6 +11,8 @@ export default function LostFoundList({
   items = [],
   date,
   keyword,
+  isLoading = false,
+  error = '',
   onDateChange,
   onKeywordChange,
   onSelect,
@@ -45,7 +47,9 @@ export default function LostFoundList({
         <S.FilterHint>*날짜는 취득날짜입니다.</S.FilterHint>
       </S.FilterRow>
 
-      {items.length ? (
+      {isLoading && <EmptyState>분실물 목록을 불러오는 중...</EmptyState>}
+      {!isLoading && error && <EmptyState>{error}</EmptyState>}
+      {!isLoading && !error && items.length ? (
         <S.List>
           {items.map((item) => (
             <S.Card
@@ -72,9 +76,9 @@ export default function LostFoundList({
             </S.Card>
           ))}
         </S.List>
-      ) : (
+      ) : !isLoading && !error ? (
         <EmptyState>검색 결과가 없습니다.</EmptyState>
-      )}
+      ) : null}
     </S.Stack>
   )
 }

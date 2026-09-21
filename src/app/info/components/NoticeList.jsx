@@ -1,8 +1,13 @@
 import Tag from '../../../components/common/Tag'
+import EmptyState from '../../../components/common/EmptyState'
 import OverflowMarquee from './OverflowMarquee'
 import * as S from './NoticeList.styles'
 
 export default function NoticeList({ notices = [], onSelect }) {
+  if (notices.length === 0) {
+    return <EmptyState>등록된 공지사항이 없습니다.</EmptyState>
+  }
+
   return (
     <S.List>
       {notices.map((item) => (

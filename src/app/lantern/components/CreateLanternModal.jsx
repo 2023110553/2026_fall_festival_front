@@ -162,8 +162,10 @@ export default function CreateLanternModal({
     if (!onSubmitSuccess) return;
 
     // 닉네임 기본값("익명의 코끼리")은 백엔드가 명시적으로 채워준다 — 프론트는 입력값 그대로(빈 값 포함)만 전달
+    // boothName은 API로 보내지 않고, 카드에 바로 표시하기 위해 로컬에서만 같이 들고 다닌다
     const lanternData = {
       boothId: selectedBooth,
+      boothName: selectedBoothName,
       nickname: nickname.trim(),
       message: content.trim(),
     };
