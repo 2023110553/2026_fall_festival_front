@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { getCurrentFestivalDate } from '../utils/getCurrentFestivalDate'
 
 // 등불 "달기" 작성 플로우 전용 훅 (LanternFlowPage, MyPage 공용).
-// 등불 생성 자체(모달 상태, 3개 제한, 등불 객체 생성)
+// 등불 생성 자체(모달 상태, 3개 제한, 실제 등록 API 호출 + 에러 코드 분기)
 
 export function useCreateLanternFlow({ lanternCount, onCreated, onFirstLantern }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -17,27 +16,42 @@ export function useCreateLanternFlow({ lanternCount, onCreated, onFirstLantern }
     }
   }
 
-  const handleCreateLantern = (newLantern) => {
+  // onCreated(= LanternProvider의 addLantern)가 실제 등록 API를 호출한다.
+  // 실패 시 CreateLanternModal이 인라인 에러로 보여줄 수 있게 { field, message }를 던진다.
+  const handleCreateLantern = async (formData) => {
     const isFirstLantern = lanternCount === 0
-    const now = new Date()
-    const created = {
-      id: Date.now(),
-      boothName: newLantern.boothName,
-      // nickname은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback (LanternCard 등에서 처리)
-      nickname: newLantern.nickname,
-      message: newLantern.content,
-      content: newLantern.content,
-      createdAt: now.toISOString(),
-      festivalDate: getCurrentFestivalDate(), // 'YYYY-MM-DD' — 나의 등불 DAY 필터 기준
-    }
 
-    onCreated(created)
-    setIsCreateModalOpen(false)
+    try {
+      const created = await onCreated({
+        boothId: formData.boothId,
+        nickname: formData.nickname,
+        message: formData.message,
+      })
 
-    if (isFirstLantern) {
-      onFirstLantern?.(created)
-    } else {
-      setIsSuccessModalOpen(true)
+      setIsCreateModalOpen(false)
+
+      if (isFirstLantern) {
+        onFirstLantern?.(created)
+      } else {
+        setIsSuccessModalOpen(true)
+      }
+    } catch (err) {
+      const code = err?.response?.data?.code
+      const serverMessage = err?.response?.data?.message
+
+      // 로컬 카운트와 서버 상태가 어긋난 경우(새로고침 없이 다른 탭에서 등록 등) — 제한 안내로 대체
+      if (code === 'DAILY_LIMIT_EXCEEDED') {
+        setIsCreateModalOpen(false)
+        setIsLimitModalOpen(true)
+        return
+      }
+
+      if (code === 'BOOTH_NOT_FOUND' || code === 'DUPLICATE_BOOTH_LANTERN') {
+        throw { field: 'booth', code, message: serverMessage }
+      }
+
+      // FORBIDDEN_WORD_DETECTED, INVALID_REQUEST_PARAM 등은 한마디 입력 필드 에러로 표시
+      throw { field: 'message', code, message: serverMessage }
     }
   }
 
