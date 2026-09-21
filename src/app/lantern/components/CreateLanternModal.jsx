@@ -42,6 +42,7 @@ export default function CreateLanternModal({
   const [submitError, setSubmitError] = useState('');
   const [isDuplicateBoothModalOpen, setIsDuplicateBoothModalOpen] = useState(false);
   const [isForbiddenWordModalOpen, setIsForbiddenWordModalOpen] = useState(false);
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
   const [fetchedBoothList, setFetchedBoothList] = useState([]);
   const [isBoothListLoading, setIsBoothListLoading] = useState(false);
   const boothFieldRef = useRef(null);
@@ -118,6 +119,14 @@ export default function CreateLanternModal({
     onClose();
   };
 
+  // 빈 화면(오버레이) 또는 닫기 버튼 클릭 시 바로 닫지 않고 먼저 확인 모달을 띄운다
+  const requestClose = () => setIsLeaveConfirmOpen(true);
+
+  const confirmLeave = () => {
+    setIsLeaveConfirmOpen(false);
+    handleClose();
+  };
+
   // 이미 등불을 단 부스를 다시 고르려고 하면 선택 자체를 막고 안내 모달을 띄운다
   const handleSelectBooth = (boothId) => {
     if (usedBoothIds.includes(Number(boothId))) {
@@ -181,7 +190,7 @@ export default function CreateLanternModal({
 
   return (
     <>
-    <Modal isOpen={isOpen} onClose={handleClose} style={largeModalStyle}>
+    <Modal isOpen={isOpen} onClose={requestClose} style={largeModalStyle}>
       <S.Form onSubmit={handleSubmit}>
         <S.TopWrapper>
           {/* Header */}
@@ -286,7 +295,7 @@ export default function CreateLanternModal({
         </S.TopWrapper>
         {/* Footer 버튼 */}
         <S.ButtonRow>
-          <S.CloseButton type="button" onClick={handleClose}>
+          <S.CloseButton type="button" onClick={requestClose}>
             닫기
           </S.CloseButton>
 
@@ -309,6 +318,16 @@ export default function CreateLanternModal({
       onClose={() => setIsForbiddenWordModalOpen(false)}
       title="부적절한 표현이 포함되어 있어요"
       subTitle="내용을 수정한 후 다시 등불을 등록해주세요"
+    />
+
+    <AlertModal
+      isOpen={isLeaveConfirmOpen}
+      onClose={() => setIsLeaveConfirmOpen(false)}
+      title="작성을 그만둘까요?"
+      subTitle="지금 나가면 작성한 내용이 저장되지 않아요."
+      buttonText="취소"
+      onConfirm={confirmLeave}
+      confirmText="나가기"
     />
     </>
   );

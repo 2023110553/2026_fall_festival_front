@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import * as S from './EditLanternModal.styles'
 import { formatLanternTime } from '../utils/formatLanternDateTime'
+import AlertModal from '../../../components/common/AlertModal'
 
 export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
     const [nickname, setNickname] = useState('')
     const [message, setMessage] = useState('')
+    const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false)
 
     useEffect(() => {
         if (lantern) {
@@ -15,6 +17,12 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
     }, [lantern])
 
     if (!isOpen) return null
+
+    const requestClose = () => setIsLeaveConfirmOpen(true)
+    const confirmLeave = () => {
+        setIsLeaveConfirmOpen(false)
+        onClose()
+    }
 
     const handleNicknameChange = (e) => {
         const value = e.target.value
@@ -44,7 +52,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
     }
 
     return (
-        <S.Overlay onClick={onClose}>
+        <>
+        <S.Overlay onClick={requestClose}>
             <S.Container onClick={(e) => e.stopPropagation()}>
                 {lantern?.boothName && <S.BoothLabel>{lantern.boothName}</S.BoothLabel>}
 
@@ -73,7 +82,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
                 <S.Footer>
                     <S.Time>{formatLanternTime(lantern?.createdAt)}</S.Time>
                     <S.ButtonGroup>
-                        <S.CancelButton type="button" onClick={onClose}>
+                        <S.CancelButton type="button" onClick={requestClose}>
                         취소
                         </S.CancelButton>
                         <S.SubmitButton type="button" onClick={handleSubmit}>
@@ -83,5 +92,16 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
                 </S.Footer>
             </S.Container>
         </S.Overlay>
+
+        <AlertModal
+            isOpen={isLeaveConfirmOpen}
+            onClose={() => setIsLeaveConfirmOpen(false)}
+            title="작성을 그만둘까요?"
+            subTitle="지금 나가면 작성한 내용이 저장되지 않아요."
+            buttonText="취소"
+            onConfirm={confirmLeave}
+            confirmText="나가기"
+        />
+        </>
     )
 }
