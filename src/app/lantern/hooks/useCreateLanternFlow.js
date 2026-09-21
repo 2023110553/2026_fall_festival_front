@@ -19,18 +19,18 @@ export function useCreateLanternFlow({ lanternCount, onCreated, onFirstLantern }
   // onCreated(= LanternProvider의 addLantern)가 실제 등록 API를 호출한다.
   // 실패 시 CreateLanternModal이 인라인 에러로 보여줄 수 있게 { field, message }를 던진다.
   const handleCreateLantern = async (formData) => {
-    const isFirstLantern = lanternCount === 0
-
     try {
       const created = await onCreated({
         boothId: formData.boothId,
+        boothName: formData.boothName,
         nickname: formData.nickname,
         message: formData.message,
       })
 
       setIsCreateModalOpen(false)
 
-      if (isFirstLantern) {
+      // 오늘 첫 등불인지는 서버가 내려준 값을 그대로 따른다 (로컬 카운트 추측 금지)
+      if (created.isFirstToday) {
         onFirstLantern?.(created)
       } else {
         setIsSuccessModalOpen(true)
