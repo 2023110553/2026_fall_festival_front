@@ -1,4 +1,6 @@
 import BoothMarker from './BoothMarker'
+import BoothPin from './BoothPin'
+import { BOOTH_PIN_PREVIEW, BOOTH_PIN_PROPS } from './boothPinPreview'
 
 // 구역 부스 목록(JSON의 booths[]) → BoothMarker 배치.
 //
@@ -15,6 +17,14 @@ import BoothMarker from './BoothMarker'
 // 내려주기 시작하면 zoneN-booths.sample.json을 그 응답의 data.booths로 그대로 바꿔 끼우면
 // 끝난다(필드명이 이미 같아서 매핑 코드가 필요 없음).
 //
+// 2026-09-20: 부스 마커를 3D 핀(BoothPin)으로 교체 — 재원 요청("마커를 3D로, 구글맵 핀 느낌으로").
+// 이 컴포넌트가 "부스 한 동 = 천막(BoothMarker) + 마커(BoothPin)"를 같은 좌표에 나란히 놓는
+// 자리가 됐다. 둘을 합치지 않고 형제로 둔 이유는 BoothPin.jsx 상단 주석 참고(B안 합의 + 충돌 회피).
+// 백엔드 변동은 없다 — 핀이 쓰는 값(map_x/map_y/map_elevation/category/lantern_count/name/booth_id)이
+// 전부 이미 GET /api/booths/ 명세에 있는 필드라, 렌더 방식만 바뀌고 데이터 계약은 그대로다.
+// 기존 <Html> PinLabel은 3D 핀과 겹치므로 기본값에서는 끈다(BoothMarker의 showLabel=false).
+// ?marker=label / ?marker=both 로 되돌려 비교할 수 있다 — boothPinPreview.js 참고.
+//
 // booth 스키마(각 zoneN-booths.sample.json 상단 _comment 참고, 세호님 API 명세와 동일):
 //   - booth_id: BoothMarker key + onBoothClick(boothId)에 넘기는 값
 //   - map_x / map_y / map_elevation / rotation: Three.js 씬 좌표(m) — map_x=씬 x, map_y=씬 z,
@@ -27,16 +37,36 @@ import BoothMarker from './BoothMarker'
 //     (BoothMarker.jsx 19번 항목). MapProvider.boothBrightnessPreview가 MapCanvas → 씬 → 여기로 내려온다.
 //   - onBoothClick(boothId): 부스 클릭 콜백(MapShell이 바텀시트 열기로 연결)
 export default function ZoneBooths({ booths = [], brightnessLevel = null, onBoothClick }) {
-  return booths.map((booth) => (
-    <BoothMarker
-      key={booth.booth_id}
-      position={[booth.map_x, booth.map_elevation, booth.map_y]}
-      rotationY={(booth.rotation * Math.PI) / 180}
-      label={booth.name}
-      category={booth.category}
-      lanternCount={booth.lantern_count}
-      brightnessLevel={brightnessLevel}
-      onClick={() => onBoothClick?.(booth.booth_id)}
-    />
-  ))
+  const { showPin, showLabel } = BOOTH_PIN_PREVIEW
+
+  return booths.map((booth, index) => {
+    const position = [booth.map_x, booth.map_elevation, booth.map_y]
+    const handleClick = () => onBoothClick?.(booth.booth_id)
+
+    return (
+      <group key={booth.booth_id}>
+        <BoothMarker
+          position={position}
+          rotationY={(booth.rotation * Math.PI) / 180}
+          label={booth.name}
+          showLabel={showLabel}
+          category={booth.category}
+          lanternCount={booth.lantern_count}
+          brightnessLevel={brightnessLevel}
+          onClick={handleClick}
+        />
+        {showPin ? (
+          <BoothPin
+            position={position}
+            category={booth.category}
+            count={Number(booth.lantern_count) || 0}
+            // 부스마다 다른 위상을 줘야 핀들이 한 몸처럼 같이 출렁이지 않고 따로 논다
+            bobPhase={index * 0.7}
+            onClick={handleClick}
+            {...BOOTH_PIN_PROPS}
+          />
+        ) : null}
+      </group>
+    )
+  })
 }

@@ -94,6 +94,12 @@ const BaseButton = styled.button`
   font-weight: 500;
   font-family: var(--font-pretendard);
   cursor: pointer;
+
+  /* 삭제 요청 중 중복 클릭 방지 상태 */
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 `
 
 export const CloseButton = styled(BaseButton)`

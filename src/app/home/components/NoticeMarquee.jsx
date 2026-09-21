@@ -1,15 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 
-// 공지사항 — 긴급 공지 1순위, 일반 공지는 최신순으로 반복 롤링 (기능명세서 Notice 항목 참조했습니다)
-
-// TODO(API): isUrgent 우선 정렬
-const NOTICES = [
-  { id: 1, isUrgent: true, title: '공지사항 1 더미' },
-  { id: 2, isUrgent: false, title: '공지사항 2 더미' },
-  { id: 3, isUrgent: false, title: '공지사항 3 더미' },
-]
-
 const scroll = keyframes`
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -85,22 +76,32 @@ const Item = styled.span`
   line-height: normal;
 `
 
-export default function NoticeMarquee() {
+export default function NoticeMarquee({ notices = [], isLoading = false, isError = false }) {
   const navigate = useNavigate()
-  const ordered = [...NOTICES].sort((a, b) => Number(b.isUrgent) - Number(a.isUrgent))
+  const ordered = [...notices].sort((a, b) =>
+    Number(b.type === 'URGENT') - Number(a.type === 'URGENT') ||
+    b.created_at.localeCompare(a.created_at)
+  )
+  const message = isLoading
+    ? '공지사항을 불러오는 중입니다.'
+    : isError
+      ? '공지사항을 불러오지 못했습니다.'
+      : ordered.length === 0
+        ? '등록된 공지사항이 없습니다.'
+        : null
 
   return (
-    <Wrapper type="button" aria-label="공지사항 보기" onClick={() => navigate('/info')}>
+    <Wrapper type="button" aria-label="공지사항 보기" onClick={() => navigate('/info?tab=notice')}>
       <IconBox>
         <NoticeIcon />
       </IconBox>
       <Label>공지사항</Label>
       <Track>
 
-        {[0, 1].map((loop) => (
+        {message ? <Item role="status">{message}</Item> : [0, 1].map((loop) => (
           <Rolling key={loop} aria-hidden={loop === 1 ? 'true' : undefined}>
             {ordered.map((notice) => (
-              <Item key={notice.id}>{notice.title}</Item>
+              <Item key={notice.notice_id}>{notice.title}</Item>
             ))}
           </Rolling>
         ))}

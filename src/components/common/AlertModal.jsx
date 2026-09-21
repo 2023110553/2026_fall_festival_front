@@ -3,7 +3,7 @@ import * as S from './AlertModal.styles'
 
 export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText = '닫기' }) {
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} style={S.modalStyle}>
             <S.Container>
                 <S.Header>
                 {title && <S.Title>{title}</S.Title>}

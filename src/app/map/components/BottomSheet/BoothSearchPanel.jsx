@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { searchBooths } from '../../../../api/map'
 import { useMapContext } from '../../context/MapProvider'
 import BoothCardList from '../BoothCardList/BoothCardList'
 import searchIcon from '../../../../assets/map/search.svg'
@@ -15,10 +16,15 @@ function readHistory() {
   }
 }
 
-export default function BoothSearchPanel({ booths, onSelectBooth, onCancel }) {
-  const { setSearchTerm } = useMapContext()
+export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) {
+  const { selectedDate } = useMapContext()
   const [keyword, setKeyword] = useState('')
   const [history, setHistory] = useState(readHistory)
+  const [results, setResults] = useState([])
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const requestRef = useRef(null)
+  useEffect(() => () => requestRef.current?.abort(), [])
 
   const updateHistory = (next) => {
     setHistory(next)
@@ -29,12 +35,38 @@ export default function BoothSearchPanel({ booths, onSelectBooth, onCancel }) {
     }
   }
 
-  const search = (value) => {
+  const search = async (value) => {
     const term = value.trim()
-    if (!term) return
+    requestRef.current?.abort()
+    if (!term || term.length > 50) {
+      setError(!term ? '검색어를 입력해주세요.' : '검색어는 50자 이내로 입력해주세요.')
+      setStatus('error')
+      return
+    }
+    const controller = new AbortController()
+    requestRef.current = controller
     setKeyword(term)
-    setSearchTerm(term)
+    setResults([])
+    setError('')
+    setStatus('loading')
     updateHistory([term, ...history.filter((item) => item !== term)].slice(0, 10))
+    try {
+      const { data } = await searchBooths({
+        keyword: term,
+        date: selectedDate ?? '2026-09-29',
+        timeSlot: timeSlot?.toUpperCase(),
+      }, { signal: controller.signal })
+      if (controller.signal.aborted) return
+      if (!data?.success || !Array.isArray(data.data?.booths)) throw new Error('Invalid search response')
+      setResults(data.data.booths)
+      setStatus('success')
+    } catch (error) {
+      if (controller.signal.aborted) return
+      setError(error.response?.status === 400
+        ? '검색어를 확인해주세요. 1~50자로 입력해야 해요.'
+        : '검색 결과를 불러오지 못했어요. 다시 시도해주세요.')
+      setStatus('error')
+    }
   }
 
   return (
@@ -46,25 +78,30 @@ export default function BoothSearchPanel({ booths, onSelectBooth, onCancel }) {
           </S.IconButton>
           <S.Input
             type="search"
+            maxLength={50}
+            enterKeyHint="search"
             aria-label="전체 검색"
             placeholder="전체 검색"
             value={keyword}
             onChange={(event) => {
               setKeyword(event.target.value)
-              setSearchTerm(event.target.value.trim())
+              requestRef.current?.abort()
+              setStatus('idle')
+              setError('')
             }}
             autoFocus
           />
         </S.InputWrapper>
         <S.TextButton type="button" onClick={onCancel}>취소</S.TextButton>
       </S.SearchRow>
-      {keyword.trim() ? (
+      {status !== 'idle' ? (
         <section aria-label="검색 결과">
           <S.Heading>검색 결과</S.Heading>
-          <BoothCardList booths={booths} onSelectBooth={(id) => {
-            search(keyword)
-            onSelectBooth(id)
-          }} />
+          {status === 'loading' ? <S.Empty role="status">검색 중이에요...</S.Empty>
+            : status === 'error' ? <S.Empty role="alert">{error}</S.Empty>
+            : results.length === 0 ? <S.Empty>검색 결과가 없습니다.</S.Empty>
+            : <BoothCardList booths={results} filterBySearchTerm={false} onSelectBooth={onSelectBooth} />}
+
         </section>
       ) : (
         <section aria-label="최근 검색어">
