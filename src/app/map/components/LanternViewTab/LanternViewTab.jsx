@@ -1,60 +1,108 @@
-import { useState } from 'react'
-import { useAuth } from '../../../../hooks/useAuth'
+import { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import { useAuthStore } from '../../../../store/useAuthStore'
+import { getBoothLanterns } from '../../../../api/lantern'
+import { useMapContext } from '../../context/MapProvider'
 import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
 
-// 등불 보기 탭 — 목록/신고/삭제 "UI만" 이 도메인 담당 (map-section-scope-and-roles.md).
-// 실제 등불 API·로그인 인증 로직은 다른 팀 소관이라, useAuth() 훅으로 인증 상태만 받아서 쓴다.
-export default function LanternViewTab() {
-  const { isLoggedIn } = useAuth()
+const List = styled.ul`
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  > li { min-width: 0; }
+`
+const Action = styled.button`
+  min-height: 44px;
+  padding: 8px 16px;
+  margin: 8px 0;
+  cursor: pointer;
+`
+
+// 부스·날짜·로그인 상태가 바뀌면 목록과 필터를 초기화한다.
+export default function LanternViewTab({ boothId }) {
+  const { selectedDate } = useMapContext()
+  const { isLoggedIn, accessToken } = useAuthStore()
+  const date = selectedDate ?? '2026-09-29'
+  const key = JSON.stringify([boothId, date, isLoggedIn, accessToken])
+  return <BoothLanternList key={key} boothId={boothId} date={date} isLoggedIn={isLoggedIn} />
+}
+
+function BoothLanternList({ boothId, date, isLoggedIn }) {
   const [onlyMine, setOnlyMine] = useState(false)
-
-  // TODO: getBoothLanterns(boothId)로 목록 조회 (api/lantern.js)
-  // 임시데이터
-  const lanterns = [
-    {
-      id: 1,
-      nickname: '익명의 코끼리',
-      message: '아니 여기 부스 직원 너무 잘생겼구요 음식 진짜 맛있어요 ㅠㅠ',
-      createdAt: '2026-09-29T20:44:00+09:00',
-      isMine: false,
-    },
-    {
-      id: 2,
-      nickname: '닉네임',
-      message: '여기서 파는 삼겹살 너무 맛있어여 친절하심',
-      createdAt: '2026-09-29T20:44:00+09:00',
-      isMine: true,
-    },
-  ]
-  const visibleLanterns = lanterns.filter((lantern) =>
-    !onlyMine || !isLoggedIn || lantern.isMine
-  )
-
   return (
-    <div>
+    <section aria-label="부스 등불 목록">
       <p>등불을 달아 부스를 밝혀주세요! 욕설, 비방과 같은 내용을 게시할 시 처벌을 받을 수 있습니다.</p>
       <label>
-        <input
-          type="checkbox"
-          checked={isLoggedIn && onlyMine}
-          onChange={(e) => setOnlyMine(e.target.checked)}
-          disabled={!isLoggedIn}
-        />
+        <input type="checkbox" checked={onlyMine} disabled={!isLoggedIn}
+          onChange={(event) => setOnlyMine(event.target.checked)} />
         내가 쓴 등불만 보기
       </label>
+      <LanternResults key={String(onlyMine)} boothId={boothId} date={date} mine={onlyMine} />
+    </section>
+  )
+}
 
-      {visibleLanterns.length === 0 ? (
-        <EmptyState>등불이 아직 없습니다.</EmptyState>
-      ) : (
-        <ul>
-          {visibleLanterns.map((lantern) => (
-            <li key={lantern.id}>
-              <LanternCard lantern={lantern} isMine={isLoggedIn && lantern.isMine} />
-            </li>
-          ))}
-        </ul>
-      )}
+function LanternResults({ boothId, date, mine }) {
+  const [items, setItems] = useState([])
+  const [page, setPage] = useState(0)
+  const [attempt, setAttempt] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [status, setStatus] = useState('loading')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    getBoothLanterns(boothId, { date, mine, page, size: 20, signal: controller.signal })
+      .then(({ data: response }) => {
+        if (controller.signal.aborted) return
+        const data = response?.data
+        if (!response?.success || !Array.isArray(data?.items)
+          || data.page !== page || typeof data.has_next !== 'boolean') {
+          throw new Error('Invalid lantern list response')
+        }
+        const nextItems = data.items.map((item) => ({
+          id: item.lantern_id,
+          nickname: item.nickname,
+          message: item.message,
+          createdAt: item.created_at,
+          status: item.status,
+        }))
+        setItems((previous) => [...new Map([...previous, ...nextItems].map((item) => [item.id, item])).values()])
+        setHasNext(data.has_next)
+        setStatus('success')
+      })
+      .catch((failure) => {
+        if (controller.signal.aborted) return
+        const code = failure.response?.status
+        setError(code === 400 ? '조회 조건을 확인해주세요. 날짜는 YYYY-MM-DD 형식이어야 해요.'
+          : code === 401 ? '로그인이 필요해요. 로그인 상태를 확인해주세요.'
+          : '등불 목록을 불러오지 못했어요. 다시 시도해주세요.')
+        setStatus('error')
+      })
+    return () => controller.abort()
+  }, [boothId, date, mine, page, attempt])
+
+  return (
+    <div aria-busy={status === 'loading'}>
+      <List>
+        {items.map((item) => (
+          <li key={item.id}>
+            {['deleted_by_user', 'deleted_by_admin'].includes(item.status) ? (
+              <p>{item.status === 'deleted_by_admin' ? '관리자에 의해 삭제된 등불입니다.' : '삭제한 등불입니다.'}</p>
+            ) : <LanternCard lantern={item} isMine={mine} />}
+          </li>
+        ))}
+      </List>
+      {status === 'loading' && <p role="status">등불 목록을 불러오는 중이에요...</p>}
+      {status === 'error' && <div role="alert">
+        <p>{error}</p>
+        <Action type="button" onClick={() => { setStatus('loading'); setAttempt((value) => value + 1) }}>다시 시도</Action>
+      </div>}
+      {status === 'success' && items.length === 0 && <EmptyState>{mine ? '이 날짜에 작성한 등불이 없습니다.' : '등불이 아직 없습니다.'}</EmptyState>}
+      {status === 'success' && hasNext && <Action type="button" onClick={() => { setStatus('loading'); setPage((value) => value + 1) }}>더 보기</Action>}
     </div>
   )
 }
