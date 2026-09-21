@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import LoginModal from '../../app/auth/LoginModal'
+import ConfirmLogoutModal from '../../app/auth/ConfirmLogoutModal'
+import { logoutAccount } from '../../api/auth'
 import { useAuth } from '../../hooks/useAuth'
 import { useLanterns } from '../../app/lantern/context/LanternProvider'
 
@@ -26,13 +27,15 @@ export default function TopHeader({
   appearance = 'dark',
   isLoggedIn: isLoggedInOverride,
 }) {
-  const navigate = useNavigate()
-  const { isLoggedIn: authIsLoggedIn, logout } = useAuth()
+  const { isLoggedIn: authIsLoggedIn } = useAuth()
   const { requestLanternList, requestCoupon } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false)
+  const [logoutPending, setLogoutPending] = useState(false)
+  const [logoutError, setLogoutError] = useState('')
   const headerRef = useRef(null)
   const languageMenuId = useId()
   const profileMenuId = useId()
@@ -74,10 +77,24 @@ export default function TopHeader({
     requestLanternList()
     closeProfileMenu()
   }
-  const handleLogout = () => {
-    logout()
+  const openLogoutModal = () => {
     closeProfileMenu()
-    navigate('/')
+    setLogoutError('')
+    setIsLogoutOpen(true)
+  }
+
+  const handleLogout = async () => {
+    if (logoutPending) return
+    setLogoutPending(true)
+    setLogoutError('')
+    try {
+      await logoutAccount()
+      setIsLogoutOpen(false)
+    } catch {
+      setLogoutError('로그아웃에 실패했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setLogoutPending(false)
+    }
   }
 
   const toggleLanguageMenu = () => {
@@ -161,7 +178,7 @@ export default function TopHeader({
             <S.MenuItem type="button" role="menuitem" onClick={openMyLanternListModal}>
               나의 등불
             </S.MenuItem>
-            <S.LogoutItem type="button" role="menuitem" onClick={handleLogout}>
+            <S.LogoutItem type="button" role="menuitem" onClick={openLogoutModal}>
               <S.LogoutIcon src={logoutIcon} alt="" aria-hidden="true" />
               로그아웃
             </S.LogoutItem>
@@ -169,6 +186,13 @@ export default function TopHeader({
         )}
       </S.Header>
       <LoginModal open={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <ConfirmLogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={handleLogout}
+        pending={logoutPending}
+        error={logoutError}
+      />
     </>
   )
 }
