@@ -17,6 +17,10 @@ export const updateLantern = (lanternId, { nickname, message }) =>
 
 export const deleteLantern = (lanternId) => apiClient.delete(`/api/lanterns/${lanternId}/`)
 
+// 신고 — 성공 시 code: 'LANTERN_REPORT_SUCCESS', 중복 신고면 409 + code: 'ALREADY_REPORTED'
+export const reportLantern = (lanternId, reason) =>
+  apiClient.post(`/api/lanterns/${lanternId}/reports/`, { reason })
+
 // mine=true면 본인 등불만(삭제 포함 + status 필드), booth_id/date로 필터, page는 0부터
 export const getLanterns = ({ mine, boothId, date, page, size } = {}) =>
   apiClient.get('/api/lanterns/', {
