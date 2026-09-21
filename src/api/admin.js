@@ -1,7 +1,14 @@
-import { apiClient } from './client'
+import { adminClient as apiClient } from './adminClient'
 
-// 관리자 로그인 — 성공 시 받은 토큰을 useAdminAuthStore에 저장해서 AdminRoute 가드가 사용
-export const adminLogin = (adminKey) => apiClient.post('/api/admin/login', { adminKey })
+// 관리자 로그인 — 백엔드에 로그인 API가 없으므로 입력한 키(ADMIN_API_TOKEN)를 그대로 토큰으로 쓴다.
+// 키로 관리자 API를 한 번 호출해 검증하고, 틀리면 401로 reject된다. 성공 시 키를 반환.
+export const adminLogin = async (adminKey) => {
+  await apiClient.get('/api/notices/', {
+    params: { size: 1 },
+    headers: { Authorization: `Bearer ${adminKey}` },
+  })
+  return adminKey
+}
 
 // 등불 관리
 // 목록 조회 — sort: REPORT_DESC(신고 많은 순, 기본) | LATEST(최신순), page는 0부터, size는 최대 100 (기본 20)
