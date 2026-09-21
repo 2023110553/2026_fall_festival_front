@@ -29,7 +29,3 @@ export const getLantern = (lanternId) => apiClient.get(`/api/lanterns/${lanternI
 // 파라미터 미지정 시 서버가 오늘 날짜 + 현재 시각 기준 주/야간으로 판정해서
 // "당일 운영 부스만" 내려주므로 그대로 둔다.
 export const getLanternBoothOptions = () => apiClient.get('/api/booths/')
-
-// 등불 달기 성공 시 발급되는 쿠폰 스크래치/사용 — 쿠폰팀 소관, 인터페이스만 유지
-export const getMyCoupon = () => apiClient.get('/api/coupons/me')
-export const useCoupon = (couponId, code) => apiClient.post(`/api/coupons/${couponId}/use`, { code })

@@ -31,7 +31,7 @@ export function useCreateLanternFlow({ lanternCount, onCreated, onFirstLantern }
 
       // 오늘 첫 등불인지는 서버가 내려준 값을 그대로 따른다 (로컬 카운트 추측 금지)
       if (created.isFirstToday) {
-        onFirstLantern?.(created)
+        await onFirstLantern?.(created)
       } else {
         setIsSuccessModalOpen(true)
       }
