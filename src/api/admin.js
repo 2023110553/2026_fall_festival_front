@@ -16,7 +16,10 @@ export const getAdminLanterns = ({ sort = 'REPORT_DESC', page = 0, size = 20 } =
 //              report_reason_summary: [{ reason, count }], created_at }
 // 없거나 이미 삭제된 등불은 404(LANTERN_NOT_FOUND)
 export const getAdminLanternDetail = (lanternId) => apiClient.get(`/api/lanterns/${lanternId}/`)
-export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/admin/lanterns/${lanternId}`)
+
+// 삭제(블라인드) — Soft Delete(deleted_by='ADMIN'). 부스별/전체 등불 수는 서버에서 즉시 -1 차감
+// 응답 data: { lantern_id, is_deleted, deleted_by, deleted_at }
+export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/lanterns/${lanternId}/`)
 
 // 공지 관리
 export const getAdminNotices = () => apiClient.get('/api/admin/notices')

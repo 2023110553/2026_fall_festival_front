@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import * as S from './AdminLanternPage.styles'
 import LanternDetailModal from './LanternDetailModal'
 import ConfirmDeleteModal from './ConfirmDeleteModal'
-import { getAdminLanterns } from '../../../../api/admin'
+import { deleteAdminLantern, getAdminLanterns } from '../../../../api/admin'
 import sirenIcon from '../../../../assets/admin/siren.svg'
 import closeIcon from '../../../../assets/admin/close.svg'
 
@@ -15,6 +15,8 @@ export default function AdminLanternPage() {
   const [sort, setSort] = useState('REPORT_DESC')
   const [selectedLantern, setSelectedLantern] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   // GET /api/lanterns/ — 페이징이라 page를 올리면서 items를 이어붙인다
   const [lanterns, setLanterns] = useState([])
@@ -69,11 +71,38 @@ export default function AdminLanternPage() {
     setDeleteTarget(lantern)
   }
 
-  // 2단계: 확인 모달의 "삭제하기" → 실제 삭제
-  const handleDeleteConfirm = () => {
-    // TODO: deleteAdminLantern(deleteTarget.lantern_id) 연동 후 목록 갱신
-    console.log('delete lantern', deleteTarget.lantern_id)
+  // 목록에서 빼고 총 개수도 같이 줄인다 (서버도 삭제 즉시 카운트를 -1 차감)
+  const removeLantern = (lanternId) => {
+    setLanterns((prev) => prev.filter((l) => l.lantern_id !== lanternId))
+    setTotalCount((prev) => Math.max(prev - 1, 0))
+  }
+
+  const closeDeleteModal = () => {
+    if (isDeleting) return
     setDeleteTarget(null)
+    setDeleteError('')
+  }
+
+  // 2단계: 확인 모달의 "삭제하기" → DELETE /api/lanterns/{lantern_id}/ (블라인드 처리)
+  const handleDeleteConfirm = async () => {
+    const lanternId = deleteTarget.lantern_id
+    setIsDeleting(true)
+    setDeleteError('')
+    try {
+      await deleteAdminLantern(lanternId)
+      removeLantern(lanternId)
+      setDeleteTarget(null)
+    } catch (err) {
+      // 404는 이미 삭제된 등불 — 목록에 남아 있을 이유가 없으니 똑같이 빼준다
+      if (err.response?.status === 404) {
+        removeLantern(lanternId)
+        setDeleteTarget(null)
+      } else {
+        setDeleteError('등불을 삭제하지 못했습니다. 다시 시도해 주세요.')
+      }
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -102,7 +131,15 @@ export default function AdminLanternPage() {
                 {l.report_count}
                 <S.SirenIcon src={sirenIcon} alt="신고" />
               </S.ReportCount>
-              <S.DeleteButton type="button" aria-label="등불 삭제">
+              {/* 카드의 X는 상세 모달을 건너뛰고 바로 확인 모달을 연다 */}
+              <S.DeleteButton
+                type="button"
+                aria-label="등불 삭제"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setDeleteTarget(l)
+                }}
+              >
                 <img src={closeIcon} alt="" />
               </S.DeleteButton>
             </S.CardSide>
@@ -127,8 +164,10 @@ export default function AdminLanternPage() {
       />
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+        onClose={closeDeleteModal}
         onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
       />
     </S.Page>
   )
