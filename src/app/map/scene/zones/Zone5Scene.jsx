@@ -23,15 +23,27 @@ import boothData from './zone5-booths.sample.json'
 //   - 골목       x   4.3~9.55 (아스팔트 윗면 y=0.02), 광장 윗면 y=0.12
 // 부스 좌표(zone5-booths.sample.json)도 전부 이 three 좌표계 값이다.
 //
-// 카메라 메모: MapCanvas의 고정 카메라([10,140,90] → target [10,3,-30])는 zone1 기준이라
-// 이 구역은 화면 아래쪽에 치우쳐 보인다(원흥관 중심이 three z≈8인데 타깃이 z=-30). zone3·zone4도
-// 같은 문제를 안고 있고, 구역 전환 카메라 연출을 정할 때 네 구역을 한꺼번에 맞추기로 한 상태라
-// 여기서 임시로 오프셋을 주지 않았다 — 지금 옮겨두면 나중에 카메라를 제대로 잡을 때 이 구역만
-// 좌표가 어긋난 채 남는다. glb는 블렌더 원본 좌표 그대로 내보냈다.
+// 카메라 메모: 이 구역 시점은 MapCanvas의 ZONE_CAMERAS.zone5가 맡는다(2026-09-20 구역별 카메라 분리,
+// 2026-09-21 재원 요청으로 본동 정면이 있는 -z 쪽에서 보도록 변경). 화면 구도는 카메라 쪽에서 맞추므로
+// glb는 오프셋 없이 블렌더 원본 좌표 그대로 내보냈다.
+//
+// 부스 메모(2026-09-21): 본동 후면 광장에 있던 부스 4개는 뺐고, 지금은 원흥관·본관 사이 골목의 3개만 있다.
 //
 // glb 최적화: 다른 구역과 같은 파이프라인(gltf-transform meshopt + WebP + 재질별 메시 병합).
 // 40.6MB → 1.86MB. 메시가 재질 단위로 병합돼 있어 glb 안 오브젝트 이름으로 건물을 찾는 코드는
 // 쓸 수 없다(부스 좌표는 JSON 기반이라 무관). 자세한 절차는 zones/README.md 참고.
+//
+// 2026-09-21: 지도 크기 2배 — 재원 요청("현재 구조·구성은 그대로 두고 크기만 2배").
+// 이 모델은 높이가 실제의 절반쯤으로 만들어져 있다(본동 11.7m ↔ 실측 약 24.5m, 본관 7.8m ↔ 실측 약 15.7m,
+// 캠퍼스 좌표 문서의 OSM 값). 그래서 실제 크기(6×3m)인 부스에 비해 건물·골목이 작아 보였다.
+// glb는 그대로 두고 여기서 통째로 MAP_SCALE배 키운다(본동 23.4m, 본관 15.6m, 골목 폭 5.25m → 10.5m).
+//   - 부스는 실제 크기를 유지해야 해서 이 배율을 받지 않는다(ZoneBooths는 primitive의 형제 노드).
+//     대신 부스 좌표(zone5-booths.sample.json)를 전부 2배 값으로 바꿔 같은 자리에 오게 했다.
+//   - 그래서 이 구역만 "씬 좌표 = glb(블렌더) 좌표 × MAP_SCALE"이다. 위 좌표계 메모의 범위는 glb 기준
+//     값이고, 블렌더에서 새 좌표를 뽑으면 MAP_SCALE을 곱해서 넣어야 한다.
+//   - 카메라(MapCanvas의 ZONE_CAMERAS.zone5)도 원점 기준으로 똑같이 2배라 화면 구도는 그대로다.
+const MAP_SCALE = 2
+
 export default function Zone5Scene({ brightnessLevel = null, onBoothClick }) {
   const { scene } = useGLTF('/models/zone5.glb')
 
@@ -47,7 +59,7 @@ export default function Zone5Scene({ brightnessLevel = null, onBoothClick }) {
 
   return (
     <>
-      <primitive object={scene} />
+      <primitive object={scene} scale={MAP_SCALE} />
       <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
