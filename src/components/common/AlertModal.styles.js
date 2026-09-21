@@ -61,6 +61,11 @@ export const CloseBtn = styled.button`
     &:hover {
         background: #e0e0e0;
     }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: wait;
+    }
 `
 
 export const ConfirmBtn = styled.button`
@@ -78,5 +83,10 @@ export const ConfirmBtn = styled.button`
 
     &:hover {
         background: #333333;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: wait;
     }
 `
