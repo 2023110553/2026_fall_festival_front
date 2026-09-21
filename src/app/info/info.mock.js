@@ -1,8 +1,3 @@
-import lostWalletImage from '../../assets/info/lost-wallet.svg'
-import lostEarbudsImage from '../../assets/info/lost-earbuds.svg'
-import lostUmbrellaImage from '../../assets/info/lost-umbrella.svg'
-import lostStudentIdImage from '../../assets/info/lost-student-id.svg'
-import noticeStageImage from '../../assets/info/notice-stage.svg'
 import dongbitImage from '../../assets/info/collab-dongbit.png'
 import ecocoImage from '../../assets/info/collab-ecoco.png'
 import donggamImage from '../../assets/info/collab-donggam.webp'
@@ -40,70 +35,5 @@ export const COLLAB_MOCKS = [
     imageUrl: naturalScienceImage,
     snsHandle: '@dgu_club',
     snsUrl: 'https://www.instagram.com/science_dgu_buddhism/',
-  },
-]
-export const NOTICE_MOCKS = [
-  {
-    id: 'notice-1',
-    title: '우천으로 인한 메인 무대 공연 시작 시간 및 입장 동선 변경 안내',
-    date: '09.29',
-    isUrgent: true,
-    imageUrl: noticeStageImage,
-    content: '우천 상황에 따라 일부 공연 시작 시간이 변경되었습니다. 현장 안내와 최신 공지를 확인해 주세요.',
-  },
-  {
-    id: 'notice-2',
-    title: '축제장 입장 및 안전 수칙 안내',
-    date: '09.29',
-    isUrgent: false,
-    imageUrl: noticeStageImage,
-    content: '혼잡 구역에서는 안전요원의 안내에 따라 이동해 주세요. 위험 물품은 행사장에 반입할 수 없습니다.',
-  },
-  {
-    id: 'notice-3',
-    title: '분리배출 장소 운영 안내',
-    date: '09.30',
-    isUrgent: false,
-    imageUrl: noticeStageImage,
-    content: '행사장 곳곳에 분리배출 장소가 마련되어 있습니다. 품목별 표시에 맞춰 배출해 주세요.',
-  },
-]
-
-export const LOST_FOUND_MOCKS = [
-  {
-    id: 'lost-1',
-    title: '검은색 카드지갑',
-    date: '9/29',
-    location: '팔정도 무대 앞',
-    imageUrl: lostWalletImage,
-    hashtags: ['#카드지갑', '#검은색', '#팔정도'],
-    instagramUrl: 'https://www.instagram.com/',
-  },
-  {
-    id: 'lost-2',
-    title: '흰색 무선 이어폰',
-    date: '9/29',
-    location: '푸드트럭 존',
-    imageUrl: lostEarbudsImage,
-    hashtags: ['#무선이어폰', '#흰색', '#푸드트럭존'],
-    instagramUrl: 'https://www.instagram.com/',
-  },
-  {
-    id: 'lost-3',
-    title: '파란색 우산',
-    date: '9/30',
-    location: '혜화관 입구',
-    imageUrl: lostUmbrellaImage,
-    hashtags: ['#우산', '#파란색', '#혜화관'],
-    instagramUrl: 'https://www.instagram.com/',
-  },
-  {
-    id: 'lost-4',
-    title: '학생증',
-    date: '10/1',
-    location: '만해광장 안내 부스',
-    imageUrl: lostStudentIdImage,
-    hashtags: ['#학생증', '#만해광장', '#안내부스'],
-    instagramUrl: 'https://www.instagram.com/',
   },
 ]
