@@ -62,7 +62,7 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 // 카메라([10,140,90] → target [10,3,-30])에서는 꽤 멀리/위에서 보인다 — 구역 전환 카메라 연출을
 // 정할 때 zone4와 함께 조정 예정.
 //
-// 2026-09-19(2차): 네 구역 모두 부스 목데이터 연결(zoneN-booths.sample.json + zones/ZoneBooths.jsx).
+// 2026-09-19(2차): 네 구역 모두 API 부스 데이터와 zones/ZoneBooths.jsx를 연결.
 // 그래서 Zone2/3/4Scene도 Zone1Scene과 같은 props(brightnessLevel/onBoothClick)를 받게 됐고, 이 컴포넌트는
 // 네 구역에 똑같은 값을 넘긴다. 부스 밝기는 이제 각 부스의 lantern_count로 자동 계산되므로(BoothMarker.jsx
 // 19번 항목) boothBrightnessPreview는 null(자동)이 기본이다.

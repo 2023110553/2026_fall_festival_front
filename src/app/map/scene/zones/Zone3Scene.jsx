@@ -3,13 +3,13 @@ import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
 import { useMapZoneBooths } from '../../hooks/useMapZones'
 
-// 구역 3(만해광장 + 후문쪽 거리) 씬 — 지형/구조물 .glb 로드 + 부스 목데이터 배치.
+// 구역 3(만해광장 + 후문쪽 거리) 씬 — 지형/구조물 .glb 로드 + API 부스 좌표 배치.
 //
 // 2026-09-19: public/models/zone3.glb 최초 연결. 현재 glb는 만해광장 본체(살몬톤 콘크리트 코트 +
 // 곡선 계단식 관람석/석재 옹벽 + 목재 데크 무대 정자 + 수목/바위 라인)까지 반영된 상태고,
 // "후문쪽 거리" 부분은 재원이 모델링을 추가하면 같은 파일명으로 재-export해서 교체한다(로더는 그대로).
 //
-// 2026-09-19(2차): 부스 목데이터 연결 — zone3-booths.sample.json(7개)을 ZoneBooths로 배치한다.
+// 2026-09-19(2차): ZoneBooths 연결. 현재 좌표와 밝기 정보는 API 응답을 사용한다.
 // 코트(보행 가능한 평지) 외곽선을 glb에서 다각형으로 뽑아 그 안쪽 가장자리를 따라 둘렀고, 무대 정자와
 // 관객이 무대를 보는 코트 중앙은 비워뒀다(배치 근거는 JSON 상단 _placement_note 참고). 후문쪽 거리가
 // 모델링되면 그쪽 보행로 부스는 같은 JSON에 이어서 추가하면 된다.
@@ -31,7 +31,7 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 // 만해광장 모델(bbox 42×30m)이 실측(OSM 타원 약 66×84m)보다 작게 만들어져 있어서, 실제 크기(6×3m)인
 // 부스에 비해 광장이 좁아 보였다. glb는 그대로 두고 여기서 통째로 MAP_SCALE배 키운다(약 84×59m).
 //   - 부스는 실제 크기를 유지해야 해서 이 배율을 받지 않는다(ZoneBooths는 primitive의 형제 노드).
-//     대신 부스 좌표(zone3-booths.sample.json)를 전부 2배 값으로 바꿔 같은 자리에 오게 했다.
+//     대신 API가 MAP_SCALE을 반영한 부스 좌표를 내려줘 같은 자리에 오게 한다.
 //   - 그래서 이 구역만 "씬 좌표 = glb(블렌더) 좌표 × MAP_SCALE"이다. 위 좌표계 메모의 bbox·높이는
 //     glb 기준 값이고, 블렌더에서 새 좌표를 뽑으면 MAP_SCALE을 곱해서 넣어야 한다.
 //   - 카메라(MapCanvas의 ZONE_CAMERAS.zone3)도 원점 기준으로 똑같이 2배라 화면 구도는 그대로다.

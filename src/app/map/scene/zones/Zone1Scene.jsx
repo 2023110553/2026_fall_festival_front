@@ -3,12 +3,12 @@ import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
 import { useMapZoneBooths } from '../../hooks/useMapZones'
 
-// 구역 1(경영관·혜화관 거리) 씬 — 지형/건물 .glb 로드 + 부스 좌표 JSON을 기반으로
+// 구역 1(경영관·혜화관 거리) 씬 — 지형/건물 .glb 로드 + API 부스 좌표를 기반으로
 // 부스 오브젝트를 동적으로 배치(clone/instancing)하는 방식 검증용.
 //
 // 2026-09-13: public/models/zone1.glb를 재원이 작업 중인 실제 상세 지형
 // (gyeongyeong_hyehwa_terrain.blend, WIP 스냅샷)으로 교체하고, 그 좌표계에 맞춰
-// zone1-booths.sample.json의 목데이터도 다시 잡음. 아직 최종본이 아니므로
+// 현재 부스 좌표는 API 응답을 사용한다.
 // (지형이 계속 업데이트 중) 재원이 작업을 마무리하면 최신 .glb로 다시 교체 필요.
 //
 // 좌표 변환 메모(중요, 팀 공유 필요):
@@ -21,7 +21,7 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 //     이 변환을 빠뜨리면 부스가 항상 앞뒤로 뒤집혀 나타나므로 반드시 확인할 것.
 //   → 이 구역은 지면이 평지가 아니라 단(段)이 있는 대지라, y(표고)를 0으로 고정하면
 //     안 되고 각 부스가 실제로 놓이는 바닥면의 blender.z 값을 그대로 넘겨줘야 한다
-//     (zone1-booths.sample.json의 map_elevation이 그 값).
+//     (API 응답의 map_elevation이 그 값).
 //
 // 2026-09-13(3차): brightnessLevel prop 추가 — 부스 밝기 단계(등불 개수 기반,
 // 0~MAX_LANTERN_TIER — constants/lanternTiers.js, 2026-09-18부터 6단계) 임시 미리보기 값을
@@ -33,8 +33,6 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 //     계약은 그대로다.
 //   - places.map → <BoothMarker/> 블록은 ZoneBooths.jsx로 옮겼다. 팔정도/만해광장/학림관 씬에도 같은
 //     부스 배치가 들어가면서 네 군데 복사되는 걸 피하기 위함 — 구역 씬은 "지형 glb + ZoneBooths" 두 줄이면 끝.
-//   - zone1-booths.sample.json에 부스 8개 추가(105~112, 보행로 B 빈 슬롯 + 경영관 앞 광장 줄) — 좌표
-//     근거는 그 파일의 _placement_note_2 참고.
 //
 // 2026-09-19(2차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
 //   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —

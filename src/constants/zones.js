@@ -8,10 +8,7 @@
 // 2026-09-20: 원흥관을 zone5로 추가. 팔정도에서 법학관 쪽으로 올라간 위치라 기존 네 구역 어디에도
 //   붙지 않아 별도 구역으로 팠다. 씬에는 원흥관 두 동 + 맞은편 본관 + 그 사이 골목이 들어 있다.
 // 2026-09-20(2차): zone1 라벨을 '경영관·혜화관 거리' → '혜화관'으로 줄임(재원 요청, 토글이 길어서).
-//   ※ 여기 label은 단순 표시용이 아니다 — mocks/boothMockAdapter.js가 이 문자열과 booth.zone을
-//     문자열 비교해서 부스 목록을 거른다(getZoneLabel → booth.zone === zoneLabel). 그래서 라벨을
-//     바꿀 때는 mocks/boothResponses.json의 zone 값도 같이 바꿔야 목록이 비지 않는다.
-//     백엔드 GET /api/booths/가 붙으면 zoneId로 조회하게 되므로 이 결합은 그때 사라진다.
+// 부스 목록은 API 응답의 zone_id를 기준으로 구역별 필터링한다.
 export const MAP_ZONES = [
   { id: 'zone1', label: '혜화관' },
   { id: 'zone2', label: '팔정도' },

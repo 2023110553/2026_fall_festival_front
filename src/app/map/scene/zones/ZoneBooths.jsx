@@ -2,10 +2,10 @@ import BoothMarker from './BoothMarker'
 import BoothPin from './BoothPin'
 import { BOOTH_PIN_PREVIEW, BOOTH_PIN_PROPS } from './boothPinPreview'
 
-// 구역 부스 목록(JSON의 booths[]) → BoothMarker 배치.
+// 구역 부스 목록(API 응답의 booths[]) → BoothMarker 배치.
 //
 // 2026-09-19: 원래 Zone1Scene 안에 있던 "places.map → <BoothMarker …/>" 블록을 떼어내 공통화한
-// 컴포넌트. 팔정도/만해광장/학림관에도 부스 목데이터(zone2/3/4-booths.sample.json)를 붙이면서
+// 컴포넌트. 팔정도/만해광장/학림관에도 같은 API 부스 데이터를 붙이면서
 // 같은 코드가 네 파일에 복사될 상황이라 한 곳으로 모았다.
 //
 // 2026-09-19(2차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과
@@ -13,9 +13,8 @@ import { BOOTH_PIN_PREVIEW, BOOTH_PIN_PROPS } from './boothPinPreview'
 // 명세에 "map_x/map_y/map_elevation/rotation은 FE 3D 씬 좌표를 무변환으로 반환한다"고
 // 확정되면서(map_x=씬 x, map_y=씬 z, map_elevation=씬 y, rotation=y축 회전) 그 필드들이 곧
 // 3D 좌표 그 자체가 됐다. 그래서 이제 coordinates 없이 map_x/map_y/map_elevation/rotation을
-// 바로 BoothMarker position/rotationY에 꽂는다 — 나중에 백엔드가 GET /api/booths/ 응답을
-// 내려주기 시작하면 zoneN-booths.sample.json을 그 응답의 data.booths로 그대로 바꿔 끼우면
-// 끝난다(필드명이 이미 같아서 매핑 코드가 필요 없음).
+// 바로 BoothMarker position/rotationY에 꽂는다. 현재 GET /api/booths/의 data.booths를
+// 별도 매핑 없이 사용한다.
 //
 // 2026-09-20: 부스 마커를 3D 핀(BoothPin)으로 교체 — 재원 요청("마커를 3D로, 구글맵 핀 느낌으로").
 // 이 컴포넌트가 "부스 한 동 = 천막(BoothMarker) + 마커(BoothPin)"를 같은 좌표에 나란히 놓는
@@ -25,7 +24,7 @@ import { BOOTH_PIN_PREVIEW, BOOTH_PIN_PROPS } from './boothPinPreview'
 // 기존 <Html> PinLabel은 3D 핀과 겹치므로 기본값에서는 끈다(BoothMarker의 showLabel=false).
 // ?marker=label / ?marker=both 로 되돌려 비교할 수 있다 — boothPinPreview.js 참고.
 //
-// booth 스키마(각 zoneN-booths.sample.json 상단 _comment 참고, 세호님 API 명세와 동일):
+// booth 스키마(GET /api/booths/ 명세):
 //   - booth_id: BoothMarker key + onBoothClick(boothId)에 넘기는 값
 //   - map_x / map_y / map_elevation / rotation: Three.js 씬 좌표(m) — map_x=씬 x, map_y=씬 z,
 //     map_elevation=씬 y(높이), rotation은 도 단위 Y축 회전
