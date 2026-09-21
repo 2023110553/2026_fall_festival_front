@@ -88,14 +88,14 @@ export function LanternProvider({ children }) {
     }
   }
 
-  const editLantern = async (id, newContent) => {
+  const editLantern = async (id, { nickname, message }) => {
     try {
-      const res = await updateLanternRequest(id, { message: newContent })
+      const res = await updateLanternRequest(id, { nickname, message })
       const data = res.data.data
       setLanterns((prev) =>
         prev.map((item) =>
           item.id === id
-            ? { ...item, message: data.message, content: data.message, updatedAt: data.updated_at }
+            ? { ...item, nickname: data.nickname, message: data.message, content: data.message, updatedAt: data.updated_at }
             : item
         )
       )

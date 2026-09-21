@@ -34,7 +34,10 @@ export default function LanternCard({
     return (
         <S.CardContainer>
         <S.Header>
+            <S.TitleGroup>
             <S.Nickname>{lantern.nickname || '익명의 코끼리'}</S.Nickname>
+            {lantern.boothName && <S.BoothName>{lantern.boothName}</S.BoothName>}
+            </S.TitleGroup>
             <S.MoreButton type="button" onClick={toggleMenu}>
             ⋮
             </S.MoreButton>

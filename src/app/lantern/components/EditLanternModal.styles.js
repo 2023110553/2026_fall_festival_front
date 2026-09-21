@@ -16,64 +16,82 @@ export const Overlay = styled.div`
 export const Container = styled.div`
     display: flex;
     flex-direction: column;
-    width: 305px;
-    padding: 16px;
-    border-radius: 20px;
-    background-color: #dcdcdc;
+    width: 320px;
+    padding: 12px 20px;
+    border-radius: 9px;
+    background-color: #D8D8D8;
     box-sizing: border-box;
     text-align: left;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.15);
+    `
+
+export const BoothLabel = styled.span`
+    align-self: flex-end;
+    font-family: Pretendard;
+    font-size: 10px;
+    font-weight: 400;
+    color: #9F9C99;
 `
 
-export const Header = styled.div`
+export const InputGroup = styled.div`
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding: 0 2px;
+    flex-direction: column;
+    gap: 4px;
+    margin: 6px 0;
 `
 
-export const Nickname = styled.span`
-    font-size: 15px;
-    font-weight: 700;
-    color: #111111;
-`
-
-export const MoreButton = styled.button`
-    border: none;
-    background: none;
-    cursor: pointer;
-    padding: 0 2px;
-    font-size: 16px;
-    color: #777777;
-    line-height: 1;
-`
-
-export const InputWrapper = styled.div`
+export const InputBox = styled.div`
     position: relative;
     width: 100%;
-    height: 52px;
-    background-color: #ffffff;
-    border-radius: 14px;
-    padding: 12px 14px 28px 14px;
+    padding: 6px;
+    background-color: #FDFDFD;
+    border-radius: 6px;
+    border: 0.5px solid #9F9C99;
     box-sizing: border-box;
-    border: 1px solid #c8c8c8;
 `
 
-export const TextArea = styled.textarea`
+// 메시지 입력창 컨테이너 — 패딩/보더 포함한 전체 높이를 52px로 고정
+export const MessageBox = styled(InputBox)`
+    height: 52px;
+`
+
+// 닉네임 입력창 컨테이너 — 패딩/보더 포함한 전체 높이를 30px로 고정
+export const NicknameBox = styled(InputBox)`
+    height: 30px;
+`
+
+export const NicknameInput = styled.input`
     width: 100%;
-    height: 64px;
+    height: 100%;
+
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: Pretentard;
+    color: #100B0B;
+    background: transparent;
+    padding: 0;
+
+    &::placeholder {
+        color: #D8D8D8;
+    }
+`
+
+export const MessageTextArea = styled.textarea`
+    width: 100%;
+    height: 100%;
     border: none;
     outline: none;
     resize: none;
     font-size: 12px;
-    font-family: inherit;
-    color: #222222;
+    font-family: Pretentard;
+    color: #100B0B;
     line-height: 1.45;
     background: transparent;
+    padding: 0;
 
     &::placeholder {
-        color: #aaaaaa;
+        color: #D8D8D8;
     }
 `
 
@@ -81,52 +99,68 @@ export const CharCount = styled.span`
     position: absolute;
     bottom: 8px;
     right: 12px;
-    font-size: 11px;
+    font-size: 10px;
     color: #aaaaaa;
 `
 
 export const Footer = styled.div`
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 14px;
-    padding: 0 2px;
+    flex-direction: column;
+    gap: 2px;
 `
 
 export const Time = styled.span`
-    font-size: 11px;
-    color: #888888;
+    font-family: Pretendard;
+    font-size: 10px;
+    color: #9F9C99;
     font-weight: 400;
 `
 
 export const ButtonGroup = styled.div`
     display: flex;
+    justify-content: flex-end;
     gap: 8px;
 `
 
 export const CancelButton = styled.button`
-    padding: 7px 16px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+    width: 43px;
+    height: 21px;
+    padding: 10px 0;
     border: none;
-    border-radius: 8px;
-    background-color: #ffffff;
-    font-size: 12px;
-    font-weight: 600;
-    color: #444444;
+    border-radius: 4px;
+    font-family: Pretendard;
+
+    background-color: #EEE;
+    font-size: 10px;
+    font-weight: 500;
+    color: #696666;
     cursor: pointer;
 
     &:hover {
-        background-color: #f0f0f0;
+        background-color: #e5e5e5;
     }
 `
 
 export const SubmitButton = styled.button`
-    padding: 7px 16px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+    width: 43px;
+height: 21px;
+padding: 10px 0;
     border: none;
-    border-radius: 8px;
-    background-color: #111111;
-    font-size: 12px;
-    font-weight: 600;
-    color: #ffffff;
+    border-radius: 4px;
+    background-color: #100B0B;
+    font-family: Pretendard;
+
+    font-size: 10px;
+    font-weight: 500;
+    color: #FDFDFD;
     cursor: pointer;
 
     &:hover {
