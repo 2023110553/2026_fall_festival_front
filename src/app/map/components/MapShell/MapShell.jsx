@@ -22,7 +22,7 @@ export default function MapShell() {
   return (
     <S.Shell>
       <S.HeaderArea>
-      <TopHeader title="지도" appearance="light" />
+      <TopHeader title="지도" appearance="light" zIndex={2} />
       <S.DateArea data-sheet-collapse-ignore>
         <FestivalDateTabs value={selectedDate ?? '2026-09-29'} onChange={setSelectedDate} />
       </S.DateArea>

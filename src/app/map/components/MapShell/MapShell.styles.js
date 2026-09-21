@@ -12,10 +12,6 @@ export const Shell = styled.div`
 
 export const HeaderArea = styled.div`
     flex-shrink: 0;
-
-    > header {
-        z-index: 2;
-    }
 `
 
 export const MapArea = styled.div`
