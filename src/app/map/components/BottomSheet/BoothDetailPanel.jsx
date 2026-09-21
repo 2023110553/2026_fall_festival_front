@@ -10,7 +10,7 @@ import * as S from './BoothDetailPanel.styles'
 
 // 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
 export default function BoothDetailPanel({ boothId, onBack }) {
-  const { sheetTab, setSheetTab, selectedDate } = useMapContext()
+  const { sheetTab, setSheetTab, selectedDate, boothRevision } = useMapContext()
   const { setActiveBooth } = useLanterns()
   const { isLoggedIn } = useAuth()
   const [detail, setDetail] = useState(null)
@@ -49,7 +49,7 @@ export default function BoothDetailPanel({ boothId, onBack }) {
         })
       })
     return () => { ignore = true }
-  }, [boothId, isLoggedIn])
+  }, [boothId, isLoggedIn, boothRevision])
   const simple =
     booth &&
     (booth.place_type === 'FACILITY' ||
