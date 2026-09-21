@@ -3,8 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import * as S from './NoticeEditor.styles'
 import NoticeEditor from './NoticeEditor'
-import { getAdminNoticeDetail } from '../../../../api/admin'
+import { getAdminNoticeDetail, updateAdminNotice } from '../../../../api/admin'
 import { getNoticeTypeLabel, isUrgentNotice } from './mockNotices'
+
+// 서버 400은 errors에 필드별 메시지가 오므로 있으면 그걸, 없으면 message를 보여준다
+const toErrorMessage = (error) => {
+  const data = error.response?.data
+  const fieldMessages = Object.values(data?.errors ?? {}).filter(Boolean)
+  if (fieldMessages.length) return fieldMessages.join(' ')
+  return data?.message ?? '공지 수정에 실패했습니다.'
+}
 
 export default function AdminNoticeEditPage() {
   const { noticeId } = useParams()
@@ -33,9 +41,21 @@ export default function AdminNoticeEditPage() {
 
   if (!notice) return null
 
-  const handleSave = ({ title, content, imageFile }) => {
-    console.log('update notice', notice.notice_id, { title, content, imageFile })
-    navigate(detailPath)
+  // 실패 시 에디터가 토스트로 띄울 메시지를 돌려준다 (성공하면 상세로)
+  const handleSave = async ({ title, content, imageFile }) => {
+    try {
+      // 이 화면에선 유형을 바꾸지 않지만 type은 필수라 기존 값을 그대로 보낸다
+      // imageFile은 새 사진을 골랐을 때만 있음 → 없으면 image 미전송으로 기존 사진 유지
+      await updateAdminNotice(notice.notice_id, {
+        type: isUrgentNotice(notice.type) ? 'EMERGENCY' : 'NORMAL',
+        title: title.trim(),
+        content: content.trim(),
+        imageFile,
+      })
+      navigate(detailPath)
+    } catch (err) {
+      return toErrorMessage(err)
+    }
   }
 
   return (

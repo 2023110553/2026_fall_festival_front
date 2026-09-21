@@ -18,7 +18,19 @@ export const getAdminNotices = ({ type = 'ALL', page = 0, size = 20 } = {}) =>
 export const getAdminNoticeDetail = (noticeId) =>
   apiClient.get(`/api/notices/${noticeId}/`)
 export const createAdminNotice =(payload) => apiClient.post('/api/admin/notices', payload)
-export const updateAdminNotice = (noticeId, payload) => apiClient.put(`/api/admin/notices/${noticeId}`, payload)
+// 수정 — multipart/form-data. type(EMERGENCY/NORMAL)·title·content는 필수라 바뀌지 않아도 매번 보낸다
+// image는 새 사진으로 교체할 때만, delete_image는 기존 사진을 지울 때만 true (기본 false → 기존 사진 유지)
+// 성공 200 → { type, title, content, image_url }
+export const updateAdminNotice = (noticeId, { type, title, content, imageFile, deleteImage = false }) => {
+  const formData = new FormData()
+  formData.append('type', type)
+  formData.append('title', title)
+  formData.append('content', content)
+  if (imageFile) formData.append('image', imageFile)
+  formData.append('delete_image', String(deleteImage))
+  // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
+  return apiClient.put(`/api/notices/${noticeId}/`, formData)
+}
 export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/admin/notices/${noticeId}`)
 
 // 분실물 관리
