@@ -1,0 +1,147 @@
+{
+  "_comment": "원흥관(zone5) 부스 목데이터 — 실제 부스 데이터 아님(총학생회 확정 전). 세호님 '장소 목록 조회 (지도 핀 + 카드 리스트)' API(GET /api/booths/) 응답의 data.booths[] 항목과 1:1 동일 스키마. map_x/map_y/map_elevation/rotation은 명세에 정의된 그대로 'FE 3D 씬 좌표 무변환'이다: map_x=씬 x, map_y=씬 z(바닥면), map_elevation=씬 y(높이), rotation=y축 회전(도). ZoneBooths.jsx가 이 값을 그대로 BoothMarker position/rotationY에 사용한다. 백엔드가 GET /api/booths/를 내려주기 시작하면 이 파일의 booths 배열을 그 응답의 data.booths로 그대로 교체하면 된다 — 필드명이 이미 같아서 매핑 코드가 필요 없다.",
+  "_placement_note": "2026-09-20: 부스 7개 배치. 좌표는 wonheunghall_mainhall.blend 의 실제 지오메트리에서 계산했다. 원흥관 구역에서 6x3m 부스가 들어갈 만한 평지는 두 군데뿐이다. (1) 본동 남측면 앞 광장(브릭 포장, 씬 y=0.12) — 본동이 y축 기준 -21.3° 돌아가 있어서 부스도 같은 각도(rotation -21)로 건물과 나란히 세웠다. 광장 네 모서리는 three 기준 (-33.4,9.2) (-10.1,18.3) (-6.0,7.9) (-29.3,-1.2) 이고, 부스는 건물 벽에서 7.1m 떨어진 한 줄에 7m 간격으로 뒀다 — 벽 쪽 3.2m 라인은 벤치와 빨간 차양(캐노피)이 차지하고 있어 비웠다. (2) 원흥관과 본관 사이 아스팔트 골목(씬 y=0.02, x 4.3~9.55) — 폭이 5.25m라 부스를 90° 돌려 긴 변(6m)이 z축과 나란하게 세웠다(x 5.4~8.4 점유, 양쪽 연석과 1m 이상 이격). 골목 양쪽 가로수(x=4.0, 9.85)와 가로등(x=4.05, 9.82)은 피했다. 학림관과 마찬가지로 축제 기간 차량 통제를 가정한 배치다.",
+  "_lantern_note": "lantern_count는 이웃한 부스끼리 밝기 단계가 2단계 이상 벌어지도록 섞었다. 혜화관(zone1)에서 배운 것 — 단계가 1씩만 차이 나면 항상 켜져 있는 조명끈 + 블룸 포화 + 7.5m 반경 글로우가 겹쳐서 육안으로는 전부 같은 밝기로 보인다. 단계 구간은 constants/lanternTiers.js (0/1/10/30/50/100).",
+  "booths": [
+    {
+      "booth_id": 501,
+      "name": "원흥관 광장 메인 주점",
+      "subtitle": "사범대학 학생회",
+      "place_type": "BOOTH",
+      "category": "ALCOHOL",
+      "location_detail": "원흥관 앞 광장 1번 부스(서측 끝)",
+      "zone": "원흥관",
+      "map_x": -28.97,
+      "map_y": 7.61,
+      "map_elevation": 0.12,
+      "rotation": -21,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 118,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "16:00",
+        "close_at": "23:00"
+      }
+    },
+    {
+      "booth_id": 502,
+      "name": "전공 체험 부스",
+      "subtitle": "국어교육과",
+      "place_type": "BOOTH",
+      "category": "ETC",
+      "location_detail": "원흥관 앞 광장 2번 부스",
+      "zone": "원흥관",
+      "map_x": -22.45,
+      "map_y": 10.15,
+      "map_elevation": 0.12,
+      "rotation": -21,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 3,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "11:00",
+        "close_at": "18:00"
+      }
+    },
+    {
+      "booth_id": 503,
+      "name": "동빛 에코존",
+      "subtitle": "환경동아리 연합",
+      "place_type": "BOOTH",
+      "category": "ECO",
+      "location_detail": "원흥관 앞 광장 3번 부스",
+      "zone": "원흥관",
+      "map_x": -15.93,
+      "map_y": 12.69,
+      "map_elevation": 0.12,
+      "rotation": -21,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 62,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "11:00",
+        "close_at": "20:00"
+      }
+    },
+    {
+      "booth_id": 504,
+      "name": "포토존 & 굿즈",
+      "subtitle": "원흥관 학생회 연합",
+      "place_type": "BOOTH",
+      "category": "COLLAB",
+      "location_detail": "원흥관 앞 광장 4번 부스(차양 동측)",
+      "zone": "원흥관",
+      "map_x": -9.4,
+      "map_y": 15.23,
+      "map_elevation": 0.12,
+      "rotation": -21,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 0,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "12:00",
+        "close_at": "21:00"
+      }
+    },
+    {
+      "booth_id": 505,
+      "name": "야시장 먹거리 1",
+      "subtitle": "역사교육과",
+      "place_type": "BOOTH",
+      "category": "ETC",
+      "location_detail": "원흥관·본관 사이 골목 북측 부스",
+      "zone": "원흥관",
+      "map_x": 6.9,
+      "map_y": 5.0,
+      "map_elevation": 0.02,
+      "rotation": 90,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 27,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "16:00",
+        "close_at": "23:00"
+      }
+    },
+    {
+      "booth_id": 506,
+      "name": "야시장 먹거리 2",
+      "subtitle": "수학교육과",
+      "place_type": "BOOTH",
+      "category": "ALCOHOL",
+      "location_detail": "원흥관·본관 사이 골목 중앙 부스",
+      "zone": "원흥관",
+      "map_x": 6.9,
+      "map_y": 13.0,
+      "map_elevation": 0.02,
+      "rotation": 90,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 105,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "16:00",
+        "close_at": "23:00"
+      }
+    },
+    {
+      "booth_id": 507,
+      "name": "임시 화장실",
+      "subtitle": "총무팀",
+      "place_type": "TOILET",
+      "category": "TOILET",
+      "location_detail": "원흥관·본관 사이 골목 남측 끝",
+      "zone": "원흥관",
+      "map_x": 6.9,
+      "map_y": 21.0,
+      "map_elevation": 0.02,
+      "rotation": 90,
+      "thumbnail_url": "/src/app/performance/assets/performance-thumbnail.png",
+      "lantern_count": 9,
+      "has_my_lantern": false,
+      "operation": {
+        "open_at": "10:00",
+        "close_at": "23:59"
+      }
+    }
+  ]
+}

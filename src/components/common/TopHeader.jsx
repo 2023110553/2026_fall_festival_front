@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import LoginModal from '../../app/auth/LoginModal'
-import ConfirmLogoutModal from '../../app/mypage/components/auth/ConfirmLogoutModal'
+import ConfirmLogoutModal from '../../app/auth/ConfirmLogoutModal'
+import { logoutAccount } from '../../api/auth'
 import { useAuth } from '../../hooks/useAuth'
 import { useLanterns } from '../../app/lantern/context/LanternProvider'
 
@@ -25,16 +25,17 @@ const LANGUAGES = [
 export default function TopHeader({
   title,
   appearance = 'dark',
+  zIndex = 100,
   isLoggedIn: isLoggedInOverride,
 }) {
-  const navigate = useNavigate()
-  const { isLoggedIn: authIsLoggedIn, logout } = useAuth()
+  const { isLoggedIn: authIsLoggedIn } = useAuth()
   const { requestLanternList, requestCoupon } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false)
+  const [logoutPending, setLogoutPending] = useState(false)
   const headerRef = useRef(null)
   const languageMenuId = useId()
   const profileMenuId = useId()
@@ -76,15 +77,20 @@ export default function TopHeader({
     requestLanternList()
     closeProfileMenu()
   }
-  const handleLogout = () => {
-    setIsLogoutModalOpen(true)
+  const openLogoutModal = () => {
     closeProfileMenu()
+    setIsLogoutOpen(true)
   }
 
-  const handleConfirmLogout = () => {
-    setIsLogoutModalOpen(false)
-    logout()
-    navigate('/')
+  const handleLogout = async () => {
+    if (logoutPending) return
+    setLogoutPending(true)
+    try {
+      await logoutAccount()
+      setIsLogoutOpen(false)
+    } finally {
+      setLogoutPending(false)
+    }
   }
 
   const toggleLanguageMenu = () => {
@@ -99,7 +105,7 @@ export default function TopHeader({
 
   return (
     <>
-      <S.Header ref={headerRef}>
+      <S.Header ref={headerRef} $zIndex={zIndex}>
         <S.TitleGroup>
           <S.MarkerBox>
             <S.Marker src={titleMarker} alt="" aria-hidden="true" />
@@ -168,7 +174,7 @@ export default function TopHeader({
             <S.MenuItem type="button" role="menuitem" onClick={openMyLanternListModal}>
               나의 등불
             </S.MenuItem>
-            <S.LogoutItem type="button" role="menuitem" onClick={handleLogout}>
+            <S.LogoutItem type="button" role="menuitem" onClick={openLogoutModal}>
               <S.LogoutIcon src={logoutIcon} alt="" aria-hidden="true" />
               로그아웃
             </S.LogoutItem>
@@ -177,9 +183,10 @@ export default function TopHeader({
       </S.Header>
       <LoginModal open={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <ConfirmLogoutModal
-        isOpen={isLogoutModalOpen}
-        onClose={() => setIsLogoutModalOpen(false)}
-        onConfirm={handleConfirmLogout}
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={handleLogout}
+        pending={logoutPending}
       />
     </>
   )

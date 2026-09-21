@@ -1,18 +1,24 @@
 import Modal from '../../components/common/Modal'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { startKakaoLogin, loginErrorMessage } from './kakaoOAuth'
-import { authMockEnabled } from '../../api/mocks/authMock'
 import * as S from './LoginModal.styles'
 
 // 카카오 1초 로그인 모달 — 등불 달기(+) 진입 시 비로그인 상태면 이 모달을 먼저 띄운다.
 export default function LoginModal({ open, onClose, message }) {
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  const [scenario, setScenario] = useState('success')
   const errorMessage = error || message
+
+  useEffect(() => {
+    // 카카오 화면에서 뒤로가면 bfcache가 pending=true까지 복원할 수 있다.
+    const resetPending = () => setPending(false)
+    window.addEventListener('pageshow', resetPending)
+    return () => window.removeEventListener('pageshow', resetPending)
+  }, [])
 
   const handleClose = () => {
     setError('')
+    setPending(false)
     onClose()
   }
 
@@ -21,7 +27,7 @@ export default function LoginModal({ open, onClose, message }) {
     setError('')
     setPending(true)
     try {
-      startKakaoLogin(scenario)
+      startKakaoLogin()
     } catch (loginError) {
       setPending(false)
       setError(loginErrorMessage(loginError))
@@ -41,15 +47,6 @@ export default function LoginModal({ open, onClose, message }) {
           </S.SubTitle>
         </S.Header>
 
-        {authMockEnabled && <label>
-          임시 로그인 테스트{' '}
-          <select value={scenario} onChange={(event) => setScenario(event.target.value)} disabled={pending}>
-            <option value="success">로그인 성공</option>
-            <option value="auth-error">인증 실패 (401)</option>
-            <option value="server-error">서버 오류 (502)</option>
-            <option value="cancel">로그인 취소</option>
-          </select>
-        </label>}
         <S.KakaoButton onClick={handleKakaoLogin} disabled={pending}>
           <S.KakaoIcon
             width="18"

@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const Header = styled.header`
   position: relative;
-  z-index: 100;
+  z-index: ${({ $zIndex }) => $zIndex ?? 100};
   display: flex;
   width: 100%;
   max-width: 375px;

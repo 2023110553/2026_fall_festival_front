@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { useAuth } from '../../../hooks/useAuth'
+import { useAuthStore } from '../../../store/useAuthStore'
 import { FESTIVAL_DATES } from '../../../constants/festivalDates'
 import {
   createLantern as createLanternRequest,
@@ -9,6 +9,17 @@ import {
 } from '../../../api/lantern'
 
 const LanternContext = createContext(null)
+
+const couponKey = (userId) => `festival-coupon:${userId}`
+
+function readStored(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key))
+    return value ?? fallback
+  } catch {
+    return fallback
+  }
+}
 
 // 목록 조회 응답엔 festival_date가 없으므로, 축제 3일치를 날짜별로 따로 조회해서
 // 조회에 쓴 날짜를 그대로 festivalDate로 태깅한다 (MyLanternList의 DAY 1/2/3 탭 필터 기준).
@@ -34,16 +45,26 @@ const fetchAllFestivalDaysLanterns = async () => {
 // AppLayout에 항상 떠 있는 LanternFlowPage(작성/목록 모달)와 MyPage(마이페이지 버튼)가
 // 같은 리스트를 보게 하려고 도입 — 각자 로컬 상태로 따로 들고 있으면 서로 다른 등불 목록이 보이는 문제가 생긴다.
 export function LanternProvider({ children }) {
-  const { isLoggedIn } = useAuth()
-  const [lanterns, setLanterns] = useState([])
+  const userId = useAuthStore((state) => state.user?.id)
+  const sessionId = useAuthStore((state) => state.sessionId)
+  return (
+    <AccountLanternProvider key={`${userId ?? 'guest'}:${sessionId ?? ''}`} userId={userId}>
+      {children}
+    </AccountLanternProvider>
+  )
+}
+
+function AccountLanternProvider({ children, userId }) {
   // 부스 상세에서 현재 보고 있는 부스 — map 도메인이 상세 진입/이탈 시 세팅해준다.
   // { boothId, festivalDate } | null — 등불 달기 모달이 그 부스를 미리 선택해두고,
   // festivalDate가 오늘이 아니면 등불 달기 자체를 막는 데 쓰인다.
   const [activeBooth, setActiveBooth] = useState(null)
+  const [lanterns, setLanterns] = useState([])
+  const [coupon, setCoupon] = useState(() => readStored(couponKey(userId), null))
 
-  // 로그인 상태일 때만 본인 등불을 조회 — 로그아웃 시엔 목록을 비운다
+  // 로그인 상태일 때만 본인 등불을 서버에서 조회 — 로그아웃/게스트면 목록을 비운다
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (userId == null) {
       setLanterns([])
       return
     }
@@ -60,7 +81,11 @@ export function LanternProvider({ children }) {
     return () => {
       cancelled = true
     }
-  }, [isLoggedIn])
+  }, [userId])
+
+  useEffect(() => {
+    if (userId != null) localStorage.setItem(couponKey(userId), JSON.stringify(coupon))
+  }, [coupon, userId])
 
   // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
   const addLantern = async ({ boothId, nickname, message }) => {
@@ -132,7 +157,11 @@ export function LanternProvider({ children }) {
   return (
     <LanternContext.Provider
       value={{
+        activeBooth,
+        setActiveBooth,
         lanterns,
+        coupon,
+        setCoupon,
         addLantern,
         deleteLantern,
         editLantern,
@@ -140,8 +169,6 @@ export function LanternProvider({ children }) {
         requestCreateModal,
         requestLanternList,
         requestCoupon,
-        activeBooth,
-        setActiveBooth,
       }}
     >
       {children}
