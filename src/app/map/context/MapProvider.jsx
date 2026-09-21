@@ -1,4 +1,6 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { getBooths } from '../../../api/map'
+import { useAuthStore } from '../../../store/useAuthStore'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { MAP_ZONES } from '../../../constants/zones'
 
 // 지도 섹션(검색/구역/주야/날짜/바텀시트/등불보기 탭)에서만 쓰는 로컬 상태를 묶어두는 Context.
@@ -42,8 +44,49 @@ export function MapProvider({ children }) {
   // 때만 개발용 버튼을 달아 0~MAX_LANTERN_TIER 값을 넣어보면 된다.
   const [boothBrightnessPreview, setBoothBrightnessPreview] = useState(null) // null(자동) | 0~MAX_LANTERN_TIER(현재 5)
 
+  const [listTimeOfDay, setListTimeOfDay] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [listResponse, setListResponse] = useState(null)
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryKey = JSON.stringify([selectedDate, listTimeOfDay, selectedCategory, accessToken])
+  const currentList = listResponse?.key === queryKey ? listResponse : null
+  const isLoading = currentList == null
+  const isError = Boolean(currentList?.error)
+  const listError = currentList?.error ?? ''
+  const zoneLabel = MAP_ZONES.find((zone) => zone.id === zoneId)?.label
+  const booths = useMemo(() => (currentList?.data?.booths ?? []).filter(
+    (booth) => booth.zone === zoneLabel
+  ), [currentList, zoneLabel])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    getBooths({ date: selectedDate, timeSlot: listTimeOfDay, category: selectedCategory }, { signal: controller.signal })
+      .then(({ data: response }) => {
+        if (controller.signal.aborted) return
+        const data = response?.data
+        if (!response?.success || !Array.isArray(data?.booths)
+          || !/^\d{4}-\d{2}-\d{2}$/.test(data.festival_date)
+          || !['DAY', 'NIGHT'].includes(data.time_slot)) throw new Error('Invalid booth list response')
+        const date = selectedDate ?? data.festival_date
+        const slot = listTimeOfDay ?? data.time_slot.toLowerCase()
+        setListResponse({ key: JSON.stringify([date, slot, selectedCategory, accessToken]), data })
+        if (selectedDate == null) setSelectedDate(date)
+        if (listTimeOfDay == null) setListTimeOfDay(slot)
+        setTimeOfDay(slot)
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return
+        setListResponse({ key: queryKey, error: error.response?.status === 400
+          ? '날짜와 시간대 또는 카테고리를 확인해주세요.'
+          : '부스 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.' })
+      })
+    return () => controller.abort()
+  }, [selectedDate, listTimeOfDay, selectedCategory, accessToken, queryKey])
+
   const value = useMemo(
     () => ({
+      booths, isLoading, isError, listError,
+      listTimeOfDay, setListTimeOfDay, selectedCategory, setSelectedCategory,
       zoneId,
       setZoneId,
       timeOfDay,
@@ -62,6 +105,7 @@ export function MapProvider({ children }) {
       setBoothBrightnessPreview,
     }),
     [
+      booths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
       zoneId,
       timeOfDay,
       selectedDate,

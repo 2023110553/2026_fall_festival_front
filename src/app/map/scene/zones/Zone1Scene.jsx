@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
-import boothData from './zone1-booths.sample.json'
+import { useMapZoneBooths } from '../../hooks/useMapZones'
 
 // 구역 1(경영관·혜화관 거리) 씬 — 지형/건물 .glb 로드 + 부스 좌표 JSON을 기반으로
 // 부스 오브젝트를 동적으로 배치(clone/instancing)하는 방식 검증용.
@@ -40,6 +40,7 @@ import boothData from './zone1-booths.sample.json'
 //   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
 //     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
 export default function Zone1Scene({ brightnessLevel = null, onBoothClick }) {
+  const { booths } = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone1.glb')
 
   // 2026-09-13: 낮/노을/밤 그림자(PCFSoft, directionalLight) 적용을 위해
@@ -57,7 +58,7 @@ export default function Zone1Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }
