@@ -32,7 +32,9 @@ export default function NoticeEditor({
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(initialImageUrl ?? '')
   const [isLeaveOpen, setIsLeaveOpen] = useState(false)
-  const [isToastVisible, setIsToastVisible] = useState(false)
+  // 띄울 문구 자체를 상태로 둔다 — 필수값 안내(toastMessage) 또는 onSubmit이 돌려준 실패 메시지
+  const [visibleToast, setVisibleToast] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const titleRef = useAutoGrow(title)
   const contentRef = useAutoGrow(content)
@@ -46,10 +48,10 @@ export default function NoticeEditor({
   }, [imageFile])
 
   useEffect(() => {
-    if (!isToastVisible) return
-    const timer = setTimeout(() => setIsToastVisible(false), TOAST_DURATION)
+    if (!visibleToast) return
+    const timer = setTimeout(() => setVisibleToast(''), TOAST_DURATION)
     return () => clearTimeout(timer)
-  }, [isToastVisible])
+  }, [visibleToast])
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
@@ -57,12 +59,20 @@ export default function NoticeEditor({
     e.target.value = ''
   }
 
-  const handleSubmit = () => {
+  // onSubmit이 실패 메시지(문자열)를 돌려주면 토스트로 띄운다 (서버 400의 errors/message)
+  const handleSubmit = async () => {
+    if (isSubmitting) return
     if (!title.trim() || !content.trim()) {
-      setIsToastVisible(true)
+      setVisibleToast(toastMessage)
       return
     }
-    onSubmit({ title, content, imageFile })
+    setIsSubmitting(true)
+    try {
+      const failureMessage = await onSubmit({ title, content, imageFile })
+      if (failureMessage) setVisibleToast(failureMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -104,7 +114,7 @@ export default function NoticeEditor({
           />
         </S.ContentCard>
 
-        {isToastVisible && (
+        {visibleToast && (
           <S.Toast role="alert">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
@@ -114,11 +124,11 @@ export default function NoticeEditor({
               />
               <path d="M6.5 13a1.5 1.5 0 0 0 3 0" stroke="#000" strokeLinecap="round" />
             </svg>
-            {toastMessage}
+            {visibleToast}
           </S.Toast>
         )}
         <S.BottomBar>
-          <S.PrimaryButton type="button" onClick={handleSubmit}>
+          <S.PrimaryButton type="button" disabled={isSubmitting} onClick={handleSubmit}>
             {submitLabel}
           </S.PrimaryButton>
         </S.BottomBar>
