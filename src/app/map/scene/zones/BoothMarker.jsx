@@ -173,6 +173,9 @@ import { MAX_LANTERN_TIER, getLanternTier } from '../../../../constants/lanternT
 //   - position: [x, y, z] (Three.js 씬 좌표 — y는 이 부스가 놓일 지면의 실제 높이(표고))
 //   - rotationY: 라디안 단위 Y축 회전 (부스 정면이 바라보는 방향 — 보통 0이면 통로와 나란)
 //   - label: 부스 이름 — 라벨 앵커 그룹 이름에만 사용(실제 텍스트 렌더링은 프론트A 담당)
+//   - showLabel: 위 <Html> PinLabel을 그릴지 여부(기본 true). 2026-09-20에 3D 핀(BoothPin)을
+//     도입하면서 추가 — 둘을 같은 자리에 겹쳐 띄우면 지저분해서, ZoneBooths가 마커 모드에 따라
+//     이 값을 꺼준다. 라벨 앵커 좌표(booth-label-* 그룹) 자체는 그대로 두고 렌더만 건너뛴다.
 //   - color: 캐노피(지붕+처마) 색상 — 카테고리 구분용, 기본값은 실제 천막 사진 기준 파란색
 //   - accentColor: 용마루 포인트 컬러
 //   - lanternCount: 이 부스에 달린 등불 개수(place.lantern_count) — PinLabel의 숫자 표시와 밝기 단계
@@ -569,6 +572,7 @@ export default function BoothMarker({
   position,
   rotationY = 0,
   label,
+  showLabel = true,
   category,
   lanternCount = 0,
   color = '#1d5fa8',
@@ -722,7 +726,7 @@ export default function BoothMarker({
           지형/다른 부스에 가려질 때 깜빡임(재계산 비용)이 있어서 이번 참고 구현에는 넣지 않음 —
           필요하면 프론트A가 <Html occlude> 형태로 바꿔도 됨. 색은 랜턴/조명 톤(#ffdca0 계열)과
           맞춰 부스 장식 팔레트와 통일감을 줬다. */}
-      {label ? (
+      {label && showLabel ? (
         <group
           name={`booth-label-${label}`}
           position={[0, poleHeight + roofRise + 0.5, 0]}
