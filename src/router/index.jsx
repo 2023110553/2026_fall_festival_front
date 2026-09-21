@@ -9,7 +9,6 @@ import MapPage from '../app/map/MapPage'
 import LanternFlowPage from '../app/lantern/LanternFlowPage'
 import PerformancePage from '../app/performance/PerformancePage'
 import InfoPage from '../app/info/InfoPage'
-import MyPage from '../app/mypage/MyPage'
 import ComponentPreviewPage from '../app/dev/ComponentPreviewPage'
 import PerformanceDetailPage from '../app/performance/PerformanceDetailPage'
 
@@ -42,7 +41,6 @@ export const router = createBrowserRouter([
       { path: 'info/collab/:collabSlug', element: <InfoPage /> },
       { path: 'info/notices/:noticeId', element: <InfoPage /> },
       { path: 'info/lost-items/:lostItemId', element: <InfoPage /> },
-      { path: 'mypage', element: <MyPage /> },
     ],
   },
   {
