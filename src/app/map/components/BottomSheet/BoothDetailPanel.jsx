@@ -8,115 +8,16 @@ import { useMapContext } from '../../context/MapProvider'
 import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
 
-const List = styled.ul`
-  list-style: none;
-  margin: 16px 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-  > li { min-width: 0; }
-`
-const Action = styled.button`
-  min-height: 44px;
-  padding: 8px 16px;
-  margin: 8px 0;
-  cursor: pointer;
-`
-
-// 부스·날짜·로그인 상태가 바뀌면 목록과 필터를 초기화한다.
-export default function LanternViewTab({ boothId }) {
-  const { selectedDate } = useMapContext()
-  const { isLoggedIn, accessToken } = useAuthStore()
-  const date = selectedDate ?? '2026-09-29'
-  const key = JSON.stringify([boothId, date, isLoggedIn, accessToken])
-  return <BoothLanternList key={key} boothId={boothId} date={date} isLoggedIn={isLoggedIn} />
-}
-
-function BoothLanternList({ boothId, date, isLoggedIn }) {
-  const [onlyMine, setOnlyMine] = useState(false)
-  return (
-    <section aria-label="부스 등불 목록">
-      <p>등불을 달아 부스를 밝혀주세요! 욕설, 비방과 같은 내용을 게시할 시 처벌을 받을 수 있습니다.</p>
-      <label>
-        <input type="checkbox" checked={onlyMine} disabled={!isLoggedIn}
-          onChange={(event) => setOnlyMine(event.target.checked)} />
-        내가 쓴 등불만 보기
-      </label>
-      <LanternResults key={String(onlyMine)} boothId={boothId} date={date} mine={onlyMine} />
-    </section>
-  )
-}
-
-function LanternResults({ boothId, date, mine }) {
-  const { refreshBooths } = useMapContext()
-  const [editing, setEditing] = useState(null)
-  const [deleting, setDeleting] = useState(null)
-  const [pending, setPending] = useState(false)
-  const [mutationError, setMutationError] = useState('')
-  const busy = useRef(false)
-  const mounted = useRef(false)
-  useEffect(() => {
-    mounted.current = true
-    return () => { mounted.current = false }
-  }, [])
-
-  const [items, setItems] = useState([])
-  const [page, setPage] = useState(0)
-  const [attempt, setAttempt] = useState(0)
-  const [hasNext, setHasNext] = useState(false)
-  const [status, setStatus] = useState('loading')
-  const [error, setError] = useState('')
-
-  const errorMessageOf = (err) => {
-    const known = {
-      NOT_OWNER: '본인이 작성한 등불만 수정·삭제할 수 있어요.',
-      LANTERN_NOT_FOUND: '존재하지 않는 등불입니다.',
-      ALREADY_DELETED: '이미 삭제된 등불입니다.',
-    }
-    return known[err.response?.data?.code] ?? err.response?.data?.message ?? '처리하지 못했어요. 다시 시도해주세요.'
-  }
-
-  const refetchList = () => {
-    refreshBooths()
-    if (!mounted.current) return
-    setItems([])
-    setPage(0)
-    setStatus('loading')
-    setAttempt((value) => value + 1)
-  }
-
-  // EditLanternModal(공용 컴포넌트, develop 최신 버전)은 pending/error prop이 없고,
-  // onSubmit이 reject되면 스스로 에러 문구를 보여주며 열려있고, resolve되면 스스로
-  // onClose를 호출한다 — 그 계약에 맞춰 에러를 err.response.data.message 모양으로 다시 던진다.
-  const handleEditSubmit = async (id, changes) => {
-    try {
-      const { data } = await updateLantern(id, changes)
-      if (!data?.success) throw new Error('요청을 완료하지 못했어요.')
-    } catch (err) {
-      throw { response: { data: { message: errorMessageOf(err) } } }
-    }
-    refetchList()
-  }
-
-  const handleDelete = async (id) => {
-    if (busy.current) return
-    busy.current = true
-    setPending(true)
-    setMutationError('')
-    try {
-      const { data } = await deleteLantern(id)
-      if (!data?.success) throw new Error('요청을 완료하지 못했어요.')
-      refetchList()
-      if (!mounted.current) return
-      setDeleting(null)
-    } catch (err) {
-      if (!mounted.current) return
-      setMutationError(errorMessageOf(err))
-    } finally {
-      busy.current = false
-      if (mounted.current) setPending(false)
-    }
-  }
+// 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
+export default function BoothDetailPanel({ boothId, onBack }) {
+  const { sheetTab, setSheetTab, selectedDate, boothRevision } = useMapContext()
+  const { setActiveBooth } = useLanterns()
+  const { isLoggedIn } = useAuth()
+  const [detail, setDetail] = useState(null)
+  const currentDetail = detail?.boothId === boothId && detail?.isLoggedIn === isLoggedIn
+    ? detail : null
+  const booth = currentDetail?.booth ?? null
+  const isLoading = currentDetail == null
 
   useEffect(() => {
     const controller = new AbortController()
@@ -149,8 +50,27 @@ function LanternResults({ boothId, date, mine }) {
           : '등불 목록을 불러오지 못했어요. 다시 시도해주세요.')
         setStatus('error')
       })
-    return () => controller.abort()
-  }, [boothId, date, mine, page, attempt])
+    return () => { ignore = true }
+  }, [boothId, isLoggedIn, boothRevision])
+  const simple =
+    booth &&
+    (booth.place_type === 'FACILITY' ||
+      ['TOILET', 'ALCOHOL'].includes(booth.category))
+  const money = (value) =>
+    value ? `${value.toLocaleString('ko-KR')}원` : '무료'
+
+  const activeBoothId = booth && !simple ? booth.booth_id : null
+  const festivalDate = selectedDate ?? '2026-09-29'
+
+  useEffect(() => {
+    setActiveBooth(activeBoothId == null ? null : {
+      boothId: activeBoothId,
+      festivalDate,
+    })
+
+    // 목록으로 돌아가거나 지도 페이지를 떠날 때 이전 부스 선택을 남기지 않는다.
+    return () => setActiveBooth(null)
+  }, [activeBoothId, festivalDate, setActiveBooth])
 
   return (
     <div aria-busy={status === 'loading'}>
