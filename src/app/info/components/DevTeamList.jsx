@@ -5,7 +5,7 @@ import * as S from './DevTeamList.styles'
 const getCardPosition = (index, activeIndex) => index - activeIndex
 
 export default function DevTeamList({ teams }) {
-  const [activeRole, setActiveRole] = useState(teams[1]?.id ?? teams[0]?.id ?? '')
+  const [activeRole, setActiveRole] = useState(teams[0]?.id ?? '')
   const [activeIndex, setActiveIndex] = useState(0)
   const pointerRef = useRef(null)
   const suppressClickRef = useRef(false)

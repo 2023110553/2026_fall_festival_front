@@ -15,3 +15,12 @@ export function getTodayLanternCount(lanterns) {
   const today = getCurrentFestivalDate()
   return lanterns.filter((l) => l.festivalDate === today).length
 }
+
+// 오늘 이미 활성 등불을 단 부스 ID 목록 — 하나의 부스엔 등불 하나만 달 수 있어서
+// 부스 드롭다운에서 미리 막아주는 용도(삭제한 부스는 다시 선택 가능하므로 active만 카운트)
+export function getTodayUsedBoothIds(lanterns) {
+  const today = getCurrentFestivalDate()
+  return lanterns
+    .filter((l) => l.festivalDate === today && l.status === 'active')
+    .map((l) => l.boothId)
+}

@@ -30,11 +30,17 @@ export default function BottomNav() {
     <S.NavItem
       key={item.path}
       type="button"
+      $active={isActive(item.path)}
       aria-label={item.label}
       aria-current={isActive(item.path) ? 'page' : undefined}
       onClick={() => navigate(item.path)}
     >
-      <S.Icon src={item.icon} alt="" aria-hidden="true" />
+      <S.Icon
+        src={item.icon}
+        alt=""
+        $active={isActive(item.path)}
+        aria-hidden="true"
+      />
       <S.Label>{item.label}</S.Label>
     </S.NavItem>
   )

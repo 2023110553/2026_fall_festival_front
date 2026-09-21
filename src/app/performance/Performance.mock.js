@@ -9,6 +9,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-09-29T16:00:00',
         end_at: '2026-09-29T17:00:00',
         is_live: true,
+        has_setlist: true,
     },
     {
         performance_id: 2,
@@ -19,6 +20,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-09-29T17:30:00',
         end_at: '2026-09-29T18:15:00',
         is_live: false,
+        has_setlist: true,
     },
     {
         performance_id: 3,
@@ -29,6 +31,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-09-29T19:00:00',
         end_at: '2026-09-29T20:00:00',
         is_live: false,
+        has_setlist: false,
     },
     {
         performance_id: 4,
@@ -39,6 +42,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-09-30T16:30:00',
         end_at: '2026-09-30T17:10:00',
         is_live: false,
+        has_setlist: true,
     },
     {
         performance_id: 5,
@@ -49,6 +53,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-09-30T18:00:00',
         end_at: '2026-09-30T18:50:00',
         is_live: false,
+        has_setlist: true,
     },
     {
         performance_id: 6,
@@ -59,6 +64,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-10-01T17:00:00',
         end_at: '2026-10-01T17:50:00',
         is_live: false,
+        has_setlist: true,
     },
     {
         performance_id: 7,
@@ -69,6 +75,7 @@ export const PERFORMANCE_MOCKS = [
         start_at: '2026-10-01T19:30:00',
         end_at: '2026-10-01T20:40:00',
         is_live: false,
+        has_setlist: false,
     },
 ]
 

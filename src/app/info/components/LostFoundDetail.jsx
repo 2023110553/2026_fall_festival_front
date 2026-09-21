@@ -1,6 +1,8 @@
 import InfoDetailHeader from './InfoDetailHeader'
 import * as S from './LostFoundDetail.styles'
 
+const LOST_FOUND_INSTAGRAM_URL = 'https://www.instagram.com/donggukfesta/'
+
 export default function LostFoundDetail({ item, onBack }) {
   if (!item) return null
 
@@ -33,11 +35,13 @@ export default function LostFoundDetail({ item, onBack }) {
         ))}
       </S.Tags>
 
-      {item.instagram_url && (
-        <S.Link href={item.instagram_url} target="_blank" rel="noreferrer">
-          분실물 찾으러 가기
-        </S.Link>
-      )}
+      <S.Link
+        href={LOST_FOUND_INSTAGRAM_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        분실물 찾으러 가기
+      </S.Link>
     </S.Page>
   )
 }

@@ -15,6 +15,7 @@ export default function TimelineList({ performances = [], onSelect }) {
           <S.Card
             type="button"
             $isLive={p.is_live}
+            disabled={!p.has_setlist}
             onClick={() => onSelect(p.performance_id)}
           >
             <S.Left>
@@ -24,7 +25,7 @@ export default function TimelineList({ performances = [], onSelect }) {
                 {p.affiliation && <S.Category>{p.affiliation}</S.Category>}
               </S.TextGroup>
             </S.Left>
-            <S.Chevron />
+            {p.has_setlist && <S.Chevron aria-hidden="true" />}
           </S.Card>
         </S.Item>
       ))}
