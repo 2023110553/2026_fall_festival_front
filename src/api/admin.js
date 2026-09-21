@@ -10,6 +10,12 @@ export const adminLogin = (adminKey) => apiClient.post('/api/admin/login', { adm
 // top_report_reason은 신고 0건이면 null, 삭제된 등불은 서버에서 제외
 export const getAdminLanterns = ({ sort = 'REPORT_DESC', page = 0, size = 20 } = {}) =>
   apiClient.get('/api/lanterns/', { params: { sort, page, size } })
+
+// 신고 상세 조회(확인 모달용) — 목록과 달리 booth_name에 위치가 빠지고 booth_subtitle(소속 학과)이 붙는다
+// 응답 data: { lantern_id, nickname, booth_name, booth_subtitle, content, report_count, top_report_reason,
+//              report_reason_summary: [{ reason, count }], created_at }
+// 없거나 이미 삭제된 등불은 404(LANTERN_NOT_FOUND)
+export const getAdminLanternDetail = (lanternId) => apiClient.get(`/api/lanterns/${lanternId}/`)
 export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/admin/lanterns/${lanternId}`)
 
 // 공지 관리

@@ -79,6 +79,14 @@ export const MessageBox = styled.p`
   font-weight: 500;
 `
 
+export const ErrorMessage = styled.p`
+  margin: 8px 0 0;
+  color: #AD0000;
+  font-size: 11px;
+  text-align: center;
+  font-family: var(--font-pretendard);
+`
+
 export const ButtonRow = styled.div`
   display: flex;
   gap: 9px;
