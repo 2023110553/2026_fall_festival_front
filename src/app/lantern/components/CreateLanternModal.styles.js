@@ -159,6 +159,12 @@ export const Input = styled.input`
     font-size: 13px;
     outline: none;
     box-sizing: border-box;
+
+    &::placeholder {
+        font-family: Pretendard;
+        font-size: 13px;
+        color: #aaaaaa;
+    }
 `
 
 export const Textarea = styled.textarea`
@@ -172,6 +178,12 @@ export const Textarea = styled.textarea`
     outline: none;
     resize: none;
     box-sizing: border-box;
+
+    &::placeholder {
+        font-family: Pretendard;
+        font-size: 13px;
+        color: #aaaaaa;
+    }
 `
 
 export const ErrorText = styled.p`

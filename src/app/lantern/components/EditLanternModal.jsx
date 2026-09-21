@@ -52,7 +52,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
                         <S.NicknameInput
                             value={nickname}
                             onChange={handleNicknameChange}
-                            placeholder="닉네임을 입력해주세요"
+                            placeholder="닉네임을 입력해주세요."
                             maxLength={5}
                         />
                         <S.CharCount>{nickname.length}/5</S.CharCount>
@@ -62,7 +62,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
                         <S.MessageTextArea
                             value={message}
                             onChange={handleMessageChange}
-                            placeholder="응원의 한마디를 남겨주세요"
+                            placeholder="응원의 한마디를 남겨주세요."
                             maxLength={30}
                         />
                         <S.CharCount>{message.length}/30</S.CharCount>

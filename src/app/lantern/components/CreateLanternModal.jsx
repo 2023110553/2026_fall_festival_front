@@ -195,7 +195,7 @@ export default function CreateLanternModal({
                   onClick={() => setIsBoothOpen((prev) => !prev)}
                   $hasValue={selectedBooth !== ''}
                 >
-                  <span>{isBoothListLoading ? '부스 목록을 불러오는 중...' : selectedBoothName}</span>
+                  <span>{isBoothListLoading ? '부스 목록을 불러오는 중...' : (selectedBoothName || '부스를 선택해주세요.')}</span>
                   <S.Chevron
                     $isOpen={isBoothOpen}
                     width="10"
@@ -233,6 +233,7 @@ export default function CreateLanternModal({
                   maxLength={5}
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
+                  placeholder="닉네임을 입력해주세요."
                 />
                 <S.CharCount>{nickname.length}/5</S.CharCount>
               </S.InputWrapper>
@@ -247,6 +248,7 @@ export default function CreateLanternModal({
                   rows={3}
                   value={content}
                   onChange={handleContentChange}
+                  placeholder="응원의 한마디를 남겨주세요."
                 />
                 <S.CharCount>{content.length}/30</S.CharCount>
               </S.InputWrapper>
