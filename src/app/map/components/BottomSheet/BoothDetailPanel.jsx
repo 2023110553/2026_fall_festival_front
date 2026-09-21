@@ -1,5 +1,7 @@
 ﻿import { useMapContext } from '../../context/MapProvider'
 import LanternViewTab from '../LanternViewTab/LanternViewTab'
+import { useEffect } from 'react'
+import { useLanterns } from '../../../lantern/context/LanternProvider'
 import { useAuth } from '../../../../hooks/useAuth'
 import mockDetails from '../../mocks/boothDetailResponses.json'
 import mockBoothImage from '../../../performance/assets/performance-thumbnail.png'
@@ -9,7 +11,8 @@ import * as S from './BoothDetailPanel.styles'
 
 // 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
 export default function BoothDetailPanel({ boothId, onBack }) {
-  const { sheetTab, setSheetTab } = useMapContext()
+  const { sheetTab, setSheetTab, selectedDate } = useMapContext()
+  const { setActiveBooth } = useLanterns()
   const { isLoggedIn } = useAuth()
   // 3D 테스트 핀의 임시 ID를 상세 목데이터 ID로 연결한다.
   const pinIds = {
@@ -35,6 +38,19 @@ export default function BoothDetailPanel({ boothId, onBack }) {
       ['TOILET', 'ALCOHOL'].includes(booth.category))
   const money = (value) =>
     value ? `${value.toLocaleString('ko-KR')}원` : '무료'
+
+  const activeBoothId = booth && !simple ? booth.booth_id : null
+  const festivalDate = selectedDate ?? '2026-09-29'
+
+  useEffect(() => {
+    setActiveBooth(activeBoothId == null ? null : {
+      boothId: activeBoothId,
+      festivalDate,
+    })
+
+    // 목록으로 돌아가거나 지도 페이지를 떠날 때 이전 부스 선택을 남기지 않는다.
+    return () => setActiveBooth(null)
+  }, [activeBoothId, festivalDate, setActiveBooth])
 
   return (
     <S.Panel>

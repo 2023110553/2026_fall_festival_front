@@ -8,6 +8,8 @@ const STORAGE_KEY = 'my_lanterns'
 // AppLayout에 항상 떠 있는 LanternFlowPage(작성/목록 모달)와 MyPage(마이페이지 버튼)가
 // 같은 리스트를 보게 하려고 도입 — 각자 로컬 상태로 따로 들고 있으면 서로 다른 등불 목록이 보이는 문제가 생긴다.
 export function LanternProvider({ children }) {
+  // 지도 상세에서 보고 있는 부스와 날짜. 상세를 나가면 null로 초기화한다.
+  const [activeBooth, setActiveBooth] = useState(null)
   // 마운트 시 1회만 localStorage에서 초기값을 읽어온다 (읽기용 별도 useEffect보다
   // lazy initializer가 더 단순하고, "쓰기 이펙트가 초기값을 덮어쓰는" 순서 문제도 없다)
   const [lanterns, setLanterns] = useState(() => {
@@ -60,6 +62,8 @@ export function LanternProvider({ children }) {
   return (
     <LanternContext.Provider
       value={{
+        activeBooth,
+        setActiveBooth,
         lanterns,
         addLantern,
         deleteLantern,
