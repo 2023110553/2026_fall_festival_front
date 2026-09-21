@@ -3,12 +3,12 @@ import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
 import { useMapZoneBooths } from '../../hooks/useMapZones'
 
-// 구역 2(팔정도) 씬 — 지형/건물 .glb 로드 + 부스 목데이터 배치.
+// 구역 2(팔정도) 씬 — 지형/건물 .glb 로드 + API 부스 좌표 배치.
 //
 // 2026-09-15: public/models/zone2.glb 최초 연결(이슈 #22). 당시엔 부스 좌표 데이터가 없어서
 // 지형만 렌더링했다.
 //
-// 2026-09-19: 부스 목데이터 연결 — zone2-booths.sample.json(7개)을 ZoneBooths로 배치한다.
+// 2026-09-19: ZoneBooths 연결. 현재 좌표와 밝기 정보는 API 응답을 사용한다.
 // 좌표는 zone2.glb의 실제 지오메트리(보행로/가로등/나무/벤치 위치)를 읽어서 잡았고, 팔정도는
 // 재원 요청대로 대부분 5단계(등불 100개 이상)로 채워 축제 중심 구역답게 가장 밝게 보이도록 했다.
 // 배치 근거는 JSON 상단 _placement_note 참고. props(brightnessLevel/onBoothClick) 계약은 Zone1Scene과

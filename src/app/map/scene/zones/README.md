@@ -4,26 +4,20 @@
 
 확정된 3개 구역 (`campus-map/final-plan-team-share.md` v3) + 추가 구역:
 
-- `zone1` — 경영관·혜화관 거리 → `public/models/zone1.glb` (`Zone1Scene.jsx`, 부스 목데이터 `zone1-booths.sample.json` 12개)
-- `zone2` — 팔정도 → `public/models/zone2.glb` (`Zone2Scene.jsx`, 부스 목데이터 `zone2-booths.sample.json` 7개 — 2026-09-19 추가, 대부분 5단계)
-- `zone3` — 만해광장 + 후문쪽 거리 → `public/models/zone3.glb` (`Zone3Scene.jsx`, 2026-09-19 연결 — 광장 본체까지 반영, 후문쪽 거리는 모델링 추가 후 같은 파일로 재-export 예정; 부스 목데이터 `zone3-booths.sample.json` 7개; 2026-09-21부터 씬에서 glb를 2배로 키워 씀)
-- `zone4` — 학림관 (2026-09-16 추가, 별개 독립 구역) → `public/models/hangnimgwan.glb` (`Zone4Scene.jsx`, 부스 목데이터 `zone4-booths.sample.json` 6개)
-- `zone5` — 원흥관 (2026-09-20 추가, 별개 독립 구역) → `public/models/zone5.glb` (`Zone5Scene.jsx`, 부스 목데이터 `zone5-booths.sample.json` 3개 — 2026-09-21 건물 후면 광장 4개 삭제; 씬에서 glb를 2배로 키워 씀)
+- `zone1` — 경영관·혜화관 거리 → `public/models/zone1.glb` (`Zone1Scene.jsx`, API 부스 좌표 사용)
+- `zone2` — 팔정도 → `public/models/zone2.glb` (`Zone2Scene.jsx`, API 부스 좌표 사용)
+- `zone3` — 만해광장 + 후문쪽 거리 → `public/models/zone3.glb` (`Zone3Scene.jsx`, API 부스 좌표 사용; 씬에서 glb를 2배로 키워 씀)
+- `zone4` — 학림관 → `public/models/hangnimgwan.glb` (`Zone4Scene.jsx`, API 부스 좌표 사용)
+- `zone5` — 원흥관 (2026-09-20 추가, 별개 독립 구역) → `public/models/zone5.glb` (`Zone5Scene.jsx`; 씬에서 glb를 2배로 키워 씀)
 
 최종 export된 `.glb` 파일 자체는 `public/models/`에 두고, 이 폴더에는 구역별 로딩 컴포넌트(예: `Zone1Scene.jsx`)와 부스 앵커 좌표 JSON 연동 코드를 둔다.
 
-## 부스 목데이터 → 3D 배치 (2026-09-19)
+## 부스 API → 3D 배치
 
-- 구역 씬은 전부 같은 모양이다: `useGLTF`로 지형 glb 로드 + 그림자 cast/receive 켜기 + `<ZoneBooths places={boothData.places} …/>`.
-  `ZoneBooths.jsx`가 `places[]`를 `BoothMarker`로 바꿔 그리므로, 부스 관련 코드는 그 파일과 `BoothMarker.jsx`에만 있다.
-- `zoneN-booths.sample.json`의 `coordinates`는 Three.js 씬 좌표(m). 블렌더(Z-up)에서 glTF(+Y up)로 export되면
-  `(x, y, z) → (x, z, -y)`가 되므로 `three.x = blender.x`, `three.y = blender.z(높이)`, `three.z = -blender.y`. `rotation`은 도 단위 Y축 회전(0이면 6m 긴 변이 x축과 나란).
-- **예외 — zone3(만해광장)·zone5(원흥관)는 씬에서 glb를 2배로 키워 쓴다**(2026-09-21, 각 `ZoneNScene.jsx`의 `MAP_SCALE`).
-  모델이 실제보다 작게 만들어져 있어서 실제 크기 부스(6×3m)에 비해 좁아 보였기 때문. 부스는 키우지 않으므로 두 구역의 부스 좌표는
-  `glb 좌표 × 2`다 — 블렌더에서 좌표를 뽑으면 2를 곱해서 넣을 것.
-- 좌표는 최적화된 glb의 지오메트리를 재질 이름으로 읽어서(보행로/보도 타일, 가로등, 나무, 벤치, 휴지통, 횡단보도 …) 겹치지 않는 자리에 잡았다. 각 JSON 상단 `_placement_note`에 근거를 적어뒀으니 좌표를 옮길 때 참고.
-- 부스 밝기 단계는 `lantern_count`로 자동 계산된다(`constants/lanternTiers.js` 구간 0/1/10/30/50/100 → `BoothMarker` 표). 팔정도는 재원 요청으로 대부분 100개 이상(최고 단계).
-- 이 JSON들은 3D 배치 전용이고, 바텀시트 목록이 쓰는 `mocks/boothResponses.json`(세호님 API 명세 mock)과는 아직 별개라 `booth_id`가 서로 안 맞는다. 백엔드가 `GET /zones/{zoneId}/places`로 좌표를 내려주면 한 소스로 합친다.
+- zone1~4는 `useMapZoneBooths`에서 받은 API 데이터를 `ZoneBooths`와 `BoothMarker`로 렌더링한다.
+- `map_x`, `map_y`, `map_elevation`, `rotation`, `lantern_count`는 API 응답을 그대로 사용한다.
+- zone5를 포함한 모든 구역의 부스 좌표는 장소 목록 API 응답을 사용한다.
+- zone3·zone5는 씬의 `MAP_SCALE`이 2이므로 부스 좌표에도 같은 배율이 반영되어야 한다.
 
 ## glb 최적화 파이프라인 (2026-09-16, 이슈 #33)
 

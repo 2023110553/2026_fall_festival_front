@@ -139,11 +139,14 @@ export const LanguageOption = styled.button`
   text-align: left;
   white-space: nowrap;
 
-  &:disabled {
-    color: #100b0b;
-    cursor: default;
-    opacity: 1;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: #f5f5f5;
   }
+
+  ({ $active }) => $active && 'font-weight: 600;'
 `
 
 export const ProfileButton = styled.button`

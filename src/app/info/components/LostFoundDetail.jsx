@@ -1,14 +1,16 @@
 import InfoDetailHeader from './InfoDetailHeader'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './LostFoundDetail.styles'
 
 const LOST_FOUND_INSTAGRAM_URL = 'https://www.instagram.com/donggukfesta/'
 
 export default function LostFoundDetail({ item, onBack }) {
+  const { t } = useTranslation()
   if (!item) return null
 
   return (
     <S.Page>
-      <InfoDetailHeader title="분실물" onBack={onBack} />
+      <InfoDetailHeader title={t('info.lostFound')} onBack={onBack} />
 
       <S.TitleRow>
         <S.DateBadge>
@@ -18,12 +20,12 @@ export default function LostFoundDetail({ item, onBack }) {
       </S.TitleRow>
 
       {item.image_urls?.length > 0 && (
-        <S.ImageGallery aria-label={`${item.title} 이미지`}>
+        <S.ImageGallery aria-label={t('lostFound.imagesLabel', { title: item.title })}>
           {item.image_urls.map((imageUrl, index) => (
             <S.Image
               key={imageUrl}
               src={imageUrl}
-              alt={`${item.title} ${index + 1}번째 이미지`}
+              alt={t('lostFound.imageAlt', { title: item.title, index: index + 1 })}
             />
           ))}
         </S.ImageGallery>
@@ -40,7 +42,7 @@ export default function LostFoundDetail({ item, onBack }) {
         target="_blank"
         rel="noopener noreferrer"
       >
-        분실물 찾으러 가기
+        {t('lostFound.findLink')}
       </S.Link>
     </S.Page>
   )

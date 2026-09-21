@@ -1,4 +1,5 @@
 import EmptyState from '../../../components/common/EmptyState'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './LostFoundList.styles'
 
 const DATES = [
@@ -17,6 +18,8 @@ export default function LostFoundList({
   onKeywordChange,
   onSelect,
 }) {
+  const { t } = useTranslation()
+
   return (
     <S.Stack>
       <S.SearchWrap>
@@ -24,14 +27,14 @@ export default function LostFoundList({
         <S.Search
           type="search"
           value={keyword}
-          placeholder="전체 검색"
-          aria-label="분실물 전체 검색"
+          placeholder={t('lostFound.search')}
+          aria-label={t('lostFound.searchLabel')}
           onChange={(event) => onKeywordChange(event.target.value)}
         />
       </S.SearchWrap>
 
       <S.FilterRow>
-        <S.DateFilters aria-label="분실물 습득 날짜">
+        <S.DateFilters aria-label={t('lostFound.dateLabel')}>
           {DATES.map((item) => (
             <S.DateFilter
               key={item.value}
@@ -44,10 +47,10 @@ export default function LostFoundList({
             </S.DateFilter>
           ))}
         </S.DateFilters>
-        <S.FilterHint>*날짜는 취득날짜입니다.</S.FilterHint>
+        <S.FilterHint>{t('lostFound.dateHint')}</S.FilterHint>
       </S.FilterRow>
 
-      {isLoading && <EmptyState>분실물 목록을 불러오는 중...</EmptyState>}
+      {isLoading && <EmptyState>{t('lostFound.loadingList')}</EmptyState>}
       {!isLoading && error && <EmptyState>{error}</EmptyState>}
       {!isLoading && !error && items.length ? (
         <S.List>
@@ -71,13 +74,13 @@ export default function LostFoundList({
                 </S.Hashtags>
               </S.Body>
               <S.Thumbnail>
-                {item.thumbnail_url ? <img src={item.thumbnail_url} alt="" /> : <span>사진</span>}
+                {item.thumbnail_url ? <img src={item.thumbnail_url} alt="" /> : <span>{t('lostFound.photo')}</span>}
               </S.Thumbnail>
             </S.Card>
           ))}
         </S.List>
       ) : !isLoading && !error ? (
-        <EmptyState>검색 결과가 없습니다.</EmptyState>
+        <EmptyState>{t('lostFound.noResults')}</EmptyState>
       ) : null}
     </S.Stack>
   )

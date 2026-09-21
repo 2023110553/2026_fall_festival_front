@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import * as S from './PlaceSelector.styles'
 import { MAP_ZONES } from '../../../../constants/zones'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function PlaceSelector({ zoneId, onSelectPlace }) {
+    const { t } = useTranslation()
     const [isOpen, setIsOpen] = useState(false)
-    const selectedPlace = MAP_ZONES.find((zone) => zone.id === zoneId)?.label
+    const selectedPlace = t(`map.zone.${zoneId}`)
 
     return (
         <S.Wrapper>
@@ -17,13 +19,13 @@ export default function PlaceSelector({ zoneId, onSelectPlace }) {
                 key={place.id}
                 type="button"
                 disabled={Boolean(place.comingSoon)}
-                title={place.comingSoon ? '지도 준비 중' : place.label}
+                title={place.comingSoon ? t('map.comingSoon') : t(`map.zone.${place.id}`)}
                 onClick={() => {
                     setIsOpen(false)
                     onSelectPlace(place.id)
                 }}
                 >
-                {place.label}
+                {t(`map.zone.${place.id}`)}
                 </S.PlaceButton>
             ))}
             </S.Menu>

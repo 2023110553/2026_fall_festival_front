@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 const scroll = keyframes`
   from { transform: translateX(0); }
@@ -78,24 +79,25 @@ const Item = styled.span`
 
 export default function NoticeMarquee({ notices = [], isLoading = false, isError = false }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const ordered = [...notices].sort((a, b) =>
     Number(b.type === 'URGENT') - Number(a.type === 'URGENT') ||
     b.created_at.localeCompare(a.created_at)
   )
   const message = isLoading
-    ? '공지사항을 불러오는 중입니다.'
+    ? t('home.noticeLoading')
     : isError
-      ? '공지사항을 불러오지 못했습니다.'
+      ? t('home.noticeError')
       : ordered.length === 0
-        ? '등록된 공지사항이 없습니다.'
+        ? t('home.noticeEmpty')
         : null
 
   return (
-    <Wrapper type="button" aria-label="공지사항 보기" onClick={() => navigate('/info?tab=notice')}>
+    <Wrapper type="button" aria-label={t('home.viewNotices')} onClick={() => navigate('/info?tab=notice')}>
       <IconBox>
         <NoticeIcon />
       </IconBox>
-      <Label>공지사항</Label>
+      <Label>{t('home.notice')}</Label>
       <Track>
 
         {message ? <Item role="status">{message}</Item> : [0, 1].map((loop) => (

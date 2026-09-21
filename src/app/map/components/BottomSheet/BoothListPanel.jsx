@@ -4,8 +4,10 @@ import BoothCardList from '../BoothCardList/BoothCardList'
 import BoothSearchPanel from './BoothSearchPanel'
 import * as S from './BoothListPanel.styles'
 import search from '../../../../assets/map/search.svg'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearch, onCancelSearch }) {
+  const { t } = useTranslation()
   const { booths, isLoading, isError, listError, listTimeOfDay, setListTimeOfDay,
     selectedCategory, setSelectedCategory } = useMapContext()
 
@@ -17,10 +19,10 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
     <S.TimeWrapper>
       <S.Top>
         <S.ButtonWrapper>
-          <S.Button type="button" $active={listTimeOfDay === 'day'} aria-pressed={listTimeOfDay === 'day'} onClick={() => setListTimeOfDay('day')}>주간</S.Button>
-          <S.Button type="button" $active={listTimeOfDay === 'night'} aria-pressed={listTimeOfDay === 'night'} onClick={() => setListTimeOfDay('night')}>야간</S.Button>
+          <S.Button type="button" $active={listTimeOfDay === 'day'} aria-pressed={listTimeOfDay === 'day'} onClick={() => setListTimeOfDay('day')}>{t('map.day')}</S.Button>
+          <S.Button type="button" $active={listTimeOfDay === 'night'} aria-pressed={listTimeOfDay === 'night'} onClick={() => setListTimeOfDay('night')}>{t('map.night')}</S.Button>
         </S.ButtonWrapper>
-        <S.SearchButton type="button" onClick={onOpenSearch} aria-label="검색 열기" title="검색 열기">
+        <S.SearchButton type="button" onClick={onOpenSearch} aria-label={t('map.openSearch')} title={t('map.openSearch')}>
           <S.Search src={search} alt="" />
         </S.SearchButton>
       </S.Top>
@@ -38,12 +40,12 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
             aria-pressed={selectedCategory === category.value}
             onClick={() => setSelectedCategory(selectedCategory === category.value ? null : category.value)}
           >
-            {category.label}
+            {t(`map.category.${category.value}`)}
           </S.CategoryButton>
         ))}
       </S.CategoryList>
       {isLoading ? (
-        <S.StatusMessage>부스 목록을 불러오는 중이에요...</S.StatusMessage>
+        <S.StatusMessage>{t('map.loadingBooths')}</S.StatusMessage>
       ) : isError ? (
         <S.StatusMessage>{listError}</S.StatusMessage>
       ) : (

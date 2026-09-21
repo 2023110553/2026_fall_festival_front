@@ -9,11 +9,13 @@ import Setlist from './components/Setlist'
 
 import { getMockPerformanceById } from './mocks/performanceMock'
 
+import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './PerformanceDetailPage.styles'
 
 export default function PerformanceDetailPage() {
     const { id } = useParams()
     const navigate = useNavigate()
+    const { t } = useTranslation()
 
     const performance = getMockPerformanceById(id)
 
@@ -27,7 +29,7 @@ export default function PerformanceDetailPage() {
             <S.DetailHeader>
                 <S.BackButton
                     type="button"
-                    aria-label="뒤로가기"
+                    aria-label={t('common.back')}
                     onClick={() =>
                         navigate(-1)
                     }
@@ -36,14 +38,14 @@ export default function PerformanceDetailPage() {
                 </S.BackButton>
 
                 <S.HeaderTitle>
-                    공연 상세
+                    {t('performance.detail')}
                 </S.HeaderTitle>
             </S.DetailHeader>
 
             <S.DetailPanel>
                 {!performance ? (
                     <S.EmptyText>
-                        공연을 찾을 수 없습니다.
+                        {t('performance.notFound')}
                     </S.EmptyText>
                 ) : (
                     <>
@@ -57,7 +59,7 @@ export default function PerformanceDetailPage() {
 
                         <S.SetlistSection>
                             <S.SectionTitle>
-                                공연순서
+                                {t('performance.setlist')}
                             </S.SectionTitle>
 
                             <Setlist

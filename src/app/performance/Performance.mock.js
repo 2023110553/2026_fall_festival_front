@@ -1,4 +1,0 @@
-import { MOCK_PERFORMANCES, MOCK_SERVER_TIME } from './mocks/performanceMock'
-
-export const PERFORMANCE_MOCKS = MOCK_PERFORMANCES
-export const SERVER_TIME_MOCK = MOCK_SERVER_TIME

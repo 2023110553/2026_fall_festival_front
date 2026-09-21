@@ -1,12 +1,15 @@
 import styled from 'styled-components'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 export default function Setlist({
   songs = [],
 }) {
+  const { t } = useTranslation()
+
   if (songs.length === 0) {
     return (
       <EmptyText>
-        등록된 공연 순서가 없습니다.
+        {t('performance.emptySetlist')}
       </EmptyText>
     )
   }

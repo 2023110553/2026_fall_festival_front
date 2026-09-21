@@ -1,9 +1,11 @@
 import * as S from './TimelineList.styles'
 import { formatTime } from '../../../utils/time'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 export default function TimelineList({ performances = [], onSelect }) {
+  const { t } = useTranslation()
   if (performances.length === 0) {
-    return <S.Empty>등록된 공연이 없어요.</S.Empty>
+    return <S.Empty>{t('performance.emptySchedule')}</S.Empty>
   }
   return (
     <S.List>

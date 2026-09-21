@@ -1,6 +1,8 @@
 import styled from 'styled-components'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function LanternCard({ lantern }) {
+    const { t } = useTranslation()
     return (
         <Card>
             <ContentArea>
@@ -9,7 +11,7 @@ export default function LanternCard({ lantern }) {
                     <Message>{lantern.message}</Message>
                     <Time>{lantern.time}</Time>
                 </TextArea>
-                <MoreButton type="button" aria-label="등불 더보기">
+                <MoreButton type="button" aria-label={t('lantern.more')}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M8 5C8.55228 5 9 4.55228 9 4C9 3.44772 8.55228 3 8 3C7.44772 3 7 3.44772 7 4C7 4.55228 7.44772 5 8 5Z" fill="#737373"/>
                         <path d="M8 9C8.55228 9 9 8.55228 9 8C9 7.44772 8.55228 7 8 7C7.44772 7 7 7.44772 7 8C7 8.55228 7.44772 9 8 9Z" fill="#737373"/>

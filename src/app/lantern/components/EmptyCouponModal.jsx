@@ -1,15 +1,17 @@
 import Modal from '../../../components/common/Modal'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './EmptyCouponModal.styles'
 
 export default function EmptyCouponModal({ isOpen, onClose }) {
+  const { t } = useTranslation()
   return (
     <Modal isOpen={isOpen} onClose={onClose} style={S.panelStyle}>
-      <S.Title>등불이 아직 없습니다.</S.Title>
+      <S.Title>{t('coupon.emptyTitle')}</S.Title>
       <S.Description>
-        첫 등불을 달고 스크래치 쿠폰을 받아보세요.
+        {t('coupon.emptyDescription')}
       </S.Description>
       <S.CloseButton type="button" onClick={onClose}>
-        닫기
+        {t('common.close')}
       </S.CloseButton>
     </Modal>
   )

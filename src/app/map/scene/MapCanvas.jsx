@@ -62,7 +62,7 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 // 카메라([10,140,90] → target [10,3,-30])에서는 꽤 멀리/위에서 보인다 — 구역 전환 카메라 연출을
 // 정할 때 zone4와 함께 조정 예정.
 //
-// 2026-09-19(2차): 네 구역 모두 부스 목데이터 연결(zoneN-booths.sample.json + zones/ZoneBooths.jsx).
+// 2026-09-19(2차): 네 구역 모두 API 부스 데이터와 zones/ZoneBooths.jsx를 연결.
 // 그래서 Zone2/3/4Scene도 Zone1Scene과 같은 props(brightnessLevel/onBoothClick)를 받게 됐고, 이 컴포넌트는
 // 네 구역에 똑같은 값을 넘긴다. 부스 밝기는 이제 각 부스의 lantern_count로 자동 계산되므로(BoothMarker.jsx
 // 19번 항목) boothBrightnessPreview는 null(자동)이 기본이다.
@@ -152,7 +152,7 @@ const ZONE_CAMERAS = {
   // 원흥관(2026-09-20 첫 값 → 2026-09-21 재원 요청 "반대쪽에서"로 변경):
   //   본동의 원래 정면(창이 촘촘한 면)은 -z 쪽인데, 처음 잡은 시점(방위각 0°, 카메라가 +z 쪽)은 건물 후면과
   //   그 앞 광장을 보고 있었다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했고, 후면 광장에 있던
-  //   부스 4개(501~504)는 같은 날 뺐다(zone5-booths.sample.json의 _placement_note 참고).
+  //   부스 4개(501~504)는 같은 날 배치 대상에서 제외했다.
   //   내려보는 각 48.8°는 그대로다. 화면 좌우가 뒤집혀서 본관(x+)이 왼쪽, 본동(x-)이 오른쪽에 온다.
   //   bbox x -36~32 / z -16~32. 거리 150/158/166을 640×1000·600×1000으로 비교했고, 150은 600 폭에서
   //   양끝이 가장자리에 닿아서 158로 정했다(640 폭 좌우 여백 35px, 600 폭 15px).

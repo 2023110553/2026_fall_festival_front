@@ -1,7 +1,10 @@
 import Modal from './Modal'
+import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './AlertModal.styles'
 
-export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText = '닫기', onConfirm, confirmText, disabled = false }) {
+export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText, onConfirm, confirmText, disabled = false }) {
+    const { t } = useTranslation()
+    const resolvedButtonText = buttonText ?? t('common.close')
     return (
         <Modal isOpen={isOpen} onClose={disabled ? undefined : onClose} style={S.modalStyle}>
             <S.Container>
@@ -13,7 +16,7 @@ export default function AlertModal({ isOpen, onClose, title, subTitle, buttonTex
                 {onConfirm ? (
                     <S.ButtonRow>
                         <S.CloseBtn type="button" onClick={onClose} disabled={disabled}>
-                        {buttonText}
+                        {resolvedButtonText}
                         </S.CloseBtn>
                         <S.ConfirmBtn type="button" onClick={onConfirm} disabled={disabled}>
                         {confirmText}
@@ -21,7 +24,7 @@ export default function AlertModal({ isOpen, onClose, title, subTitle, buttonTex
                     </S.ButtonRow>
                 ) : (
                     <S.CloseBtn type="button" onClick={onClose} disabled={disabled}>
-                    {buttonText}
+                    {resolvedButtonText}
                     </S.CloseBtn>
                 )}
             </S.Container>

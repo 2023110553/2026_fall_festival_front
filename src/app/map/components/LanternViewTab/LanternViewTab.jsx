@@ -9,6 +9,7 @@ import { getBoothLanterns, updateLantern, deleteLantern, reportLantern } from '.
 import { useMapContext } from '../../context/MapProvider'
 import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 const List = styled.ul`
   list-style: none;
@@ -35,14 +36,15 @@ export default function LanternViewTab({ boothId }) {
 }
 
 function BoothLanternList({ boothId, date, isLoggedIn }) {
+  const { t } = useTranslation()
   const [onlyMine, setOnlyMine] = useState(false)
   return (
-    <section aria-label="부스 등불 목록">
-      <p>등불을 달아 부스를 밝혀주세요! 욕설, 비방과 같은 내용을 게시할 시 처벌을 받을 수 있습니다.</p>
+    <section aria-label={t('map.boothLanternList')}>
+      <p>{t('map.lanternNotice')}</p>
       <label>
         <input type="checkbox" checked={onlyMine} disabled={!isLoggedIn}
           onChange={(event) => setOnlyMine(event.target.checked)} />
-        내가 쓴 등불만 보기
+        {t('map.onlyMine')}
       </label>
       <LanternResults key={String(onlyMine)} boothId={boothId} date={date} mine={onlyMine} isLoggedIn={isLoggedIn} />
     </section>
@@ -50,6 +52,7 @@ function BoothLanternList({ boothId, date, isLoggedIn }) {
 }
 
 function LanternResults({ boothId, date, mine, isLoggedIn }) {
+  const { t } = useTranslation()
   const { refreshBooths } = useMapContext()
   const [reporting, setReporting] = useState(null)
   const [reportNotice, setReportNotice] = useState(null)
@@ -71,7 +74,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
     setMutationError('')
     try {
       const { data } = await (kind === 'edit' ? updateLantern(id, changes) : deleteLantern(id))
-      if (!data?.success) throw new Error('요청을 완료하지 못했어요.')
+      if (!data?.success) throw new Error(t('map.requestFailed'))
       refreshBooths()
       if (!mounted.current) return
       setEditing(null)
@@ -83,12 +86,12 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
     } catch (error) {
       if (!mounted.current) return
       const messages = {
-        NOT_OWNER: '본인이 작성한 등불만 수정·삭제할 수 있어요.',
-        LANTERN_NOT_FOUND: '존재하지 않는 등불입니다.',
-        ALREADY_DELETED: '이미 삭제된 등불입니다.',
+        NOT_OWNER: t('map.notOwner'),
+        LANTERN_NOT_FOUND: t('map.lanternNotFound'),
+        ALREADY_DELETED: t('map.alreadyDeleted'),
       }
       setMutationError(messages[error.response?.data?.code]
-        ?? error.response?.data?.message ?? '처리하지 못했어요. 다시 시도해주세요.')
+        ?? error.response?.data?.message ?? t('map.processError'))
     } finally {
       busy.current = false
       if (mounted.current) setPending(false)
@@ -143,21 +146,21 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
       .catch((failure) => {
         if (controller.signal.aborted) return
         const code = failure.response?.status
-        setError(code === 400 ? '조회 조건을 확인해주세요. 날짜는 YYYY-MM-DD 형식이어야 해요.'
-          : code === 401 ? '로그인이 필요해요. 로그인 상태를 확인해주세요.'
-          : '등불 목록을 불러오지 못했어요. 다시 시도해주세요.')
+        setError(code === 400 ? t('map.invalidDate')
+          : code === 401 ? t('map.loginRequired')
+          : t('map.lanternListError'))
         setStatus('error')
       })
     return () => controller.abort()
-  }, [boothId, date, mine, page, attempt])
+  }, [boothId, date, mine, page, attempt, t])
 
   return (
     <div aria-busy={status === 'loading'}>
       {reporting && <ReportModal key={reporting.id} isOpen
         onClose={() => setReporting(null)} onSubmit={submitReport} />}
       <AlertModal isOpen={reportNotice != null} onClose={() => setReportNotice(null)}
-        title={reportNotice === 'duplicate' ? '이미 신고한 등불이에요' : '신고가 접수되었습니다'}
-        subTitle={reportNotice === 'duplicate' ? '이미 신고한 등불은 다시 신고할 수 없어요.' : '신고 내용을 확인하겠습니다.'} />
+        title={reportNotice === 'duplicate' ? t('map.reportDuplicateTitle') : t('map.reportSuccessTitle')}
+        subTitle={reportNotice === 'duplicate' ? t('map.reportDuplicateDescription') : t('map.reportSuccessDescription')} />
 
       {editing && <EditLanternModal isOpen lantern={editing} pending={pending} error={mutationError}
         closeOnSubmit={false} onClose={() => { if (!busy.current) setEditing(null) }}
@@ -170,7 +173,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
         {items.map((item) => (
           <li key={item.id}>
             {['deleted_by_user', 'deleted_by_admin'].includes(item.status) ? (
-              <p>{item.status === 'deleted_by_admin' ? '관리자에 의해 삭제된 등불입니다.' : '삭제한 등불입니다.'}</p>
+              <p>{item.status === 'deleted_by_admin' ? t('map.deletedByAdmin') : t('map.deletedByUser')}</p>
             ) : <LanternCard lantern={item} isMine={item.isMine === true}
               onReport={isLoggedIn && item.isMine === false ? () => setReporting(item) : undefined}
               onEdit={isLoggedIn && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setEditing(item) } : undefined}
@@ -179,13 +182,13 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
           </li>
         ))}
       </List>
-      {status === 'loading' && <p role="status">등불 목록을 불러오는 중이에요...</p>}
+      {status === 'loading' && <p role="status">{t('map.loadingLanterns')}</p>}
       {status === 'error' && <div role="alert">
         <p>{error}</p>
-        <Action type="button" onClick={() => { setStatus('loading'); setAttempt((value) => value + 1) }}>다시 시도</Action>
+        <Action type="button" onClick={() => { setStatus('loading'); setAttempt((value) => value + 1) }}>{t('map.retry')}</Action>
       </div>}
-      {status === 'success' && items.length === 0 && <EmptyState>{mine ? '이 날짜에 작성한 등불이 없습니다.' : '등불이 아직 없습니다.'}</EmptyState>}
-      {status === 'success' && hasNext && <Action type="button" onClick={() => { setStatus('loading'); setPage((value) => value + 1) }}>더 보기</Action>}
+      {status === 'success' && items.length === 0 && <EmptyState>{mine ? t('map.noMineLanterns') : t('map.noLanterns')}</EmptyState>}
+      {status === 'success' && hasNext && <Action type="button" onClick={() => { setStatus('loading'); setPage((value) => value + 1) }}>{t('map.more')}</Action>}
     </div>
   )
 }

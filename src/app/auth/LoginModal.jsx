@@ -1,10 +1,12 @@
 import Modal from '../../components/common/Modal'
 import { useEffect, useState } from 'react'
 import { startKakaoLogin, loginErrorMessage } from './kakaoOAuth'
+import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './LoginModal.styles'
 
 // 카카오 1초 로그인 모달 — 등불 달기(+) 진입 시 비로그인 상태면 이 모달을 먼저 띄운다.
 export default function LoginModal({ open, onClose, message }) {
+  const { t } = useTranslation()
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
   const errorMessage = error || message
@@ -37,13 +39,13 @@ export default function LoginModal({ open, onClose, message }) {
   return (
     <Modal open={open} onClose={handleClose}>
       <S.Container>
-        <S.CloseButton onClick={handleClose} aria-label="닫기">
+        <S.CloseButton onClick={handleClose} aria-label={t('common.close')}>
           ✕
         </S.CloseButton>
         <S.Header>
-          <S.Title>로그인</S.Title>
+          <S.Title>{t('auth.loginTitle')}</S.Title>
           <S.SubTitle role={errorMessage ? 'alert' : undefined}>
-            {errorMessage || '1초만에 로그인하고 등불 달기!'}
+            {errorMessage || t('auth.loginDescription')}
           </S.SubTitle>
         </S.Header>
 
@@ -62,7 +64,7 @@ export default function LoginModal({ open, onClose, message }) {
               fill="#000000"
             />
           </S.KakaoIcon>
-          카카오 1초 로그인
+          {t('auth.kakaoLogin')}
         </S.KakaoButton>
       </S.Container>
     </Modal>

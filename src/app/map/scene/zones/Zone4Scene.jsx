@@ -3,13 +3,13 @@ import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
 import { useMapZoneBooths } from '../../hooks/useMapZones'
 
-// 구역 4(학림관) 씬 — 지형/건물 .glb 로드 + 부스 목데이터 배치.
+// 구역 4(학림관) 씬 — 지형/건물 .glb 로드 + API 부스 좌표 배치.
 //
 // 2026-09-16: public/models/hangnimgwan.glb 최초 연결(이슈 #33). 학림관은 기존 3구역과 별개의
 // 독립 구역(학림관 건물 + 앞 도로 한 블록)이라 zone4로 추가했다. 당시엔 부스 좌표 데이터가 없어서
 // 지형만 렌더링했다.
 //
-// 2026-09-19: 부스 목데이터 연결 — zone4-booths.sample.json(6개)을 ZoneBooths로 배치한다.
+// 2026-09-19: ZoneBooths 연결. 현재 좌표와 밝기 정보는 API 응답을 사용한다.
 // 학림관 앞 보도는 가로등/가로수/벤치/휴지통이 4m 간격으로 꽉 차 있어 3m 깊이 부스가 들어갈 자리가
 // 없어서, 축제 기간 차량 통제를 가정하고 건물 앞 차도의 보도 쪽 차선에 한 줄로 세웠다(횡단보도 앞은
 // 비움). 배치 근거는 JSON 상단 _placement_note 참고.

@@ -1,6 +1,8 @@
 import styled from 'styled-components'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function ReportModal() {
+    const { t } = useTranslation()
     return (
         <Modal>
             <Content>
@@ -11,25 +13,25 @@ export default function ReportModal() {
                 <ReasonList>
                     <ReasonItem>
                         <input type="radio" name="reportReason" />
-                        <span>욕설 및 비방</span>
+                        <span>{t('report.abuse')}</span>
                     </ReasonItem>
                     <ReasonItem>
                         <input type="radio" name="reportReason" />
-                        <span>음란하거나 불쾌한 내용</span>
+                        <span>{t('report.obscene')}</span>
                     </ReasonItem>
                     <ReasonItem>
                         <input type="radio" name="reportReason" />
-                        <span>허위 정보</span>
+                        <span>{t('report.falseInfo')}</span>
                     </ReasonItem>
                     <ReasonItem>
                         <input type="radio" name="reportReason" />
-                        <span>기타</span>
+                        <span>{t('report.other')}</span>
                     </ReasonItem>
                 </ReasonList>
             </Content>
             <ButtonGroup>
-                <CancelButton type="button">취소</CancelButton>
-                <ReportButton type="button">신고하기</ReportButton>
+                <CancelButton type="button">{t('common.cancel')}</CancelButton>
+                <ReportButton type="button">{t('lantern.report')}</ReportButton>
             </ButtonGroup>
         </Modal>
     )
