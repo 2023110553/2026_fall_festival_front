@@ -63,16 +63,36 @@ export default function LanternFlowPage() {
   // null | 'past' | 'future' — 지도에서 오늘이 아닌 날짜의 부스를 보다가 등불 달기를 누른 경우
   const [wrongDateVariant, setWrongDateVariant] = useState(null)
 
+  // 카카오 로그인은 페이지를 완전히 떠났다 돌아오는 리다이렉트 방식이라 리액트 state로는
+  // "등불 달기 하려던 중이었다"는 걸 못 들고 다닌다 — URL 쿼리에 표시해뒀다가 로그인 완료 후 확인한다.
+  const OPEN_LANTERN_PARAM = 'openLantern'
+
+  const clearOpenLanternParam = () => {
+    const params = new URLSearchParams(window.location.search)
+    if (!params.has(OPEN_LANTERN_PARAM)) return
+    params.delete(OPEN_LANTERN_PARAM)
+    const query = params.toString()
+    window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : '') + window.location.hash)
+  }
+
+  // 로그인 완료 후 돌아왔을 때, 등불 달기 하려다 로그인하러 간 거였으면 바로 작성 모달을 띄운다
+  useEffect(() => {
+    if (!isLoggedIn) return
+    if (!new URLSearchParams(window.location.search).has(OPEN_LANTERN_PARAM)) return
+    clearOpenLanternParam()
+    openCreateModal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn])
+
   // BottomNav('+' 버튼)가 호출할 오픈 함수 — 로그인 여부 확인 후 등불 작성 모달(또는 제한 모달) 오픈
   const handleOpenCreateFlow = () => {
-    // -------------------------------------------------------------
-    // [개발용 로그인 우회]
-    // 실제 로그인 연동 시 아래 주석을 해제하고 로그인 모달을 띄워줍니다.
     if (!isLoggedIn) {
+      const params = new URLSearchParams(window.location.search)
+      params.set(OPEN_LANTERN_PARAM, '1')
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}${window.location.hash}`)
       setIsLoginModalOpen(true)
       return
     }
-    // -------------------------------------------------------------
 
     // 당일 부스에만 등불을 달 수 있음 — 전날/다음날 부스면 문구를 다르게 안내
     if (activeBooth?.festivalDate && activeBooth.festivalDate !== getCurrentFestivalDate()) {
@@ -143,7 +163,10 @@ export default function LanternFlowPage() {
       {/* --- 모달 랜더링 영역 --- */}
       <LoginModal
         open={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() => {
+          clearOpenLanternParam()
+          setIsLoginModalOpen(false)
+        }}
       />
       {/* 1. 등불 작성 모달 */}
       <CreateLanternModal
