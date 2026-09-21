@@ -6,6 +6,8 @@ import AlertModal from '../../../components/common/AlertModal'
 export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
     const [nickname, setNickname] = useState('')
     const [message, setMessage] = useState('')
+    const [messageError, setMessageError] = useState(false)
+    const [submitError, setSubmitError] = useState('')
     const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false)
 
     useEffect(() => {
@@ -13,6 +15,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
         // '익명의 코끼리'는 미입력 시 표시 전용 기본값이라, 수정할 땐 빈 입력으로 되돌려둔다
         setNickname(lantern.nickname === '익명의 코끼리' ? '' : lantern.nickname || '')
         setMessage(lantern.message || lantern.content || '')
+        setMessageError(false)
+        setSubmitError('')
         }
     }, [lantern])
 
@@ -35,20 +39,30 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
         const value = e.target.value
         if (value.length <= 30) {
         setMessage(value)
+        if (value.trim().length > 0) setMessageError(false)
         }
     }
 
-    // 완료 버튼 클릭 시 변경 사항 전달 후 닫기
-    const handleSubmit = () => {
-        if (!message.trim()) return
-        if (onSubmit && lantern) {
+    // 완료 버튼 클릭 시 변경 사항 전달 후 닫기 — 실패하면 닫지 않고 빨간 안내 문구로 보여준다
+    const handleSubmit = async () => {
+        const isMessageEmpty = !message.trim()
+        if (isMessageEmpty) {
+        setMessageError(true)
+        return
+        }
+        if (!onSubmit || !lantern) return
+
+        setSubmitError('')
+        try {
         // 닉네임은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback
-        onSubmit(lantern.id, {
+        await onSubmit(lantern.id, {
             nickname: nickname.trim(),
             message,
         })
-        }
         onClose()
+        } catch (err) {
+        setSubmitError(err?.response?.data?.message || '등불 수정에 실패했어요. 다시 시도해주세요.')
+        }
     }
 
     return (
@@ -77,7 +91,10 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
                         />
                         <S.CharCount>{message.length}/30</S.CharCount>
                     </S.MessageBox>
+                    {messageError && <S.ErrorText>응원의 한마디를 입력해주세요.</S.ErrorText>}
                 </S.InputGroup>
+
+                {submitError && <S.ErrorText>{submitError}</S.ErrorText>}
 
                 <S.Footer>
                     <S.Time>{formatLanternTime(lantern?.createdAt)}</S.Time>

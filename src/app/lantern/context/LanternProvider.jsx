@@ -106,31 +106,25 @@ function AccountLanternProvider({ children, userId }) {
   }
 
   // soft delete라 목록에서 지우지 않고 status만 바꾼다 (마이페이지 회색 처리용)
+  // 실패 시(본인 아님/이미 삭제됨 등) 그대로 reject해서 호출부가 안내 문구로 보여주게 둔다
   const deleteLantern = async (id) => {
-    try {
-      await deleteLanternRequest(id)
-      setLanterns((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, status: 'deleted_by_user' } : item))
-      )
-    } catch {
-      // 실패(이미 삭제됨 등) 시엔 다음 새로고침에서 서버 기준으로 다시 맞춰진다
-    }
+    await deleteLanternRequest(id)
+    setLanterns((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: 'deleted_by_user' } : item))
+    )
   }
 
+  // 실패 시(금칙어/본인 아님/이미 삭제됨 등) 그대로 reject해서 EditLanternModal이 안내 문구로 보여주게 둔다
   const editLantern = async (id, { nickname, message }) => {
-    try {
-      const res = await updateLanternRequest(id, { nickname, message })
-      const data = res.data.data
-      setLanterns((prev) =>
-        prev.map((item) =>
-          item.id === id
-            ? { ...item, nickname: data.nickname, message: data.message, content: data.message, updatedAt: data.updated_at }
-            : item
-        )
+    const res = await updateLanternRequest(id, { nickname, message })
+    const data = res.data.data
+    setLanterns((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, nickname: data.nickname, message: data.message, content: data.message, updatedAt: data.updated_at }
+          : item
       )
-    } catch {
-      // 실패 시 기존 값 유지
-    }
+    )
   }
 
   // BottomNav(+버튼)/TopHeader(나의 등불) 등은 LanternFlowPage와 형제 컴포넌트라 그 로컬 상태를
