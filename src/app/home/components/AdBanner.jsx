@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import donggam from '../assets/donggam.png'
 import ecoco from '../assets/ecoco.png'
 import scien from '../assets/scien.png'
+import sogaeting from '../assets/sogaeting.svg'
 
 // 상단 광고 배너 (기능명세서 바탕으로) 일정 시간(5초)마다 자동 롤링, 클릭 시 안내>협업 페이지로 이동
 
@@ -31,6 +32,13 @@ const BANNERS = [
     image: scien,
     href: null,
     to: '/info/collab/with-nature',
+  },
+  {
+    id: 4,
+    title: '소개팅',
+    image: sogaeting,
+    href: 'https://threadoffate.site/?ref=dgufest',
+    to: null,
   },
 ]
 
