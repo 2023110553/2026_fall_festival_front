@@ -6,9 +6,9 @@ import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import mockDetails from '../../mocks/boothDetailResponses.json'
 import helpingHand from '../../../../assets/map/Helping Hand.svg'
 // 하단 부스/장소 카드 리스트 — 썸네일/이름/소속/등불개수. 카테고리 필터·주야간 전환에 따라 갱신된다.
-export default function BoothCardList({ booths: providedBooths, onSelectBooth }) {
+export default function BoothCardList({ booths: providedBooths, onSelectBooth, filterBySearchTerm = true }) {
   const { searchTerm } = useMapContext()
-  const filtered = useBoothSearch(providedBooths, searchTerm)
+  const filtered = useBoothSearch(providedBooths, filterBySearchTerm ? searchTerm : '')
 
   if (filtered.length === 0) return <p>표시할 부스가 없어요.</p>
 
@@ -53,10 +53,10 @@ export default function BoothCardList({ booths: providedBooths, onSelectBooth })
             </S.CollabBadge>
           )}
           <S.LanternImg
-            src={booth.hasMyLantern ? lanternOn : lanternOff}
-            alt={booth.hasMyLantern ? '등불 등록 완료' : '등불 미등록'}
+            src={(booth.has_my_lantern ?? booth.hasMyLantern) ? lanternOn : lanternOff}
+            alt={(booth.has_my_lantern ?? booth.hasMyLantern) ? '등불 등록 완료' : '등불 미등록'}
           />
-          <S.LanternCount $hasMyLantern={booth.hasMyLantern}>{booth.lantern_count}</S.LanternCount>
+          <S.LanternCount $hasMyLantern={(booth.has_my_lantern ?? booth.hasMyLantern)}>{booth.lantern_count}</S.LanternCount>
         </S.LanternWrapper>}
       </S.Card>
       )

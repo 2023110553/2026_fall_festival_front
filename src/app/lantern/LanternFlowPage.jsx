@@ -22,12 +22,11 @@ export default function LanternFlowPage() {
   const { isLoggedIn } = useAuth()
 
   // --- 상태 관리 --- (등불 리스트는 LanternProvider로 전역 공유 — MyPage 등 다른 화면과 같은 목록을 본다)
-  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers } = useLanterns()
+  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers, coupon, setCoupon } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
 
   // 쿠폰 플로우: null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
-  const [coupon, setCoupon] = useState(null)
   const [isNewCoupon, setIsNewCoupon] = useState(false)
   const [isNoCouponModalOpen, setIsNoCouponModalOpen] = useState(false)
 

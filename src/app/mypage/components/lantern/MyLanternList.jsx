@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import Modal from '../../../../components/common/Modal'
-import EmptyState from '../../../../components/common/EmptyState'
 import AlertModal from '../../../../components/common/AlertModal'
 import LanternCard from '../../../lantern/components/LanternCard'
 import ConfirmDeleteModal from './ConfirmDeleteModal'
@@ -18,11 +17,10 @@ const largeModalStyle = {
   padding: '28px 16px 16px 16px',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  gap: '16px',
   borderRadius: '12px',
-  background: '#FFF',
+  background: '#F7F7F7',
   boxShadow:
-    '0 3px 6px 0 rgba(255, 161, 161, 0.25), 0 -4px 6px 0 rgba(194, 255, 175, 0.25), 0 0 6px 0 rgba(243, 246, 188, 0.75)',
+    '0 0 10px 0 rgba(0, 0, 0, 0.15)',
 }
 
 // 오늘이 축제 기간 전이면 DAY 1, 기간 중이면 해당 날짜, 기간이 다 지났으면 DAY 3을 기본 선택
@@ -80,9 +78,9 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
   }
 
   // 수정 완료 제출 시
-  const handleConfirmEdit = (id, newContent) => {
+  const handleConfirmEdit = (id, updates) => {
     if (onEdit) {
-      onEdit(id, newContent)
+      onEdit(id, updates)
     }
     setEditingLantern(null) // 수정 모달 닫힘 -> 조건에 의해 다시 나의 등불 목록 모달이 뜸
   }
@@ -105,8 +103,24 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
               aria-haspopup="listbox"
               aria-expanded={isDayDropdownOpen}
             >
-              DAY {selectedDayIndex + 1}
-              <S.DayBadgeChevron>⌄</S.DayBadgeChevron>
+              <S.DayBadgeGap>
+                <S.DayBadgeLabel>DAY</S.DayBadgeLabel>
+                <S.DayBadgeNumber>{selectedDayIndex + 1}</S.DayBadgeNumber>
+              </S.DayBadgeGap>
+              <S.DayBadgeChevron
+                width="6"
+                height="4"
+                viewBox="0 0 6 4"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M5.40242 0.127416C5.32039 0.0454869 5.20919 -0.00053215 5.09325 -0.00053215C4.97732 -0.00053215 4.86612 0.0454869 4.78409 0.127416L2.75992 2.15158L0.735753 0.127416C0.652818 0.0501366 0.543125 0.00806427 0.429782 0.0100639C0.31644 0.0120637 0.208298 0.0579796 0.128141 0.138137C0.0479832 0.218295 0.00206795 0.326436 6.8161e-05 0.439778C-0.00193163 0.553121 0.0401401 0.662814 0.11742 0.745749L2.45075 3.07908C2.53279 3.16101 2.64398 3.20703 2.75992 3.20703C2.87586 3.20703 2.98706 3.16101 3.06909 3.07908L5.40242 0.745749C5.48435 0.663718 5.53037 0.552521 5.53037 0.436583C5.53037 0.320645 5.48435 0.209448 5.40242 0.127416Z"
+                  fill="#FDFDFD"
+                />
+              </S.DayBadgeChevron>
             </S.DayBadge>
 
             {isDayDropdownOpen && (
@@ -126,7 +140,22 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
                         DAY {index + 1}
                         <S.DayOptionDate>{formatDayLabel(date)}</S.DayOptionDate>
                       </S.DayOptionLabel>
-                      <S.DayOptionCheck $active={isActive} aria-hidden="true">✓</S.DayOptionCheck>
+                      <S.DayOptionCheck
+                        $active={isActive}
+                        aria-hidden="true"
+                        width="11"
+                        height="8"
+                        viewBox="0 0 11 8"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M0.485352 3.87937L3.88035 7.27437L9.53868 0.484375"
+                          strokeWidth="0.97"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </S.DayOptionCheck>
                     </S.DayOption>
                   )
                 })}
@@ -138,7 +167,7 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
         {/* Body */}
         <S.ListWrapper>
           {dayLanterns.length === 0 ? (
-            <EmptyState>이 날짜에 남긴 등불이 없습니다.</EmptyState>
+            <S.EmptyState>아직 남긴 등불이 없습니다.</S.EmptyState>
           ) : (
             dayLanterns.map((l) => {
               const isAdmin = l.status === 'DELETED_BY_ADMIN'
@@ -150,11 +179,14 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
                     <S.DeletedNickname $isAdmin={isAdmin}>
                       {l.nickname || '익명의 코끼리'}
                     </S.DeletedNickname>
+                    {l.boothName && (
+                      <S.DeletedBoothName $isAdmin={isAdmin}>{l.boothName}</S.DeletedBoothName>
+                    )}
                     <S.DeletedMessage $isAdmin={isAdmin}>
                       {isAdmin ? '관리자에 의해 삭제된 댓글입니다.' : '삭제한 댓글입니다'}
                     </S.DeletedMessage>
                     <S.DeletedTime $isAdmin={isAdmin}>
-                      {formatLanternDateTime(l.createdAt)}
+                      {formatLanternDateTime(l.updatedAt ?? l.createdAt)}
                     </S.DeletedTime>
                   </S.DeletedCard>
                 )
@@ -175,12 +207,19 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
 
         {/* Footer Notice */}
         <S.FooterNotice>
-          <S.InfoIcon>i</S.InfoIcon>
+          <S.InfoIcon width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.5 3.5H6.5V6.5H5.5V3.5ZM5.5 7.5H6.5V8.5H5.5V7.5Z" fill="#9F9C99" />
+            <path
+              d="M6 11C8.755 11 11 8.755 11 6C11 3.245 8.755 1 6 1C3.245 1 1 3.245 1 6C1 8.755 3.245 11 6 11ZM6 2C8.205 2 10 3.795 10 6C10 8.205 8.205 10 6 10C3.795 10 2 8.205 2 6C2 3.795 3.795 2 6 2Z"
+              fill="#9F9C99"
+            />
+          </S.InfoIcon>
           <S.NoticeText>
-            등불은 하루 최대 3개까지 달 수 있어요. 삭제한 등불도 횟수에 포함돼요.
+            등불은 하루 최대 3개까지 작성할 수 있으며, 삭제한 등불도 작성 횟수에 포함돼요.
             <br />
-            욕설 및 타인을 비방하는 글은 삭제조치 될 수 있어요. 지난 일자의 등불은 삭제만 가능하며
-            수정은 불가해요.
+            욕설이나 타인을 비방하는 내용은 운영 정책에 따라 삭제될 수 있어요.
+            <br />
+            지난 날짜에 작성한 등불은 삭제만 가능하며 수정할 수 없어요.
           </S.NoticeText>
         </S.FooterNotice>
 

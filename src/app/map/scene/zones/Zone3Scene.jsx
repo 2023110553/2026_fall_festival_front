@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
-import boothData from './zone3-booths.sample.json'
+import { useMapZoneBooths } from '../../hooks/useMapZones'
 
 // 구역 3(만해광장 + 후문쪽 거리) 씬 — 지형/구조물 .glb 로드 + 부스 목데이터 배치.
 //
@@ -39,6 +39,7 @@ import boothData from './zone3-booths.sample.json'
 const MAP_SCALE = 2
 
 export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
+  const { booths } = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone3.glb')
 
   // Zone1/2/4Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요).
@@ -54,7 +55,7 @@ export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} scale={MAP_SCALE} />
-      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }

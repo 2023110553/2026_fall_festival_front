@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import { logoutAccount } from '../../api/auth'
 import AlertModal from '../../components/common/AlertModal'
 
 // 1. mypage 전용 컴포넌트 및 스타일
-import ConfirmLogoutModal from './components/auth/ConfirmLogoutModal'
+import ConfirmLogoutModal from '../auth/ConfirmLogoutModal'
 import * as S from './MyPage.styles'
 
 // 2. app/lantern 공통 모달들, 등불 작성 플로우 훅, 전역 등불 리스트
@@ -21,19 +22,19 @@ import { FESTIVAL_DATES } from '../../constants/festivalDates'
 import { revealCoupon, markCouponUsed } from '../lantern/utils/couponRules'
 
 export default function MyPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
 
   // 등불 리스트는 LanternProvider로 전역 공유 (나의 등불 목록 모달은 AppLayout에 항상 떠 있는 LanternFlowPage가 렌더링)
-  const { lanterns, addLantern, requestLanternList } = useLanterns()
+  const { lanterns, addLantern, requestLanternList, coupon, setCoupon } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
 
   // --- 모달 상태 관리 ---
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false) // 로그아웃 확인 모달
+  const [logoutPending, setLogoutPending] = useState(false)
   const [isNoLanternModalOpen, setIsNoLanternModalOpen] = useState(false) // '나의 쿠폰' 클릭 시 등불 0개 안내 모달
 
   // 쿠폰 플로우 — null | 'scratch' | 'result' | 'verify'
   const [couponFlow, setCouponFlow] = useState(null)
-  const [coupon, setCoupon] = useState(null)
   const [isNewCoupon, setIsNewCoupon] = useState(false)
 
   const {
@@ -110,9 +111,15 @@ export default function MyPage() {
   }
 
   // 로그아웃 처리
-  const handleConfirmLogout = () => {
-    setIsLogoutModalOpen(false)
-    logout()
+  const handleConfirmLogout = async () => {
+    if (logoutPending) return
+    setLogoutPending(true)
+    try {
+      await logoutAccount()
+      setIsLogoutModalOpen(false)
+    } finally {
+      setLogoutPending(false)
+    }
   }
 
   return (
@@ -225,6 +232,7 @@ export default function MyPage() {
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={handleConfirmLogout}
+        pending={logoutPending}
       />
 
       <AlertModal

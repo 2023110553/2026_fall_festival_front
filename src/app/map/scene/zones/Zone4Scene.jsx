@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
-import boothData from './zone4-booths.sample.json'
+import { useMapZoneBooths } from '../../hooks/useMapZones'
 
 // 구역 4(학림관) 씬 — 지형/건물 .glb 로드 + 부스 목데이터 배치.
 //
@@ -28,6 +28,7 @@ import boothData from './zone4-booths.sample.json'
 //   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
 //     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
 export default function Zone4Scene({ brightnessLevel = null, onBoothClick }) {
+  const { booths } = useMapZoneBooths()
   const { scene } = useGLTF('/models/hangnimgwan.glb')
 
   // Zone1/Zone2Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요).
@@ -43,7 +44,7 @@ export default function Zone4Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }

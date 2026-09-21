@@ -98,4 +98,10 @@ export const PrimaryButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   font-family: var(--font-pretendard);
+
+  /* 저장 요청 중 중복 클릭 방지 상태 */
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 `

@@ -22,7 +22,9 @@ export function useCreateLanternFlow({ lanternCount, onCreated, onFirstLantern }
     const now = new Date()
     const created = {
       id: Date.now(),
-      nickname: newLantern.nickname || '익명의 코끼리',
+      boothName: newLantern.boothName,
+      // nickname은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback (LanternCard 등에서 처리)
+      nickname: newLantern.nickname,
       message: newLantern.content,
       content: newLantern.content,
       createdAt: now.toISOString(),

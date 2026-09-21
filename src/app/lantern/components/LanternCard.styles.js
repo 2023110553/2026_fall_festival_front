@@ -3,12 +3,11 @@ import styled from 'styled-components'
 export const CardContainer = styled.div`
     position: relative;
     width: 100%;
-    padding: 14px 16px 12px 16px;
-    border-radius: 16px;
+    padding: 12px 18px 8px 20px;
+    border-radius: 9px;
     background-color: #ffffff;
-    /* 💡 카드 테두리 및 부드러운 음영 추가 */
-    border: 1px solid #f2f2f2;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.10);
+
 
     display: flex;
     flex-direction: column;
@@ -19,15 +18,30 @@ export const CardContainer = styled.div`
 export const Header = styled.div`
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    margin-bottom: 6px;
+`
+
+export const TitleGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     margin-bottom: 6px;
 `
 
 export const Nickname = styled.span`
-    font-size: 14px;
-    font-weight: 700;
-    color: #111111;
-    line-height: 1.2;
+color: var(--aurora_black, #100B0B);
+
+font-family: Pretendard;
+font-size: 12px;
+font-weight: 400;
+`
+
+export const BoothName = styled.span`
+    color: var(--aurora_gray, #9F9C99);
+font-family: Pretendard;
+font-size: 10px;
+font-weight: 400;
 `
 
 export const MoreButton = styled.button`
@@ -48,20 +62,19 @@ export const MoreButton = styled.button`
 `
 
 export const Content = styled.p`
-    margin: 0;
-    font-size: 13px;
-    font-weight: 400;
-    color: #222222;
-    line-height: 1.45;
-    word-break: break-all;
-    white-space: pre-wrap;
+color: var(--aurora_black, #100B0B);
+font-family: Pretendard;
+font-size: 14px;
+font-weight: 500;
+margin: 0;
 `
 
 export const Time = styled.span`
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: 400;
-    color: #aaaaaa;
+color: var(--aurora_gray, #9F9C99);
+font-family: Pretendard;
+font-size: 10px;
+font-weight: 400;
+margin-top: 8px;
 `
 
 /* 더보기 팝오버 메뉴 */

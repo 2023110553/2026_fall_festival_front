@@ -99,12 +99,13 @@ export default function CreateLanternModal({
       return;
     }
 
-    // 닉네임 안 적은 경우 '익명의 코끼리' 적용
-    const finalNickname = nickname.trim() || '익명의 코끼리';
-
+    // 닉네임은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback이라 저장하지 않음
+    // (nickname 컬럼이 VARCHAR(5)라 7글자인 '익명의 코끼리'는 애초에 저장할 수 없음)
+    // 카드/수정 모달에 부스명을 보여주려면 id뿐 아니라 이름도 같이 저장해둬야 함
     const lanternData = {
       boothId: selectedBooth,
-      nickname: finalNickname,
+      boothName: selectedBoothName,
+      nickname: nickname.trim(),
       content: content.trim(),
     };
 
@@ -208,11 +209,11 @@ export default function CreateLanternModal({
               />
             </S.InfoIcon>
             <S.NoticeText>
-              등불은 하루 최대 3개까지 달 수 있어요. 삭제한 등불도 횟수에 포함돼요.
+              등불은 하루 최대 3개까지 작성할 수 있으며, 삭제한 등불도 작성 횟수에 포함
               <br />
-              욕설 및 타인을 비방하는 글은 삭제조치 될 수 있어요. 지난 일자의 등불은 삭
+              돼요. 욕설이나 타인을 비방하는 내용은 운영 정책에 따라 삭제될 수 있어요.
               <br />
-              제만 가능하며 수정은 불가해요.
+              지난 날짜에 작성한 등불은 삭제만 가능하며 수정할 수 없어요.
             </S.NoticeText>
           </S.NoticeWrapper>
         </S.TopWrapper>

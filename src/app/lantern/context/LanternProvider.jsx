@@ -1,24 +1,48 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useAuthStore } from '../../../store/useAuthStore'
 
 const LanternContext = createContext(null)
 
-const STORAGE_KEY = 'my_lanterns'
+const storageKey = (userId) => `festival-lanterns:${userId}`
+const couponKey = (userId) => `festival-coupon:${userId}`
+
+function readStored(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key))
+    return value ?? fallback
+  } catch {
+    return fallback
+  }
+}
 
 // 등불 리스트를 앱 전역에서 공유하기 위한 컨텍스트.
 // AppLayout에 항상 떠 있는 LanternFlowPage(작성/목록 모달)와 MyPage(마이페이지 버튼)가
 // 같은 리스트를 보게 하려고 도입 — 각자 로컬 상태로 따로 들고 있으면 서로 다른 등불 목록이 보이는 문제가 생긴다.
 export function LanternProvider({ children }) {
+  const userId = useAuthStore((state) => state.user?.id)
+  const sessionId = useAuthStore((state) => state.sessionId)
+  return <AccountLanternProvider key={`${userId ?? 'guest'}:${sessionId ?? ''}`} userId={userId}>{children}</AccountLanternProvider>
+}
+
+function AccountLanternProvider({ children, userId }) {
+  // 지도 상세에서 보고 있는 부스와 날짜. 상세를 나가면 null로 초기화한다.
+  const [activeBooth, setActiveBooth] = useState(null)
   // 마운트 시 1회만 localStorage에서 초기값을 읽어온다 (읽기용 별도 useEffect보다
   // lazy initializer가 더 단순하고, "쓰기 이펙트가 초기값을 덮어쓰는" 순서 문제도 없다)
   const [lanterns, setLanterns] = useState(() => {
-    const savedLanterns = localStorage.getItem(STORAGE_KEY)
-    return savedLanterns ? JSON.parse(savedLanterns) : []
+    const saved = readStored(storageKey(userId), [])
+    return Array.isArray(saved) ? saved : []
   })
+  const [coupon, setCoupon] = useState(() => readStored(couponKey(userId), null))
 
   // lanterns가 바뀔 때마다(추가/삭제/수정 전부 setLanterns를 거치므로) 자동으로 저장
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lanterns))
-  }, [lanterns])
+    if (userId != null) localStorage.setItem(storageKey(userId), JSON.stringify(lanterns))
+  }, [lanterns, userId])
+
+  useEffect(() => {
+    if (userId != null) localStorage.setItem(couponKey(userId), JSON.stringify(coupon))
+  }, [coupon, userId])
 
   const addLantern = (lantern) => setLanterns((prev) => [...prev, lantern])
 
@@ -27,11 +51,11 @@ export function LanternProvider({ children }) {
       prev.map((item) => (item.id === id ? { ...item, isDeleted: true } : item))
     )
 
-  const editLantern = (id, newContent) =>
+  const editLantern = (id, { nickname, message }) =>
     setLanterns((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, message: newContent, content: newContent, updatedAt: new Date().toISOString() }
+          ? { ...item, nickname, message, content: message, updatedAt: new Date().toISOString() }
           : item
       )
     )
@@ -60,7 +84,11 @@ export function LanternProvider({ children }) {
   return (
     <LanternContext.Provider
       value={{
+        activeBooth,
+        setActiveBooth,
         lanterns,
+        coupon,
+        setCoupon,
         addLantern,
         deleteLantern,
         editLantern,
