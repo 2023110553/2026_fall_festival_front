@@ -30,6 +30,7 @@ export default function CreateLanternModal({
   boothList = [],
   usedBoothIds = [], // 오늘 이미 등불을 단 부스 ID 목록 — 드롭다운에서 재선택 방지용
   currentCount = 0, // 현재 작성한 등불 개수
+  presetBoothId = null, // 부스 상세에서 진입한 경우 미리 선택돼 있어야 할 부스 ID
 }) {
   const [selectedBooth, setSelectedBooth] = useState('');
   const [nickname, setNickname] = useState('');
@@ -78,6 +79,14 @@ export default function CreateLanternModal({
   const resolvedBoothList = boothList.length > 0 ? boothList : fetchedBoothList;
 
   const selectedBoothName = resolvedBoothList.find((booth) => booth.id === selectedBooth)?.name ?? '';
+
+  // 부스 상세에서 진입한 경우 해당 부스를 자동으로 선택해둔다 (이미 등불을 단 부스면 건너뜀)
+  useEffect(() => {
+    if (!isOpen || !presetBoothId || selectedBooth !== '') return;
+    const matched = resolvedBoothList.find((booth) => booth.id === presetBoothId);
+    if (!matched || usedBoothIds.includes(Number(presetBoothId))) return;
+    setSelectedBooth(presetBoothId);
+  }, [isOpen, presetBoothId, resolvedBoothList, selectedBooth, usedBoothIds]);
 
   // 드롭다운 바깥 클릭 시 닫기
   useEffect(() => {
@@ -195,7 +204,7 @@ export default function CreateLanternModal({
                   onClick={() => setIsBoothOpen((prev) => !prev)}
                   $hasValue={selectedBooth !== ''}
                 >
-                  <span>{isBoothListLoading ? '부스 목록을 불러오는 중...' : selectedBoothName}</span>
+                  <span>{isBoothListLoading ? '부스 목록을 불러오는 중...' : (selectedBoothName || '부스를 선택해주세요.')}</span>
                   <S.Chevron
                     $isOpen={isBoothOpen}
                     width="10"
@@ -233,6 +242,7 @@ export default function CreateLanternModal({
                   maxLength={5}
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
+                  placeholder="닉네임을 입력해주세요."
                 />
                 <S.CharCount>{nickname.length}/5</S.CharCount>
               </S.InputWrapper>
@@ -247,6 +257,7 @@ export default function CreateLanternModal({
                   rows={3}
                   value={content}
                   onChange={handleContentChange}
+                  placeholder="응원의 한마디를 남겨주세요."
                 />
                 <S.CharCount>{content.length}/30</S.CharCount>
               </S.InputWrapper>

@@ -141,12 +141,16 @@ export const DropdownItem = styled.li`
 `
 
 export const Dot = styled.span`
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
-    background-color: ${({ $color }) => $color};
-    box-shadow: 0 0 10px 5px ${({ $color }) => $color}66;
+    background: radial-gradient(
+        circle closest-side,
+        ${({ $color }) => $color}b3 0%,
+        ${({ $color }) => $color}66 35%,
+        ${({ $color }) => $color}22 65%,
+        ${({ $color }) => $color}00 100%
+    );
 `
 
 export const Input = styled.input`
@@ -159,6 +163,12 @@ export const Input = styled.input`
     font-size: 13px;
     outline: none;
     box-sizing: border-box;
+
+    &::placeholder {
+        font-family: Pretendard;
+        font-size: 13px;
+        color: #aaaaaa;
+    }
 `
 
 export const Textarea = styled.textarea`
@@ -172,6 +182,12 @@ export const Textarea = styled.textarea`
     outline: none;
     resize: none;
     box-sizing: border-box;
+
+    &::placeholder {
+        font-family: Pretendard;
+        font-size: 13px;
+        color: #aaaaaa;
+    }
 `
 
 export const ErrorText = styled.p`

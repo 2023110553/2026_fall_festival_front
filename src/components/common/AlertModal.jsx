@@ -1,7 +1,7 @@
 import Modal from './Modal'
 import * as S from './AlertModal.styles'
 
-export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText = '닫기' }) {
+export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText = '닫기', onConfirm, confirmText }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} style={S.modalStyle}>
             <S.Container>
@@ -10,9 +10,20 @@ export default function AlertModal({ isOpen, onClose, title, subTitle, buttonTex
                 {subTitle && <S.SubTitle>{subTitle}</S.SubTitle>}
                 </S.Header>
 
-                <S.CloseBtn type="button" onClick={onClose}>
-                {buttonText}
-                </S.CloseBtn>
+                {onConfirm ? (
+                    <S.ButtonRow>
+                        <S.CloseBtn type="button" onClick={onClose}>
+                        {buttonText}
+                        </S.CloseBtn>
+                        <S.ConfirmBtn type="button" onClick={onConfirm}>
+                        {confirmText}
+                        </S.ConfirmBtn>
+                    </S.ButtonRow>
+                ) : (
+                    <S.CloseBtn type="button" onClick={onClose}>
+                    {buttonText}
+                    </S.CloseBtn>
+                )}
             </S.Container>
         </Modal>
     )
