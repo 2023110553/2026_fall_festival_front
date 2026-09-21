@@ -59,6 +59,11 @@ export const Card = styled.button`
     $isLive ? 'rgba(220, 112, 84, 0.1)' : CARD_BG};
   box-shadow: ${({ $isLive }) =>
     $isLive ? '0 2px 5px 0 rgba(0, 0, 0, 0.15)' : '0 2px 5px 0 rgba(0, 0, 0, 0.1)'};
+
+  &:disabled {
+    opacity: 1;
+    color: inherit;
+  }
 `
 
 export const Left = styled.div`
