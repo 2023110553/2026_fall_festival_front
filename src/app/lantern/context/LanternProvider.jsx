@@ -55,7 +55,9 @@ export function LanternProvider({ children }) {
 }
 
 function AccountLanternProvider({ children, userId }) {
-  // 지도 상세에서 보고 있는 부스와 날짜 — 상세를 나가면 null로 초기화한다.
+  // 부스 상세에서 현재 보고 있는 부스 — map 도메인이 상세 진입/이탈 시 세팅해준다.
+  // { boothId, festivalDate } | null — 등불 달기 모달이 그 부스를 미리 선택해두고,
+  // festivalDate가 오늘이 아니면 등불 달기 자체를 막는 데 쓰인다.
   const [activeBooth, setActiveBooth] = useState(null)
   const [lanterns, setLanterns] = useState([])
   const [coupon, setCoupon] = useState(() => readStored(couponKey(userId), null))
