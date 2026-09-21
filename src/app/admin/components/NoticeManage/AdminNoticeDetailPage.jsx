@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import * as S from './AdminNoticeDetailPage.styles'
-import { getAdminNoticeDetail } from '../../../../api/admin'
-import { getNoticeTypeLabel, isUrgentNotice } from './mockNotices'
+import { deleteAdminNotice, getAdminNoticeDetail } from '../../../../api/admin'
+import { getNoticeTypeLabel, isUrgentNotice } from './noticeTypes'
 import ConfirmDeleteModal from '../LanternManage/ConfirmDeleteModal'
 
 export default function AdminNoticeDetailPage() {
   const { noticeId } = useParams()
   const navigate = useNavigate()
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   // GET /api/notices/{notice_id}/
   const [notice, setNotice] = useState(null)
@@ -45,10 +47,25 @@ export default function AdminNoticeDetailPage() {
 
   const goToList = () => navigate('/admin/notices')
 
-  const handleDeleteConfirm = () => {
-    console.log('delete notice', notice.notice_id)
-    setIsDeleteOpen(false)
-    goToList()
+  const handleDeleteConfirm = async () => {
+    if (isDeleting) return
+    setIsDeleting(true)
+    setDeleteError('')
+    try {
+      await deleteAdminNotice(noticeId)
+      setIsDeleteOpen(false)
+      goToList()
+    } catch (err) {
+      // 404는 이미 삭제된 경우도 포함 — 어차피 없는 공지이니 목록으로 보낸다
+      if (err.response?.status === 404) {
+        setIsDeleteOpen(false)
+        goToList()
+        return
+      }
+      setDeleteError(err.response?.data?.message ?? '삭제에 실패했습니다.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -90,7 +107,12 @@ export default function AdminNoticeDetailPage() {
 
       <ConfirmDeleteModal
         isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        onClose={() => {
+          setIsDeleteOpen(false)
+          setDeleteError('')
+        }}
         onConfirm={handleDeleteConfirm}
       />
     </S.Page>

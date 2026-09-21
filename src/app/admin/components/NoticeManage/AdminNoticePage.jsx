@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import * as S from './AdminNoticePage.styles'
 import { getAdminNotices } from '../../../../api/admin'
-import { getNoticeTypeLabel, isUrgentNotice } from './mockNotices'
+import { getNoticeTypeLabel, isUrgentNotice } from './noticeTypes'
 import NoticeTypeSelectModal from './NoticeTypeSelectModal'
 
 // 한 번에 불러오는 개수 (명세상 size 최대 100)

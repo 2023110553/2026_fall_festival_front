@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import * as S from './NoticeEditor.styles'
 import NoticeEditor from './NoticeEditor'
 import { createAdminNotice } from '../../../../api/admin'
-import { NOTICE_TYPE_LABEL } from './mockNotices'
+import { NOTICE_TYPE_LABEL } from './noticeTypes'
 
 // 서버 400은 errors에 필드별 메시지가 오므로 있으면 그걸, 없으면 message를 보여준다
 const toErrorMessage = (error) => {

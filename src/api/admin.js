@@ -41,7 +41,9 @@ export const updateAdminNotice = (noticeId, { type, title, content, imageFile, d
   // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
   return apiClient.put(`/api/notices/${noticeId}/`, formData)
 }
-export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/admin/notices/${noticeId}`)
+// 삭제 — Soft Delete(deleted_at 갱신). 사용자 공지 목록·홈 롤링 바에서도 즉시 빠진다
+// 성공 200 → data: { notice_id, deleted_at }
+export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/notices/${noticeId}/`)
 
 // 분실물 관리
 // 목록 조회 — found_date 미지정 시 전체, page는 0부터, size는 최대 100 (기본 20)
