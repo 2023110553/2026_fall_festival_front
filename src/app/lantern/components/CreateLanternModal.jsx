@@ -4,6 +4,7 @@ import AlertModal from '../../../components/common/AlertModal'
 import * as S from './CreateLanternModal.styles'
 import { BOOTH_CATEGORIES } from '../../../constants/categories'
 import { getLanternBoothOptions } from '../../../api/lantern'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 // map 도메인 PinLabel.jsx와 동일한 방식 — 부스 category를 지도 마커와 같은 색으로 매핑
 const DEFAULT_BOOTH_DOT_COLOR = '#DC7054';
@@ -32,6 +33,7 @@ export default function CreateLanternModal({
   currentCount = 0, // 현재 작성한 등불 개수
   presetBoothId = null, // 부스 상세에서 진입한 경우 미리 선택돼 있어야 할 부스 ID
 }) {
+  const { t } = useTranslation()
   const [selectedBooth, setSelectedBooth] = useState('');
   const [nickname, setNickname] = useState('');
   const [content, setContent] = useState('');
@@ -197,24 +199,24 @@ export default function CreateLanternModal({
           {/* Header */}
           <S.HeaderWrapper>
             <S.ModalTitle>
-              등불 달기 ({Math.min(currentCount + 1, 3)}/3)
+              {t('lantern.addTitle', { count: Math.min(currentCount + 1, 3) })}
             </S.ModalTitle>
             <S.ModalSubtitle>
-              축제 한 마디 남기고 부스를 응원해봐요.
+              {t('lantern.addDescription')}
             </S.ModalSubtitle>
           </S.HeaderWrapper>
 
           <S.FieldsGroup>
             {/* 부스 선택 드롭다운 */}
             <S.FieldWrapper>
-              <S.Label>부스 선택</S.Label>
+              <S.Label>{t('lantern.selectBooth')}</S.Label>
               <S.SelectWrapper ref={boothFieldRef}>
                 <S.SelectTrigger
                   type="button"
                   onClick={() => setIsBoothOpen((prev) => !prev)}
                   $hasValue={selectedBooth !== ''}
                 >
-                  <span>{isBoothListLoading ? '부스 목록을 불러오는 중...' : (selectedBoothName || '부스를 선택해주세요.')}</span>
+                  <span>{isBoothListLoading ? t('lantern.loadingBooths') : (selectedBoothName || t('lantern.selectBoothPlaceholder'))}</span>
                   <S.Chevron
                     $isOpen={isBoothOpen}
                     width="10"
@@ -238,13 +240,13 @@ export default function CreateLanternModal({
                   </S.DropdownList>
                 )}
               </S.SelectWrapper>
-              {boothError && <S.ErrorText>부스를 선택해주세요.</S.ErrorText>}
+              {boothError && <S.ErrorText>{t('lantern.selectBoothPlaceholder')}</S.ErrorText>}
             </S.FieldWrapper>
 
             {/* 닉네임 입력 */}
             <S.FieldWrapper>
               <S.Label>
-                닉네임 <S.OptionalText>(선택)</S.OptionalText>
+                {t('lantern.nickname')} <S.OptionalText>{t('lantern.optional')}</S.OptionalText>
               </S.Label>
               <S.InputWrapper>
                 <S.Input
@@ -252,7 +254,7 @@ export default function CreateLanternModal({
                   maxLength={5}
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder="닉네임을 입력해주세요."
+                  placeholder={t('lantern.nicknamePlaceholder')}
                 />
                 <S.CharCount>{nickname.length}/5</S.CharCount>
               </S.InputWrapper>
@@ -260,18 +262,18 @@ export default function CreateLanternModal({
 
             {/* 축제 한마디 */}
             <S.FieldWrapper>
-              <S.Label>축제 한마디</S.Label>
+              <S.Label>{t('lantern.message')}</S.Label>
               <S.InputWrapper>
                 <S.Textarea
                   maxLength={30}
                   rows={3}
                   value={content}
                   onChange={handleContentChange}
-                  placeholder="응원의 한마디를 남겨주세요."
+                  placeholder={t('lantern.messagePlaceholder')}
                 />
                 <S.CharCount>{content.length}/30</S.CharCount>
               </S.InputWrapper>
-              {contentError && <S.ErrorText>축제 한마디를 입력해주세요.</S.ErrorText>}
+              {contentError && <S.ErrorText>{t('lantern.messageRequired')}</S.ErrorText>}
             </S.FieldWrapper>
           </S.FieldsGroup>
 
@@ -283,13 +285,7 @@ export default function CreateLanternModal({
                 fill="#9F9C99"
               />
             </S.InfoIcon>
-            <S.NoticeText>
-              등불은 하루 최대 3개까지 작성할 수 있으며, 삭제한 등불도 작성 횟수에 포함
-              <br />
-              돼요. 욕설이나 타인을 비방하는 내용은 운영 정책에 따라 삭제될 수 있어요.
-              <br />
-              지난 날짜에 작성한 등불은 삭제만 가능하며 수정할 수 없어요.
-            </S.NoticeText>
+            <S.NoticeText>{t('lantern.policy')}</S.NoticeText>
           </S.NoticeWrapper>
 
           {submitError && <S.ErrorText>{submitError}</S.ErrorText>}
@@ -297,11 +293,11 @@ export default function CreateLanternModal({
         {/* Footer 버튼 */}
         <S.ButtonRow>
           <S.CloseButton type="button" onClick={requestClose}>
-            닫기
+            {t('common.close')}
           </S.CloseButton>
 
           <S.SubmitButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? '등록 중...' : '등불 달기'}
+            {isSubmitting ? t('lantern.submitting') : t('nav.addLantern')}
           </S.SubmitButton>
         </S.ButtonRow>
       </S.Form>
@@ -310,25 +306,25 @@ export default function CreateLanternModal({
     <AlertModal
       isOpen={isDuplicateBoothModalOpen}
       onClose={() => setIsDuplicateBoothModalOpen(false)}
-      title="이미 등불을 단 부스에요."
-      subTitle="부스 선택을 변경해주세요."
+      title={t('lantern.duplicateTitle')}
+      subTitle={t('lantern.duplicateDescription')}
     />
 
     <AlertModal
       isOpen={isForbiddenWordModalOpen}
       onClose={() => setIsForbiddenWordModalOpen(false)}
-      title="부적절한 표현이 포함되어 있어요"
-      subTitle="내용을 수정한 후 다시 등불을 등록해주세요"
+      title={t('lantern.forbiddenTitle')}
+      subTitle={t('lantern.forbiddenDescription')}
     />
 
     <AlertModal
       isOpen={isLeaveConfirmOpen}
       onClose={() => setIsLeaveConfirmOpen(false)}
-      title="작성을 그만둘까요?"
-      subTitle="지금 나가면 작성한 내용이 저장되지 않아요."
-      buttonText="취소"
+      title={t('lantern.leaveTitle')}
+      subTitle={t('lantern.leaveDescription')}
+      buttonText={t('common.cancel')}
       onConfirm={confirmLeave}
-      confirmText="나가기"
+      confirmText={t('lantern.leave')}
     />
     </>
   );

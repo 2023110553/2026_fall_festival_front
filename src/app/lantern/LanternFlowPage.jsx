@@ -1,4 +1,5 @@
 'use client'
+import { useTranslation } from '../../i18n/useTranslation'
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
@@ -20,6 +21,7 @@ const OPEN_LANTERN_PARAM = 'openLantern'
 const getApiMessage = (error, fallback) => error?.response?.data?.message || fallback
 
 export default function LanternFlowPage() {
+  const { t } = useTranslation()
   const { isLoggedIn } = useAuth()
   const {
     lanterns, addLantern, deleteLantern, editLantern, registerTriggers,
@@ -207,17 +209,17 @@ export default function LanternFlowPage() {
       <CouponResultModal isOpen={couponFlow === 'result'} onClose={() => setCouponFlow(null)} coupon={coupon} onUseClick={() => setCouponFlow('verify')} />
       <VerifyCodeModal isOpen={couponFlow === 'verify'} onClose={() => setCouponFlow('result')} onSubmit={handleVerifyCode} />
       <MyCouponListModal isOpen={isCouponListOpen} onClose={() => setIsCouponListOpen(false)} coupons={coupons} onSelect={handleSelectCoupon} />
-      <AlertModal isOpen={isSuccessModalOpen} onClose={closeSuccessModal} title="등불 달기 성공!" subTitle="성공적으로 등불이 달렸습니다." />
-      <AlertModal isOpen={isLimitModalOpen} onClose={closeLimitModal} title="등불 3개를 모두 달았어요" subTitle="등불은 하루에 3개씩만 달 수 있어요" />
+      <AlertModal isOpen={isSuccessModalOpen} onClose={closeSuccessModal} title={t('lantern.successTitle')} subTitle={t('lantern.successDescription')} />
+      <AlertModal isOpen={isLimitModalOpen} onClose={closeLimitModal} title={t('lantern.limitTitle')} subTitle={t('lantern.limitDescription')} />
       <MyLanternList isOpen={isLanternListOpen} onClose={() => setIsLanternListOpen(false)} lanterns={lanterns} onDelete={deleteLantern} onEdit={editLantern} />
-      <AlertModal isOpen={isNoLanternModalOpen} onClose={() => setIsNoLanternModalOpen(false)} title="등불이 아직 없습니다" subTitle="첫 등불을 달고 스크래치 쿠폰을 받아보세요" />
+      <AlertModal isOpen={isNoLanternModalOpen} onClose={() => setIsNoLanternModalOpen(false)} title={t('coupon.emptyTitle')} subTitle={t('coupon.emptyDescription')} />
       <AlertModal
         isOpen={wrongDateVariant !== null}
         onClose={() => setWrongDateVariant(null)}
-        title={wrongDateVariant === 'past' ? '지난 날에는 등불을 달 수 없어요.' : '내일 등불은 아직 달 수 없어요.'}
-        subTitle="상단의 날짜 선택을 변경해주세요."
+        title={wrongDateVariant === 'past' ? t('lantern.pastDateTitle') : t('lantern.futureDateTitle')}
+        subTitle={t('lantern.changeDate')}
       />
-      <AlertModal isOpen={Boolean(couponError)} onClose={() => setCouponError('')} title="쿠폰을 확인할 수 없어요" subTitle={couponError} />
+      <AlertModal isOpen={Boolean(couponError)} onClose={() => setCouponError('')} title={t('coupon.unavailable')} subTitle={couponError} />
     </>
   )
 }

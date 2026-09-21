@@ -3,6 +3,7 @@ import Modal from '../../../components/common/Modal'
 import BoothDetailPanel from '../../map/components/BottomSheet/BoothDetailPanel'
 import { getCurrentFestivalDate } from '../../lantern/utils/getCurrentFestivalDate'
 import styled from 'styled-components'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -114,6 +115,7 @@ function ArrowRightIcon() {
 }
 
 export default function BoothRanking({ ranking = [], isLoading = false, isError = false }) {
+  const { language, t } = useTranslation()
   const [selectedBoothId, setSelectedBoothId] = useState(null)
   const [sheetTab, setSheetTab] = useState('info')
   const triggerRef = useRef(null)
@@ -146,13 +148,13 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
 
   const hasRanking = !isLoading && !isError && Array.isArray(ranking) && ranking.length > 0
   const emptyLabel = isLoading
-    ? '불러오는 중입니다.'
+    ? t('home.rankingLoading')
     : isError
-      ? '정보를 불러오지 못했습니다.'
-      : '등록된 부스가 없습니다.'
+      ? t('home.rankingError')
+      : t('home.rankingEmpty')
 
   return (
-    <Wrapper aria-label="부스 등불 랭킹">
+    <Wrapper aria-label={t('home.rankingLabel')}>
       {!hasRanking ? Array.from({ length: 3 }, (_, index) => (
         <Row key={`empty-${index}`}>
           <NameGroup>
@@ -172,7 +174,7 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           as="button"
           type="button"
           key={booth.booth_id}
-          aria-label={`${booth.rank}위 ${booth.name}, 등불 ${booth.lantern_count}개, 상세 보기`}
+          aria-label={t('home.rankingDetail', { rank: booth.rank, name: booth.name, count: booth.lantern_count })}
           aria-haspopup="dialog"
           onClick={(event) => {
             triggerRef.current = event.currentTarget
@@ -186,7 +188,7 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           </NameGroup>
           <CountGroup>
             <LanternDot aria-hidden="true" />
-            <Count aria-hidden="true">{booth.lantern_count.toLocaleString('ko-KR')}개</Count>
+            <Count aria-hidden="true">{t('home.lanternCount', { count: booth.lantern_count.toLocaleString(language === 'ko' ? 'ko-KR' : language) })}</Count>
             <ArrowBox aria-hidden="true">
               <ArrowRightIcon />
             </ArrowBox>

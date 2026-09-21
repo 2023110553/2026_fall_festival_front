@@ -6,12 +6,14 @@ import FestivalDateTabs from '../../components/common/FestivalDateTabs'
 import NowPlaying from './components/NowPlaying'
 import { MOCK_SERVER_TIME, getMockPerformanceList } from './mocks/performanceMock'
 import useServerTime from '../../hooks/useServerTime'
+import { useTranslation } from '../../i18n/useTranslation'
 
 const FESTIVAL_DATES = ['2026-09-29', '2026-09-30', '2026-10-01']
 
 // 공연 안내(STAGE) — 날짜 탭 + 지금 공연중 하이라이트 + 시간대별 타임라인
 export default function PerformancePage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const dateParam = searchParams.get('date')
   const now = useServerTime(MOCK_SERVER_TIME)
@@ -28,7 +30,7 @@ export default function PerformancePage() {
 
   return (
     <Page>
-      <TopHeader title="공연" appearance="light" />
+      <TopHeader title={t('nav.performance')} appearance="light" />
       <HeaderTab>
         <FestivalDateTabs value={selectedDate} onChange={handleDateChange} />
       </HeaderTab>

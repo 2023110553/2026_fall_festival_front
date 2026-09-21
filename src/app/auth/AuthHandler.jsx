@@ -3,8 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore, subscribeToAuthStorage } from '../../store/useAuthStore'
 import LoginModal from './LoginModal'
 import { completeKakaoLogin, clearKakaoCallback, loginErrorMessage } from './kakaoOAuth'
+import { useTranslation } from '../../i18n/useTranslation'
 
 export default function AuthHandler({ children }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const [message, setMessage] = useState('')
@@ -18,12 +20,12 @@ export default function AuthHandler({ children }) {
 
   useEffect(() => {
     const onExpired = () => {
-      setMessage('로그인이 만료되어 재로그인이 필요해요.')
+      setMessage(t('auth.expired'))
       navigate('/', { replace: true })
     }
     window.addEventListener('auth:expired', onExpired)
     return () => window.removeEventListener('auth:expired', onExpired)
-  }, [navigate])
+  }, [navigate, t])
 
   useEffect(() => {
     const onLogout = () => {
@@ -52,7 +54,7 @@ export default function AuthHandler({ children }) {
   }, [isCallback, location.search, navigate])
 
   return <>
-    {isCallback ? <p role="status">카카오 로그인 중입니다…</p> : children}
+    {isCallback ? <p role="status">{t('auth.kakaoPending')}</p> : children}
     <LoginModal open={Boolean(message)} message={message} onClose={() => setMessage('')} />
   </>
 }

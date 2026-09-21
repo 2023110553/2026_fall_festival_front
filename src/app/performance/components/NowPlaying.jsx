@@ -1,7 +1,9 @@
 import * as S from './NowPlaying.styles'
 import { formatTime, getProgress } from '../../../utils/time'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 export default function NowPlaying({ performance, now }) {
+    const { t } = useTranslation()
     if (!now) {
         return null
     }
@@ -9,7 +11,7 @@ export default function NowPlaying({ performance, now }) {
     if (!performance) {
         return (
             <S.Card>
-                <S.Empty>진행 중인 공연이 없어요.</S.Empty>
+                <S.Empty>{t('home.performanceEmpty')}</S.Empty>
             </S.Card>
         )
     }

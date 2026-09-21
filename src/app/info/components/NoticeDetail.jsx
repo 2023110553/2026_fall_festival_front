@@ -1,18 +1,20 @@
 import Tag from '../../../components/common/Tag'
 import InfoDetailHeader from './InfoDetailHeader'
 import OverflowMarquee from './OverflowMarquee'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './NoticeDetail.styles'
 
 export default function NoticeDetail({ notice, onBack }) {
+  const { t } = useTranslation()
   if (!notice) return null
 
   return (
     <S.Page>
-      <InfoDetailHeader title="공지" onBack={onBack} />
+      <InfoDetailHeader title={t('info.notice')} onBack={onBack} />
 
       <S.TitleRow>
         <Tag tone={notice.type === 'URGENT' ? 'danger' : 'default'} size="detail">
-          {notice.type === 'URGENT' ? '긴급 공지' : '일반 공지'}
+          {notice.type === 'URGENT' ? t('notice.urgent') : t('notice.normal')}
         </Tag>
         <OverflowMarquee as="h3" variant="detail">
           {notice.title}

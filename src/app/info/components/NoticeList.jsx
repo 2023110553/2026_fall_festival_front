@@ -1,11 +1,13 @@
 import Tag from '../../../components/common/Tag'
 import EmptyState from '../../../components/common/EmptyState'
 import OverflowMarquee from './OverflowMarquee'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './NoticeList.styles'
 
 export default function NoticeList({ notices = [], onSelect }) {
+  const { t } = useTranslation()
   if (notices.length === 0) {
-    return <EmptyState>등록된 공지사항이 없습니다.</EmptyState>
+    return <EmptyState>{t('notice.empty')}</EmptyState>
   }
 
   return (
@@ -18,7 +20,7 @@ export default function NoticeList({ notices = [], onSelect }) {
         >
           <S.TitleRow>
             <Tag tone={item.type === 'URGENT' ? 'danger' : 'default'}>
-              {item.type === 'URGENT' ? '긴급 공지' : '일반 공지'}
+              {item.type === 'URGENT' ? t('notice.urgent') : t('notice.normal')}
             </Tag>
             <OverflowMarquee>{item.title}</OverflowMarquee>
           </S.TitleRow>

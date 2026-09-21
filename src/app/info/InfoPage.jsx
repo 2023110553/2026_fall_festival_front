@@ -22,13 +22,14 @@ import {
   getNoticeDetail,
   getNoticeList,
 } from '../../api/info'
+import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './InfoPage.styles'
 
 const INFO_TABS = [
-  { value: 'collab', label: '협업' },
-  { value: 'notice', label: '공지' },
-  { value: 'lostfound', label: '분실물' },
-  { value: 'developer', label: '개발진' },
+  { value: 'collab', labelKey: 'info.collab' },
+  { value: 'notice', labelKey: 'info.notice' },
+  { value: 'lostfound', labelKey: 'info.lostFound' },
+  { value: 'developer', labelKey: 'info.developer' },
 ]
 
 const INITIAL_LIST_STATE = {
@@ -58,6 +59,8 @@ const normalizeLostItemDetail = (item) => ({
 })
 
 export default function InfoPage() {
+  const { t } = useTranslation()
+  const infoTabs = INFO_TABS.map((item) => ({ ...item, label: t(item.labelKey) }))
   const [lostDate, setLostDate] = useState('2026-09-29')
   const [keyword, setKeyword] = useState('')
   const [noticeList, setNoticeList] = useState({
@@ -272,14 +275,14 @@ export default function InfoPage() {
 
   return (
     <S.Page>
-      {!detail && <TopHeader title="안내" appearance="light" />}
+      {!detail && <TopHeader title={t('info.title')} appearance="light" />}
       <S.Content>
         {!detail && (
           <SegmentedTabs
-            items={INFO_TABS}
+            items={infoTabs}
             value={tab}
             onChange={changeTab}
-            ariaLabel="안내 메뉴"
+            ariaLabel={t('info.menu')}
           />
         )}
         <S.Section

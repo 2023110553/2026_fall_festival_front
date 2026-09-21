@@ -9,6 +9,7 @@ import { formatDayLabel } from '../../../lantern/utils/formatDayLabel'
 import { getToday } from '../../../lantern/utils/getToday'
 import { getCurrentFestivalDate } from '../../../lantern/utils/getCurrentFestivalDate'
 import { FESTIVAL_DATES } from '../../../../constants/festivalDates'
+import { useTranslation } from '../../../../i18n/useTranslation'
 import * as S from './MyLanternList.styles'
 
 const largeModalStyle = {
@@ -30,6 +31,7 @@ function getDefaultDayIndex() {
 }
 
 export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete, onEdit }) {
+  const { t } = useTranslation()
   const [deletingId, setDeletingId] = useState(null)
   const [editingLantern, setEditingLantern] = useState(null)
   const [selectedDayIndex, setSelectedDayIndex] = useState(getDefaultDayIndex)
@@ -98,8 +100,8 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
         {/* Header */}
         <S.HeaderRow>
           <S.Header>
-            <S.Title>나의 등불</S.Title>
-            <S.SubTitle>내가 남긴 응원을 함께 확인해봐요.</S.SubTitle>
+            <S.Title>{t('myLantern.title')}</S.Title>
+            <S.SubTitle>{t('myLantern.description')}</S.SubTitle>
           </S.Header>
 
           <S.DayPicker ref={dayPickerRef}>
@@ -173,7 +175,7 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
         {/* Body */}
         <S.ListWrapper>
           {dayLanterns.length === 0 ? (
-            <S.EmptyState>아직 남긴 등불이 없습니다.</S.EmptyState>
+            <S.EmptyState>{t('myLantern.empty')}</S.EmptyState>
           ) : (
             dayLanterns.map((l) => {
               const isAdmin = l.status === 'deleted_by_admin'
@@ -183,13 +185,13 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
                 return (
                   <S.DeletedCard key={l.id} $isAdmin={isAdmin}>
                     <S.DeletedNickname $isAdmin={isAdmin}>
-                      {l.nickname || '익명의 코끼리'}
+                      {l.nickname || t('lantern.anonymous')}
                     </S.DeletedNickname>
                     {l.boothName && (
                       <S.DeletedBoothName $isAdmin={isAdmin}>{l.boothName}</S.DeletedBoothName>
                     )}
                     <S.DeletedMessage $isAdmin={isAdmin}>
-                      {isAdmin ? '관리자에 의해 삭제된 댓글입니다.' : '삭제한 댓글입니다'}
+                      {isAdmin ? t('myLantern.deletedByAdmin') : t('myLantern.deletedByUser')}
                     </S.DeletedMessage>
                     <S.DeletedTime $isAdmin={isAdmin}>
                       {formatLanternDateTime(l.updatedAt ?? l.createdAt)}
@@ -220,17 +222,11 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
               fill="#9F9C99"
             />
           </S.InfoIcon>
-          <S.NoticeText>
-            등불은 하루 최대 3개까지 작성할 수 있으며, 삭제한 등불도 작성 횟수에 포함돼요.
-            <br />
-            욕설이나 타인을 비방하는 내용은 운영 정책에 따라 삭제될 수 있어요.
-            <br />
-            지난 날짜에 작성한 등불은 삭제만 가능하며 수정할 수 없어요.
-          </S.NoticeText>
+          <S.NoticeText>{t('lantern.policy')}</S.NoticeText>
         </S.FooterNotice>
 
         <S.CloseBtn type="button" onClick={onClose}>
-          닫기
+          {t('common.close')}
         </S.CloseBtn>
       </Modal>
 
@@ -253,15 +249,15 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
       <AlertModal
         isOpen={isEditRestrictedOpen}
         onClose={() => setIsEditRestrictedOpen(false)}
-        title="지난 등불은 수정할 수 없어요"
-        subTitle="지난 날짜의 등불은 삭제만 가능해요"
+        title={t('myLantern.pastEditTitle')}
+        subTitle={t('myLantern.pastEditDescription')}
       />
 
       {/* 등불 삭제 실패 안내 */}
       <AlertModal
         isOpen={Boolean(deleteError)}
         onClose={() => setDeleteError('')}
-        title="삭제하지 못했어요"
+        title={t('myLantern.deleteErrorTitle')}
         subTitle={deleteError}
       />
     </>

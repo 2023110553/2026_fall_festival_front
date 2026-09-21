@@ -1,21 +1,23 @@
 import Modal from "../../../../components/common/Modal";
+import { useTranslation } from '../../../../i18n/useTranslation'
 import * as S from './ConfirmDeleteModal.styles'
 
 export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, pending = false, error = '' }) {
+  const { t } = useTranslation()
   return (
     <Modal isOpen={isOpen} onClose={pending ? () => {} : onClose} style={S.modalStyle}>
       <S.Content>
-        <S.Title>정말 삭제하시겠습니까?</S.Title>
-        <S.Description>삭제 후에는 데이터가 복구되지 않습니다.</S.Description>
+        <S.Title>{t('delete.title')}</S.Title>
+        <S.Description>{t('delete.description')}</S.Description>
       </S.Content>
 
       {error && <p role="alert">{error}</p>}
       <S.ButtonRow>
         <S.CloseButton type="button" disabled={pending} onClick={onClose}>
-          닫기
+          {t('common.close')}
         </S.CloseButton>
         <S.DeleteButton type="button" disabled={pending} onClick={onConfirm}>
-          삭제하기
+          {t('lantern.delete')}
         </S.DeleteButton>
       </S.ButtonRow>
     </Modal>

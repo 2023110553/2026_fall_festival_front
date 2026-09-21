@@ -9,6 +9,7 @@ import useServerTime from '../../../hooks/useServerTime'
 import { getPerformanceProgress } from '../utils/getPerformanceProgress'
 import { formatTime } from '../../../utils/time'
 
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './NowPlayingCards.styles'
 
 function ChevronRightIcon() {
@@ -24,6 +25,7 @@ function ChevronRightIcon() {
 
 export default function NowPlayingCards() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const now = useServerTime(MOCK_SERVER_TIME)
   const visiblePerformances = now ? getMockNowPerformances(now) : []
@@ -33,7 +35,7 @@ export default function NowPlayingCards() {
       <S.Header>
         <S.TitleGroup>
           <S.Marker aria-hidden="true" />
-          <S.Title>공연 현황</S.Title>
+          <S.Title>{t('home.performanceStatus')}</S.Title>
         </S.TitleGroup>
 
         <S.MoreLink
@@ -42,18 +44,18 @@ export default function NowPlayingCards() {
             navigate('/performance')
           }
         >
-          전체 일정 보기
+          {t('home.viewFullSchedule')}
           <ChevronRightIcon />
         </S.MoreLink>
       </S.Header>
 
       {!now ? (
         <EmptyState>
-          공연 현황을 불러올 수 없어요.
+          {t('home.performanceError')}
         </EmptyState>
       ) : visiblePerformances.length === 0 ? (
         <EmptyState>
-          진행 중인 공연이 없어요.
+          {t('home.performanceEmpty')}
         </EmptyState>
       ) : (
         <S.Scroller>
@@ -92,7 +94,7 @@ export default function NowPlayingCards() {
                         performance.image_url ||
                         performanceThumbnail
                       }
-                      alt={`${performance.team_name} 공연 사진`}
+                      alt={t('home.performanceImageAlt', { team: performance.team_name })}
                     />
 
                     <S.BottomGradient />

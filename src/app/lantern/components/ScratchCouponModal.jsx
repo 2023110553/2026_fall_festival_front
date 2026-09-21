@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Modal from '../../../components/common/Modal'
 import { SCRATCH_THRESHOLD } from '../utils/couponRules'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './ScratchCouponModal.styles'
 
 const CANVAS_WIDTH = 264
@@ -14,6 +15,7 @@ const COVER_SRC = `${import.meta.env.BASE_URL}images/scratch-cover.png`
 // onReveal: 스크래치가 기준치 이상 진행되면 호출 → 상위에서 CouponResultModal로 전환
 // coupon: 발급 시점에 이미 확정된 결과(isWin/reward) — 스크래치 레이어 밑에 미리 그려서 긁는 도중에 보이게 함
 export default function ScratchCouponModal({ isOpen, onClose, onScratchStart, onReveal, coupon, isNewCoupon = false }) {
+  const { t } = useTranslation()
   const canvasRef = useRef(null)
   const ctxRef = useRef(null)
   const isScratchingRef = useRef(false)
@@ -187,16 +189,16 @@ export default function ScratchCouponModal({ isOpen, onClose, onScratchStart, on
     <Modal isOpen={isOpen} onClose={onClose} style={S.panelStyle}>
       <S.Container>
         <S.Title>
-          {isNewCoupon ? '등불을 성공적으로 남겼어요!' : '아직 쿠폰을 긁지 않았어요.'}
+          {isNewCoupon ? t('coupon.success') : t('coupon.unscratched')}
         </S.Title>
         <S.Description>
-          손으로 문질러서 당첨 결과를 확인해보세요.
+          {t('coupon.scratchDescription')}
         </S.Description>
 
         <S.ScratchArea $height={CANVAS_HEIGHT}>
           {/* canvas 밑에 깔린 실제 결과 — 스크래치 레이어가 지워지면 이 텍스트가 비쳐 보임 */}
           <S.Result>
-            <S.RewardTitle>{coupon?.isWin ? coupon.reward : '꽝'}</S.RewardTitle>
+            <S.RewardTitle>{coupon?.isWin ? coupon.reward : t('coupon.lose')}</S.RewardTitle>
             {coupon?.isWin && coupon.usageDescription && <S.UsageDescription>{coupon.usageDescription}</S.UsageDescription>}
           </S.Result>
 
@@ -209,7 +211,7 @@ export default function ScratchCouponModal({ isOpen, onClose, onScratchStart, on
             onPointerCancel={handlePointerUp}
             onLostPointerCapture={handlePointerUp}
             onPointerLeave={handlePointerUp}
-            aria-label="문질러서 쿠폰 당첨 결과 확인"
+            aria-label={t('coupon.scratchLabel')}
           />
         </S.ScratchArea>
 
@@ -218,7 +220,7 @@ export default function ScratchCouponModal({ isOpen, onClose, onScratchStart, on
             type="button"
             onClick={onClose}
           >
-            닫기
+            {t('common.close')}
           </S.CloseButton>
         </S.Footer>
       </S.Container>

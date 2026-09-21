@@ -1,15 +1,17 @@
 import { useRef, useState } from 'react'
 import Modal from '../../../components/common/Modal'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './ReportModal.styles'
 
 const REPORT_REASONS = [
-    { value: 'ABUSE', label: '욕설 및 비방' },
-    { value: 'OBSCENE', label: '음란하거나 불쾌한 내용' },
-    { value: 'FALSE_INFO', label: '허위 정보' },
-    { value: 'ETC', label: '기타' },
+    { value: 'ABUSE', labelKey: 'report.abuse' },
+    { value: 'OBSCENE', labelKey: 'report.obscene' },
+    { value: 'FALSE_INFO', labelKey: 'report.falseInfo' },
+    { value: 'ETC', labelKey: 'report.other' },
 ]
 
     export default function ReportModal({ isOpen, onClose, onSubmit }) {
+    const { t } = useTranslation()
     const [selectedReason, setSelectedReason] = useState('')
     const [pending, setPending] = useState(false)
     const [error, setError] = useState('')
@@ -30,7 +32,7 @@ const REPORT_REASONS = [
             setSelectedReason('')
             onClose()
         } catch {
-            setError('신고하지 못했어요. 잠시 후 다시 시도해주세요.')
+            setError(t('report.error'))
         } finally {
             busy.current = false
             setPending(false)
@@ -48,8 +50,8 @@ const REPORT_REASONS = [
         <Modal isOpen={isOpen} onClose={handleClose}>
         <S.Container>
             <S.Header>
-            <S.Title>신고하기</S.Title>
-            <S.SubTitle>신고 사유를 선택해주세요</S.SubTitle>
+            <S.Title>{t('report.title')}</S.Title>
+            <S.SubTitle>{t('report.description')}</S.SubTitle>
             </S.Header>
 
             <S.OptionList>
@@ -63,7 +65,7 @@ const REPORT_REASONS = [
                     checked={selectedReason === reason.value}
                     onChange={() => handleReasonChange(reason.value)}
                 />
-                {reason.label}
+                {t(reason.labelKey)}
                 </S.OptionItem>
             ))}
             </S.OptionList>
@@ -71,7 +73,7 @@ const REPORT_REASONS = [
             {error && <p role="alert">{error}</p>}
             <S.ButtonGroup>
             <S.CancelButton disabled={pending} type="button" onClick={handleClose}>
-                취소
+                {t('common.cancel')}
             </S.CancelButton>
             <S.SubmitButton
                 type="button"
@@ -79,7 +81,7 @@ const REPORT_REASONS = [
                 $disabled={!selectedReason || pending || !onSubmit}
                 onClick={handleSubmit}
             >
-                {pending ? '신고 중...' : '신고하기'}
+                {pending ? t('report.pending') : t('report.title')}
             </S.SubmitButton>
             </S.ButtonGroup>
         </S.Container>

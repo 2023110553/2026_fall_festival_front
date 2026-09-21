@@ -1,16 +1,18 @@
 import Modal from '../../../../components/common/Modal'
 import { FESTIVAL_DATES } from '../../../../constants/festivalDates'
+import { useTranslation } from '../../../../i18n/useTranslation'
 import * as S from './MyCouponListModal.styles'
 
 const STATUS_LABELS = {
-  unscratched: '결과 확인',
-  win: '당첨 | 사용 가능',
-  lose: '미당첨 | 꽝',
-  used: '당첨 | 사용 완료',
-  expired: '당첨 | 사용 만료',
+  unscratched: 'coupon.result',
+  win: 'coupon.available',
+  lose: 'coupon.notWon',
+  used: 'coupon.used',
+  expired: 'coupon.expired',
 }
 
 export default function MyCouponListModal({ isOpen, onClose, coupons = [], onSelect }) {
+  const { t } = useTranslation()
   const couponsByDate = new Map(coupons.map((coupon) => [coupon.date, coupon]))
   const receivedCoupons = FESTIVAL_DATES.map((date, index) => ({
     day: index + 1,
@@ -20,8 +22,8 @@ export default function MyCouponListModal({ isOpen, onClose, coupons = [], onSel
   return (
     <Modal isOpen={isOpen} onClose={onClose} style={S.panelStyle}>
       <S.Header>
-        <S.Title>나의 쿠폰</S.Title>
-        <S.SubTitle>축제 기간 동안 받은 쿠폰을 확인해보세요</S.SubTitle>
+        <S.Title>{t('coupon.myTitle')}</S.Title>
+        <S.SubTitle>{t('coupon.myDescription')}</S.SubTitle>
       </S.Header>
 
       {receivedCoupons.length > 0 ? (
@@ -35,11 +37,11 @@ export default function MyCouponListModal({ isOpen, onClose, coupons = [], onSel
                 disabled={isUsed}
                 $isUsed={isUsed}
                 onClick={() => onSelect?.(coupon)}
-                aria-label={`DAY ${day} 쿠폰, ${STATUS_LABELS[coupon.status] ?? '확인'}`}
+                aria-label={t('coupon.cardLabel', { day, status: t(STATUS_LABELS[coupon.status] ?? 'common.confirm') })}
               >
                 <S.Day>DAY {day}</S.Day>
                 <S.Divider aria-hidden="true" />
-                <S.Status $isUsed={isUsed}>{STATUS_LABELS[coupon.status] ?? '결과 확인'}</S.Status>
+                <S.Status $isUsed={isUsed}>{t(STATUS_LABELS[coupon.status] ?? 'coupon.result')}</S.Status>
                 <S.Brand>Pulse on</S.Brand>
                 {!isUsed && <S.Chevron aria-hidden="true">›</S.Chevron>}
               </S.CouponCard>
@@ -47,7 +49,7 @@ export default function MyCouponListModal({ isOpen, onClose, coupons = [], onSel
           })}
         </S.CouponList>
       ) : (
-        <S.EmptyState>아직 받은 쿠폰이 없습니다.</S.EmptyState>
+        <S.EmptyState>{t('coupon.none')}</S.EmptyState>
       )}
 
       <S.FooterNotice>
@@ -56,11 +58,11 @@ export default function MyCouponListModal({ isOpen, onClose, coupons = [], onSel
           <path d="M6 11C8.755 11 11 8.755 11 6C11 3.245 8.755 1 6 1C3.245 1 1 3.245 1 6C1 8.755 3.245 11 6 11ZM6 2C8.205 2 10 3.795 10 6C10 8.205 8.205 10 6 10C3.795 10 2 8.205 2 6C2 3.795 3.795 2 6 2Z" fill="#9F9C99" />
         </S.InfoIcon>
         <S.NoticeText>
-          당첨 쿠폰은 동국대학교 멋쟁이사자처럼 동아리방(학생회관 2층)에서 수령할 수 있어요. 쿠폰 화면을 운영진에게 보여주세요. 확인 코드는 운영진이 직접 입력해요.
+          {t('coupon.pickup')}
         </S.NoticeText>
       </S.FooterNotice>
 
-      <S.CloseBtn type="button" onClick={onClose}>닫기</S.CloseBtn>
+      <S.CloseBtn type="button" onClick={onClose}>{t('common.close')}</S.CloseBtn>
     </Modal>
   )
 }

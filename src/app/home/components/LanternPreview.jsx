@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 const Wrapper = styled.section`
   display: flex;
@@ -71,17 +72,18 @@ const Preview = styled.button`
 
 export default function LanternPreview({ children }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <Wrapper>
       <Header>
         <Marker aria-hidden="true" />
-        <Title>현재 인기</Title>
+        <Title>{t('home.popularNow')}</Title>
       </Header>
 
       <Card>
-        <Preview type="button" aria-label="지도에서 등불 보기" onClick={() => navigate('/map')}>
-          지도 미리보기
+        <Preview type="button" aria-label={t('home.viewLanternsOnMap')} onClick={() => navigate('/map')}>
+          {t('home.mapPreview')}
         </Preview>
         {children}
       </Card>

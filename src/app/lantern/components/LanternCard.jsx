@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import * as S from './LanternCard.styles'
 import { formatLanternDateTime } from '../utils/formatLanternDateTime'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 export default function LanternCard({
     lantern,
@@ -9,6 +10,7 @@ export default function LanternCard({
     onDelete,
     onReport,
     }) {
+    const { t } = useTranslation()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const menuRef = useRef(null)
     const hasMenuActions = isMine ? Boolean(onEdit || onDelete) : Boolean(onReport)
@@ -37,7 +39,7 @@ export default function LanternCard({
          <S.Header>
           <S.TitleGroup>
             <S.Nickname>
-              {lantern.nickname || '익명의 코끼리'}
+              {lantern.nickname || t('lantern.anonymous')}
             </S.Nickname>
 
             {lantern.boothName && (
@@ -49,7 +51,7 @@ export default function LanternCard({
             <S.MoreButton
               type="button"
               onClick={toggleMenu}
-              aria-label="등불 더보기"
+              aria-label={t('lantern.more')}
             >
               ⋮
             </S.MoreButton>
@@ -73,7 +75,7 @@ export default function LanternCard({
                         onEdit(lantern.id)
                     }}
                     >
-                    수정하기
+                    {t('lantern.edit')}
                     </S.DropdownItem>
                 )}
                 {onDelete && (
@@ -85,7 +87,7 @@ export default function LanternCard({
                         onDelete(lantern.id)
                     }}
                     >
-                    삭제하기
+                    {t('lantern.delete')}
                     </S.DropdownItem>
                 )}
                 </>
@@ -99,7 +101,7 @@ export default function LanternCard({
                         onReport(lantern.id)
                     }}
                     >
-                    신고하기
+                    {t('lantern.report')}
                     </S.DropdownItem>
                 )}
                 </>

@@ -7,6 +7,7 @@ import LanternPreview from './components/LanternPreview'
 import BoothRanking from './components/BoothRanking'
 import NowPlayingCards from './components/NowPlayingCards'
 import { apiClient } from '../../api/client'
+import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './HomePage.styles'
 
 
@@ -16,7 +17,7 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000
 const KST_OFFSET_IN_MS = 9 * 60 * 60 * 1000
 const FESTIVAL_START_DAY = Date.UTC(2026, 8, 29) / DAY_IN_MS
 
-function getFestivalDay(now = Date.now()) {
+function getFestivalDay(now = Date.now(), endedLabel = '종료') {
   const today = Math.floor((now + KST_OFFSET_IN_MS) / DAY_IN_MS)
   const daysSinceStart = today - FESTIVAL_START_DAY
 
@@ -25,7 +26,7 @@ function getFestivalDay(now = Date.now()) {
   }
 
   if (daysSinceStart >= 3) {
-    return '종료'
+    return endedLabel
   }
 
   return `DAY ${daysSinceStart + 1}`
@@ -102,7 +103,8 @@ function useHomeData(request) {
 }
 
 export default function HomePage() {
-  const [festivalDay, setFestivalDay] = useState(getFestivalDay)
+  const { t } = useTranslation()
+  const [festivalDay, setFestivalDay] = useState(() => getFestivalDay(Date.now(), t('home.ended')))
   const notices = useHomeData(getRollingNotices)
   const boothRanking = useHomeData(getBoothRanking)
 
@@ -111,7 +113,7 @@ export default function HomePage() {
 
     const updateFestivalDay = () => {
       const now = Date.now()
-      setFestivalDay(getFestivalDay(now))
+      setFestivalDay(getFestivalDay(now, t('home.ended')))
       window.clearTimeout(timeoutId)
       const untilMidnight = DAY_IN_MS - ((now + KST_OFFSET_IN_MS) % DAY_IN_MS)
       timeoutId = window.setTimeout(updateFestivalDay, untilMidnight)
@@ -126,11 +128,11 @@ export default function HomePage() {
       window.removeEventListener('focus', updateFestivalDay)
       document.removeEventListener('visibilitychange', updateFestivalDay)
     }
-  }, [])
+  }, [t])
 
   return (
     <S.Page>
-      <TopHeader title="홈" appearance="light" />
+      <TopHeader title={t('nav.home')} appearance="light" />
 
       <S.Content>
         <AdBanner />

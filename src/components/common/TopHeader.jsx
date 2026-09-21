@@ -13,13 +13,14 @@ import flagKo from '../../assets/top-header/flag-ko.png'
 import flagEn from '../../assets/top-header/flag-en.png'
 import flagZh from '../../assets/top-header/flag-zh.png'
 import flagJa from '../../assets/top-header/flag-ja.png'
+import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './TopHeader.styles'
 
 const LANGUAGES = [
   { code: 'ko', label: '한국어', flag: flagKo },
   { code: 'en', label: 'English', flag: flagEn },
-  { code: 'zh', label: '中文', flag: flagZh },
   { code: 'ja', label: '日本語', flag: flagJa },
+  { code: 'zh', label: '中文', flag: flagZh },
 ]
 
 export default function TopHeader({
@@ -29,6 +30,8 @@ export default function TopHeader({
   isLoggedIn: isLoggedInOverride,
 }) {
   const { isLoggedIn: authIsLoggedIn } = useAuth()
+  const { language, changeLanguage, t } = useTranslation()
+  const selectedLanguage = LANGUAGES.find((item) => item.code === language) ?? LANGUAGES[0]
   const { requestLanternList, requestCoupon } = useLanterns()
   const isLoggedIn = isLoggedInOverride ?? authIsLoggedIn
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
@@ -117,28 +120,33 @@ export default function TopHeader({
           <S.LanguageControl>
             <S.LanguageButton
               type="button"
-              aria-label="언어 선택, 현재 한국어"
+              aria-label={`${t('header.selectLanguage')}, ${t('header.currentLanguage', { language: selectedLanguage.label })}`}
               aria-haspopup="menu"
               aria-expanded={isLanguageOpen}
               aria-controls={isLanguageOpen ? languageMenuId : undefined}
               onClick={toggleLanguageMenu}
             >
               <S.LanguageLabel>
-                <S.Flag src={flagKo} alt="" aria-hidden="true" />
-                <span>한국어</span>
+                <S.Flag src={selectedLanguage.flag} alt="" aria-hidden="true" />
+                <span>{selectedLanguage.label}</span>
               </S.LanguageLabel>
               <S.LanguageChevron src={chevronIcon} alt="" aria-hidden="true" $open={isLanguageOpen} />
             </S.LanguageButton>
 
             {isLanguageOpen && (
-              <S.LanguageMenu id={languageMenuId} role="menu" aria-label="언어 선택">
+              <S.LanguageMenu id={languageMenuId} role="menu" aria-label={t('header.selectLanguage')}>
                 {LANGUAGES.map((language, index) => (
                   <S.LanguageOption
                     key={language.code}
                     type="button"
-                    role="menuitem"
-                    disabled
+                    role="menuitemradio"
+                    $active={language.code === selectedLanguage.code}
                     $hasDivider={index < LANGUAGES.length - 1}
+                    aria-checked={language.code === selectedLanguage.code}
+                    onClick={() => {
+                      changeLanguage(language.code)
+                      setIsLanguageOpen(false)
+                    }}
                   >
                     <S.Flag src={language.flag} alt="" aria-hidden="true" />
                     <span>{language.label}</span>
@@ -151,7 +159,7 @@ export default function TopHeader({
           {isLoggedIn ? (
             <S.ProfileButton
               type="button"
-              aria-label="내 메뉴"
+              aria-label={t('header.myMenu')}
               aria-haspopup="menu"
               aria-expanded={isProfileMenuOpen}
               aria-controls={isProfileMenuOpen ? profileMenuId : undefined}
@@ -161,7 +169,7 @@ export default function TopHeader({
             </S.ProfileButton>
           ) : (
             <S.LoginButton type="button" onClick={() => setIsLoginOpen(true)}>
-              로그인
+              {t('header.login')}
             </S.LoginButton>
           )}
         </S.Actions>
@@ -169,14 +177,14 @@ export default function TopHeader({
         {isLoggedIn && isProfileMenuOpen && (
           <S.Menu id={profileMenuId} role="menu">
             <S.MenuItem type="button" role="menuitem" onClick={openMyCouponModal}>
-              나의 쿠폰
+              {t('header.myCoupon')}
             </S.MenuItem>
             <S.MenuItem type="button" role="menuitem" onClick={openMyLanternListModal}>
-              나의 등불
+              {t('header.myLantern')}
             </S.MenuItem>
             <S.LogoutItem type="button" role="menuitem" onClick={openLogoutModal}>
               <S.LogoutIcon src={logoutIcon} alt="" aria-hidden="true" />
-              로그아웃
+              {t('header.logout')}
             </S.LogoutItem>
           </S.Menu>
         )}
