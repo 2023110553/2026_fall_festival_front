@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCreateLanternFlow } from './hooks/useCreateLanternFlow'
 import { useLanterns } from './context/LanternProvider'
-import { getTodayLanternCount, getTodayUsedBoothIds } from './utils/getCurrentFestivalDate'
+import { getTodayLanternCount, getTodayUsedBoothIds, getCurrentFestivalDate } from './utils/getCurrentFestivalDate'
 import { revealCoupon, markCouponUsed } from './utils/couponRules'
 
 // app/lantern/components/ 모달 import
