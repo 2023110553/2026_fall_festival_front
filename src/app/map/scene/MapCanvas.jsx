@@ -1,5 +1,5 @@
-import { Suspense, useEffect } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Suspense, useEffect, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, Selection, SelectiveBloom, ToneMapping } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
@@ -99,42 +99,144 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 // 보이는 문제가 있었다(zones/README.md에도 TODO로 적혀 있던 것). 원흥관은 씬 중심이 z≈8인데
 // 타깃이 z=-30이라 아예 화면 구석으로 밀려나서, 이번에 ZONE_CAMERAS 표로 분리했다.
 //
-// 중요 — **zone1~zone4 값은 기존 고정값 그대로 옮겨 적었다.** 즉 이번 변경으로 기존 네 구역의
-// 화면은 1픽셀도 바뀌지 않는다. 각 구역에 맞는 값으로 튜닝하는 건 구역 전환 연출을 정할 때
-// 한꺼번에 하기로 한 상태라, 여기서는 "구역별로 다른 값을 줄 수 있는 구조"만 만들어 두고
-// zone5에만 실제로 맞춘 값을 넣었다.
+// 처음 분리할 때는 zone1~zone4 값을 기존 고정값 그대로 옮겨 적어서 화면이 바뀌지 않게 했다.
+// 이후 재원 요청으로 구역별로 하나씩 튜닝했고, 각 항목 위에 날짜와 근거를 적어뒀다.
+// 2026-09-21 기준 다섯 구역 모두 튜닝이 끝났다(옛 공통값을 쓰는 구역 없음).
 //
 // R3F의 <Canvas camera={...}> prop 은 마운트 시점에 한 번만 적용돼서, 구역을 바꿔도 카메라가
-// 따라가지 않는다. 그래서 위치는 ZoneCamera 가 zoneId 변경 때마다 직접 옮기고, 회전 중심은
-// OrbitControls 의 target prop 으로 넘긴다. 타깃까지 ref 로 잡아서 controls.target 을 직접
-// 건드리는 방법도 되긴 하는데(헤드리스 렌더로 둘 다 확인 — 결과는 픽셀 단위로 같다),
-// prop 쪽이 ref 가 언제 붙는지에 기대지 않아 더 안전하고 기존 코드 모양과도 가깝다.
+// 따라가지 않는다. 그래서 zoneId가 바뀔 때마다 ZoneCamera가 카메라 위치와 OrbitControls 타깃을
+// 직접 옮긴다. (09-20 처음 분리할 때는 타깃을 OrbitControls의 target prop으로 넘겼는데,
+// 같은 날 3차 카메라 잠금에서 ref 방식으로 바꿨다 — 이유는 아래 ZoneCamera 주석 참고.)
 const ZONE_CAMERAS = {
-  zone1: { position: [10, 140, 90], target: [10, 3, -30] },
-  zone2: { position: [10, 140, 90], target: [10, 3, -30] },
-  zone3: { position: [10, 140, 90], target: [10, 3, -30] },
-  zone4: { position: [10, 140, 90], target: [10, 3, -30] },
-  // 원흥관: bbox x -36~32 / z -16~32, 중심 (-2, 8). 세로 화면에서 좌우가 잘리지 않는 선까지
-  // 당긴 값이다(더 당기면 본관 동쪽 끝이 잘린다).
-  zone5: { position: [-2, 116, 107], target: [-2, 3, 8] },
+  // 혜화관(2026-09-21 튜닝, 재원 요청 "왼쪽·뒤로 이동, 45° 돌려서 지도 모서리부터 쭉 보이게"):
+  //   정남쪽에서 정북을 보던 시점([10,140,90])을 y축 기준 45° 돌려 남서쪽 모서리에서 북동쪽을
+  //   보게 했다. 내려보는 각(48.8°)은 그대로다. 구역 bbox가 x -43~54 / z -76~15 라서 45°로 보면
+  //   대각선(약 133m)이 세로 화면의 좁은 쪽(가로)을 가로지르게 되고, 그래서 정면 뷰보다 멀리
+  //   빠져야 한다. 220 / 250 / 285 세 거리를 렌더해서 비교했고 220은 경영관 동쪽 끝이 잘려서,
+  //   모서리부터 끝까지 잘림 없이 들어오는 가장 가까운 250으로 정했다.
+  //   (같은 날 재측정: 640×1000에선 경영관 동쪽 끝이 화면 가장자리에 딱 닿고, 폰 비율인 600×1000에선
+  //   양끝이 조금 잘린다. 화면비에 따라 거리를 맞추는 처리는 아직 없다.)
+  zone1: { position: [-111.4, 191.1, 85.9], target: [5, 3, -30.5] },
+  // 팔정도(2026-09-21 튜닝, 재원 요청 "북서쪽에서, 혜화관이랑 비슷하게"):
+  //   블렌더 원본이 +y=북쪽이라(paljeongdo-zone-blender-structure.md) three에선 북쪽=-z, 서쪽=-x,
+  //   즉 북서쪽 = (-x, -z). 방위각 -135°에서 남동쪽을 내려다본다. 내려보는 각 48.8°는 다른 구역과 같다.
+  //   이 방향에선 법학관(동쪽)과 명진관(남쪽)이 화면 위쪽에 좌우로 나란히 서서 가로 폭이 넓어지므로
+  //   혜화관(250)보다 조금 더 빠져야 한다(같은 날 비교해 본 북동쪽 시점은 240이면 됐다).
+  //   거리 250/258/265/271을 640×1000과 600×1000(폰 지도 영역 비율) 두 화면으로 렌더해 봤다.
+  //   265 이하는 600 폭에서 한쪽 끝이 화면 가장자리에 붙거나(4px) 잘렸고, 271에서 양옆 여백이 남는다.
+  //   타깃은 구역 bbox(x -39~47 / z -31~61) 중심 근처에서 좌우 여백이 같아지게 잡았다
+  //   (640 폭 37/36px, 600 폭 17/16px).
+  zone2: { position: [-120.4, 206.9, -111.6], target: [5.8, 3, 14.6] },
+  // 만해광장(2026-09-21 튜닝, 재원 요청 "남동쪽에서, 지금 기준 60° 정도 돌려서"):
+  //   남동쪽 = (+x, +z)라 이 표기에선 방위각이 +방향이다(혜화관 남서 -45°의 반대쪽).
+  //   방위각 60°(정남에서 동쪽으로 60°)에서 북서쪽을 내려다본다. 내려보는 각 48.8°는 다른 구역과 같다.
+  //   이 방향이면 관람석(북쪽 능선)이 화면 오른쪽에서 코트를 감싸고 무대 정자(남쪽)가 왼쪽에 온다.
+  //   정확한 대각선인 45°도 같이 렌더해 봤는데, 60°가 광장의 긴 축(x, 약 42m)을 비스듬히 줄여 보여서
+  //   같은 여백으로 더 가까이 당길 수 있었다.
+  //   구역이 작아서(bbox x -20.8~21.0 / z -15.4~14.2) 거리가 혜화관·팔정도의 1/3 수준이다. 76/82/88을
+  //   640×1000·600×1000으로 비교했고, 76은 폰 비율에서 여백이 24px까지 줄고 최소 거리(70)와 거의 같아
+  //   확대 여유가 없어서 82로 정했다(600 폭 좌우 여백 46/45px). 타깃은 좌우 여백이 같아지게 맞췄다.
+  //   2026-09-21 지도 2배(Zone3Scene의 MAP_SCALE): 위 거리·bbox·여백 숫자는 2배 전 기준이다. 카메라 위치와
+  //   타깃을 원점 기준으로 똑같이 2배 해서(거리 82 → 164, 타깃 높이도 3 → 6) 화면 구도는 그대로고,
+  //   실제 크기인 부스만 상대적으로 작아진다. 확대 여유도 생겼다(최소 거리 70까지 2.3배).
+  zone3: { position: [100.6, 129.4, 55.2], target: [7, 6, 1.2] },
+  // 학림관(2026-09-21 튜닝, 재원 요청 "완전 반대쪽에서"):
+  //   건물 정면(입구·유리 타워)과 앞 도로가 -z 쪽(정면 z=-5, 도로 z -20.5~-4.5)에 있는데, 옛 공통
+  //   카메라는 +z 쪽에서 봐서 창 없는 뒷면만 보였고, 도로 차선에 세운 부스 6개(z=-12.7)는 높이 15m
+  //   건물에 가려 핀 끝만 보였다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했다.
+  //   내려보는 각 48.8°는 다른 구역과 같다. 화면 좌우도 뒤집혀서 건물의 x+ 끝이 화면 왼쪽에 온다.
+  //   구역이 좌우로 긴 직사각형(bbox x -28~28 / z -20.5~8)이고 좌우 대칭이라 타깃 x=0.
+  //   거리 125/133/143을 640×1000·600×1000으로 비교했고, 125는 600 폭에서 양끝이 5px까지 붙어서
+  //   133으로 정했다(640 폭 좌우 여백 45px, 600 폭 25px).
+  zone4: { position: [0, 103.1, -89.1], target: [0, 3, -1.5] },
+  // 원흥관(2026-09-20 첫 값 → 2026-09-21 재원 요청 "반대쪽에서"로 변경):
+  //   본동의 원래 정면(창이 촘촘한 면)은 -z 쪽인데, 처음 잡은 시점(방위각 0°, 카메라가 +z 쪽)은 건물 후면과
+  //   그 앞 광장을 보고 있었다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했고, 후면 광장에 있던
+  //   부스 4개(501~504)는 같은 날 뺐다(zone5-booths.sample.json의 _placement_note 참고).
+  //   내려보는 각 48.8°는 그대로다. 화면 좌우가 뒤집혀서 본관(x+)이 왼쪽, 본동(x-)이 오른쪽에 온다.
+  //   bbox x -36~32 / z -16~32. 거리 150/158/166을 640×1000·600×1000으로 비교했고, 150은 600 폭에서
+  //   양끝이 가장자리에 닿아서 158로 정했다(640 폭 좌우 여백 35px, 600 폭 15px).
+  //   2026-09-21 지도 2배(Zone5Scene의 MAP_SCALE): 위 거리·bbox·여백 숫자는 2배 전 기준이다. 카메라 위치와
+  //   타깃을 원점 기준으로 똑같이 2배 해서(거리 158 → 316, 타깃 높이도 3 → 6) 화면 구도는 그대로다.
+  zone5: { position: [-4, 243.8, -190.2], target: [-4, 6, 18] },
 }
 
 const DEFAULT_CAMERA = ZONE_CAMERAS.zone1
 
-function ZoneCamera({ zoneId }) {
-  const camera = useThree((state) => state.camera)
+// 2026-09-20(3차): 카메라 시점 고정 — 재원 결정 "확대는 되고, 회전은 잠그고, 좌우 이동은 어느 정도까지만".
+//
+// 그동안은 OrbitControls를 옵션 없이 써서 사용자가 건물 밑이나 뒤까지 마음대로 돌릴 수 있었다.
+// 구역마다 각도를 맞춰놨는데(ZONE_CAMERAS) 한 번 돌리면 그 구도가 의미가 없어져서 제한을 건다.
+//
+// 세 가지 한계값은 다섯 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
+// 공통 값이 그대로 들어맞는다. (처음 zone5는 옛 zone1 방향 벡터에서 거리만 줄였고, 이후 다섯 구역
+// 모두 내려보는 각은 두고 방위각만 돌렸다. 새 구역을 맞출 때도 이 48.8°를 지키면 된다.)
+// 구역 크기 차이 때문에 따로 주고 싶어지면 ZONE_CAMERAS 각 항목에 넣고 preset에서 꺼내 쓰면 된다.
+const MIN_DISTANCE = 70      // 가장 가까이 당겼을 때 (부스 지붕이 화면을 채우기 직전)
+// (만해광장은 지도를 2배로 키우기 전엔 기본 거리가 82라 확대 여유가 거의 없었는데, 2배 뒤로는 164다.)
+// MAX_DISTANCE 220 → 300 → 360 (2026-09-21): 혜화관 기본 시점이 거리 250이 되면서 300으로 올렸고,
+// 원흥관 지도를 2배로 키워 기본 거리가 316이 되면서 360으로 한 번 더 올렸다.
+// 기본 거리가 최대값보다 크면 OrbitControls가 첫 update()에서 최대값으로 끌어당겨
+// 카메라가 튕겨 들어온다. 또 기본값 = 최대값이면 사용자가 더 뒤로 뺄 여지가 없다.
+// 지금 가장 먼 기본 시점은 원흥관(316)이다. 새 구역 기본 거리가 이보다 커지면 이 값도 같이 올릴 것.
+const MAX_DISTANCE = 360     // 가장 멀리 뺐을 때 (구역 전체 + 여백)
+const PAN_LIMIT = 30         // 구역 중심에서 좌우/앞뒤로 이만큼까지만 끌 수 있다
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function ZoneCamera({ zoneId, controlsRef }) {
+  const camera = useThree((state) => state.camera)
+  const preset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
+
+  // 구역이 바뀌면 그 구역 기본 시점으로 되돌린다.
+  // (zone1에서 확대해둔 채 zone5로 넘어가도 zone5 기본 화면에서 시작한다)
+  //
+  // 타깃을 OrbitControls의 prop으로 넘기지 않고 여기서 ref로 직접 넣는 이유:
+  // prop으로 주면 MapCanvas가 리렌더될 때마다(MapShell의 onBoothClick이 매 렌더 새로 만들어져서
+  // 바텀시트를 열고 닫을 때도 리렌더된다) 타깃이 구역 중심으로 되돌아가 사용자가 끌어둔
+  // 좌우 이동이 툭툭 튕겨 돌아온다.
   useEffect(() => {
-    const preset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
     camera.position.set(...preset.position)
-    camera.lookAt(...preset.target)     // OrbitControls 가 붙기 전에도 방향이 맞게
-  }, [zoneId, camera])
+    const controls = controlsRef.current
+    if (controls) {
+      controls.target.set(...preset.target)
+      controls.update()
+    } else {
+      camera.lookAt(...preset.target)
+    }
+  }, [camera, controlsRef, preset])
+
+  // 좌우 이동이 구역 밖으로 나가지 않게 매 프레임 가둔다.
+  // OrbitControls는 회전(min/maxPolarAngle)과 줌(min/maxDistance)은 한계를 제공하지만
+  // 패닝은 막아주지 않아서, 그냥 두면 지도 밖 허공까지 끌고 갈 수 있다.
+  //
+  // drei의 OrbitControls는 renderPriority -1로 update()를 돌리므로, 기본 우선순위(0)인
+  // 이 콜백은 그 뒤에 실행된다 — 즉 사용자의 조작이 반영된 결과를 받아서 되돌리는 순서다.
+  useFrame(() => {
+    const controls = controlsRef.current
+    if (!controls) return
+
+    const target = controls.target
+    const [centerX, , centerZ] = preset.target
+    const beforeX = target.x
+    const beforeZ = target.z
+
+    target.x = clamp(target.x, centerX - PAN_LIMIT, centerX + PAN_LIMIT)
+    target.z = clamp(target.z, centerZ - PAN_LIMIT, centerZ + PAN_LIMIT)
+
+    // 패닝은 카메라와 타깃을 같은 양만큼 옮긴다. 타깃만 되돌리면 시선 방향이 틀어지므로
+    // 카메라도 같은 양만큼 되돌려서 (카메라 - 타깃) 오프셋을 유지한다.
+    camera.position.x += target.x - beforeX
+    camera.position.z += target.z - beforeZ
+  })
 
   return null
 }
 
 export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, onBoothClick }) {
-  const cameraPreset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
+  const controlsRef = useRef(null)
 
   return (
     <Canvas
@@ -159,9 +261,28 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
           </Suspense>
           {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
           {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
-          {/* 2026-09-20: 타깃이 구역에 따라 바뀐다(ZONE_CAMERAS). 위치는 ZoneCamera 담당. */}
-          <OrbitControls target={cameraPreset.target} />
-          <ZoneCamera zoneId={zoneId} />
+          {/* 2026-09-20: 시점 고정 — 회전은 잠그고 확대/좌우 이동만 허용.
+              위치·타깃과 패닝 범위 제한은 ZoneCamera가 담당한다.
+              touches/mouseButtons를 바꾼 이유 — OrbitControls 기본값은 '한 손가락=회전'이라
+              회전을 끄면 한 손가락 조작이 아무것도 안 하게 된다. 지도처럼 한 손가락으로
+              끌 수 있어야 해서 PAN으로 바꿨다(데스크톱 좌클릭 드래그도 마찬가지). */}
+          <OrbitControls
+            ref={controlsRef}
+            makeDefault
+            enableRotate={false}
+            enableZoom
+            enablePan
+            screenSpacePanning={false}
+            minDistance={MIN_DISTANCE}
+            maxDistance={MAX_DISTANCE}
+            touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN }}
+            mouseButtons={{
+              LEFT: THREE.MOUSE.PAN,
+              MIDDLE: THREE.MOUSE.DOLLY,
+              RIGHT: THREE.MOUSE.PAN,
+            }}
+          />
+          <ZoneCamera zoneId={zoneId} controlsRef={controlsRef} />
           <EffectComposer>
             <SelectiveBloom
               mipmapBlur
