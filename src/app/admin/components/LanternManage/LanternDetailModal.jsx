@@ -10,15 +10,15 @@ export default function LanternDetailModal({ lantern, onClose, onDelete }) {
           <S.TopRow>
             <S.TitleRow>
               <S.Nickname>{lantern.nickname}</S.Nickname>
-              {lantern.reportReason && <S.ReportBadge>{lantern.reportReason}</S.ReportBadge>}
+              {lantern.top_report_reason && <S.ReportBadge>{lantern.top_report_reason}</S.ReportBadge>}
             </S.TitleRow>
             <S.ReportCount>
-              {lantern.reportCount}
+              {lantern.report_count}
               <S.SirenIcon src={sirenIcon} alt="신고" />
             </S.ReportCount>
           </S.TopRow>
-          <S.BoothName>{lantern.boothName}</S.BoothName>
-          <S.MessageBox>{lantern.message}</S.MessageBox>
+          <S.BoothName>{lantern.booth_name}</S.BoothName>
+          <S.MessageBox>{lantern.content}</S.MessageBox>
           <S.ButtonRow>
             <S.CloseButton type="button" onClick={onClose}>
               닫기

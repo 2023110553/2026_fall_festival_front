@@ -4,7 +4,12 @@ import { apiClient } from './client'
 export const adminLogin = (adminKey) => apiClient.post('/api/admin/login', { adminKey })
 
 // 등불 관리
-export const getAdminLanterns = (sort = 'report') => apiClient.get('/api/admin/lanterns', { params: { sort } })
+// 목록 조회 — sort: REPORT_DESC(신고 많은 순, 기본) | LATEST(최신순), page는 0부터, size는 최대 100 (기본 20)
+// 응답 data: { total_count, page, size, has_next, items: [{ lantern_id, nickname, booth_id, booth_name,
+//              content, report_count, top_report_reason, created_at }] }
+// top_report_reason은 신고 0건이면 null, 삭제된 등불은 서버에서 제외
+export const getAdminLanterns = ({ sort = 'REPORT_DESC', page = 0, size = 20 } = {}) =>
+  apiClient.get('/api/lanterns/', { params: { sort, page, size } })
 export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/admin/lanterns/${lanternId}`)
 
 // 공지 관리
