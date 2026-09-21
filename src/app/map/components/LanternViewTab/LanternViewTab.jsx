@@ -133,7 +133,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
           message: item.message,
           createdAt: item.created_at,
           updatedAt: item.updated_at,
-          isMine: mine ? true : item.is_mine,
+          isMine: item.is_mine,
           status: item.status,
         }))
         setItems((previous) => [...new Map([...previous, ...nextItems].map((item) => [item.id, item])).values()])

@@ -13,7 +13,7 @@ export const postLantern = ({ boothId, nickname, message }) =>
 export const deleteLantern = (lanternId) => apiClient.delete(`/api/lanterns/${lanternId}/`)
 
 export const reportLantern = (lanternId, reason) =>
-  apiClient.post(`/api/lanterns/${lanternId}/reports/`, { reason })
+  apiClient.post(`/api/lanterns/${lanternId}/reports`, { reason })
 
 // 등불 달기 성공 시 발급되는 쿠폰 스크래치/사용
 export const getMyCoupon = () => apiClient.get('/api/coupons/me')
