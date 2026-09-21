@@ -1,5 +1,12 @@
 import { apiClient } from './client'
 
+// 등불 관련 api — "달기" 플로우 + 부스별 등불 목록(등불 보기 탭)
+export const getBoothLanterns = (boothId, { mine = false, date, page = 0, size = 20, signal } = {}) =>
+  apiClient.get('/api/lanterns/', {
+    params: { booth_id: boothId, mine, date: date || undefined, page, size },
+    signal,
+  })
+
 // festival_date는 body에 없음 — 서버 시간 기준 자동 설정
 export const createLantern = ({ boothId, nickname, message }) =>
   apiClient.post('/api/lanterns/', { booth_id: Number(boothId), nickname, message })
