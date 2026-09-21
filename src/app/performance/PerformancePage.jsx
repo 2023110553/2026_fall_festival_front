@@ -19,8 +19,10 @@ export default function PerformancePage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const now = useServerTime(SERVER_TIME_MOCK)
-  const selectedDate = searchParams.get('date') ?? getDefaultDate(SERVER_TIME_MOCK)
-
+  const dateParam = searchParams.get('date')
+  const selectedDate = FESTIVAL_DATES.includes(dateParam)
+    ? dateParam
+    : getDefaultDate(SERVER_TIME_MOCK)
   const handleDateChange = (date) => {
     setSearchParams({ date })
   }
