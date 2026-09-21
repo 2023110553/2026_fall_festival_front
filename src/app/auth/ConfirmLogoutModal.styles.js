@@ -18,12 +18,6 @@ export const Description = styled.p`
   font-size: 12px;
 `
 
-export const Error = styled.p`
-  margin: 12px 0 0;
-  color: #d32f2f;
-  font-size: 12px;
-`
-
 export const Actions = styled.div`
   display: flex;
   gap: 8px;

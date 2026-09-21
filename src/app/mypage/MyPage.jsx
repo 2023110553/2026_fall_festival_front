@@ -31,7 +31,6 @@ export default function MyPage() {
   // --- 모달 상태 관리 ---
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false) // 로그아웃 확인 모달
   const [logoutPending, setLogoutPending] = useState(false)
-  const [logoutError, setLogoutError] = useState('')
   const [isNoLanternModalOpen, setIsNoLanternModalOpen] = useState(false) // '나의 쿠폰' 클릭 시 등불 0개 안내 모달
 
   // 쿠폰 플로우 — null | 'scratch' | 'result' | 'verify'
@@ -115,12 +114,9 @@ export default function MyPage() {
   const handleConfirmLogout = async () => {
     if (logoutPending) return
     setLogoutPending(true)
-    setLogoutError('')
     try {
       await logoutAccount()
       setIsLogoutModalOpen(false)
-    } catch {
-      setLogoutError('로그아웃에 실패했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setLogoutPending(false)
     }
@@ -184,7 +180,7 @@ export default function MyPage() {
 
       {/* 로그아웃 버튼 */}
       <S.LogoutWrapper>
-        <S.LogoutButton onClick={() => { setLogoutError(''); setIsLogoutModalOpen(true) }}>
+        <S.LogoutButton onClick={() => setIsLogoutModalOpen(true)}>
           로그아웃
         </S.LogoutButton>
       </S.LogoutWrapper>
@@ -237,7 +233,6 @@ export default function MyPage() {
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={handleConfirmLogout}
         pending={logoutPending}
-        error={logoutError}
       />
 
       <AlertModal

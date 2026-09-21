@@ -31,26 +31,41 @@ export async function logoutAccount() {
 
   const logout = async () => {
     // 재발급과 같은 잠금을 사용해 회전된 최신 refresh token을 무효화한다.
-    await syncAuthFromStorage()
-    const auth = useAuthStore.getState()
-    if (!auth.isLoggedIn || auth.sessionId !== sessionId) return false
+    let refreshToken = initialAuth.refreshToken
+
+    try {
+      await syncAuthFromStorage()
+      const auth = useAuthStore.getState()
+      if (auth.isLoggedIn && auth.sessionId !== sessionId) return false
+      if (auth.sessionId === sessionId) refreshToken = auth.refreshToken
+    } catch (error) {
+      if (import.meta.env.DEV) console.warn('[Logout storage sync failed]', error)
+    }
 
     // 개발용 가짜 계정은 서버 토큰이 없으므로 로컬 상태만 지운다.
-    if (auth.refreshToken) {
-      const response = await apiClient.post(
-        '/api/accounts/logout/',
-        { refresh_token: auth.refreshToken },
-        { skipUserAuth: true },
-      )
-      if (response.data?.success !== true) throw new Error('로그아웃 응답을 확인할 수 없습니다.')
+    if (refreshToken) {
+      try {
+        const response = await apiClient.post(
+          '/api/accounts/logout/',
+          { refresh_token: refreshToken },
+          { skipUserAuth: true },
+        )
+        if (response.data?.success !== true && import.meta.env.DEV) {
+          console.warn('[Logout API returned an unsuccessful response]')
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('[Logout API failed]', error?.response?.status ?? error?.code ?? 'UNKNOWN')
+        }
+      }
     }
 
-    if (useAuthStore.getState().isLoggedIn && useAuthStore.getState().sessionId === sessionId) {
-      useAuthStore.getState().logout()
-      window.dispatchEvent(new Event('auth:logout'))
-      return true
-    }
-    return false
+    const currentAuth = useAuthStore.getState()
+    if (currentAuth.isLoggedIn && currentAuth.sessionId !== sessionId) return false
+
+    currentAuth.logout()
+    window.dispatchEvent(new Event('auth:logout'))
+    return true
   }
 
   return globalThis.navigator?.locks
