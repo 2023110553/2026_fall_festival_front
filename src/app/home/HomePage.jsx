@@ -30,16 +30,19 @@ export default function HomePage() {
           </S.HeroRow>
         </S.Hero>
 
-        <S.Gap $size={8}>
+        {/* 간격계산 DIRVANA 로고 ~ 공지사항 18px */}
+        <S.Gap $size={18}>
           <NoticeMarquee />
         </S.Gap>
 
-        <S.Gap $size={20}>
+        {/* 공지사항 ~ 현재 인기 */}
+        <S.Gap $size={30}>
           <LanternPreview>
             <BoothRanking />
           </LanternPreview>
         </S.Gap>
 
+        {/* 카드 ~ 공연 현황 20px */}
         <S.Gap $size={20}>
           <NowPlayingCards />
         </S.Gap>

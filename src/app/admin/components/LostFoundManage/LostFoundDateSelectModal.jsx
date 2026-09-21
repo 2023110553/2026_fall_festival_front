@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 import Modal from '../../../../components/common/Modal'
-import { LOST_FOUND_DATES } from './mockLostFound'
+import { FESTIVAL_DATES } from './lostFoundDates'
 
 const panelStyle = {
   position: 'relative',
@@ -44,7 +44,7 @@ const DateButton = styled.button`
   font-size: 17px;
   font-weight: 500;
   cursor: pointer;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 
   & + & {
     margin-top: 12px;
@@ -60,9 +60,10 @@ export default function LostFoundDateSelectModal({ isOpen, onClose, onSelect }) 
         </svg>
       </CloseIconButton>
       <Title>분실물 취득 날짜를 선택하세요.</Title>
-      {LOST_FOUND_DATES.map((date) => (
-        <DateButton key={date} type="button" onClick={() => onSelect(date)}>
-          {date}
+      {/* onSelect로는 API가 받는 ISO 날짜(2026-09-29)를 넘기고, 화면에는 짧은 표기만 보여준다 */}
+      {FESTIVAL_DATES.map((date) => (
+        <DateButton key={date.value} type="button" onClick={() => onSelect(date.value)}>
+          {date.label}
         </DateButton>
       ))}
     </Modal>

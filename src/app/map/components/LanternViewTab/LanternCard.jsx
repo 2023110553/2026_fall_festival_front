@@ -51,7 +51,7 @@ const TextArea = styled.div`
 const NickName = styled.p`
     margin: 0 0 4px 0;
     color: #100B0B;
-    font-family: Pretendard;
+    font-family: var(--font-pretendard);
     font-size: 14px;
     font-style: normal;
     font-weight: 600;
@@ -61,7 +61,7 @@ const NickName = styled.p`
 const Message = styled.p`
     margin: 0 0 8px 0;
     color: #100B0B;
-    font-family: Pretendard;
+    font-family: var(--font-pretendard);
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
@@ -71,7 +71,7 @@ const Message = styled.p`
 const Time = styled.p`
     margin: 0;
     color: #9F9C99;
-    font-family: Pretendard;
+    font-family: var(--font-pretendard);
     font-size: 10px;
     font-style: normal;
     font-weight: 400;

@@ -1,4 +1,10 @@
 import { useMemo, useState } from 'react'
+import {
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import TopHeader from '../../components/common/TopHeader'
 import SegmentedTabs from '../../components/common/SegmentedTabs'
 import CollabList from './components/CollabList'
@@ -22,12 +28,24 @@ const INFO_TABS = [
 ]
 
 export default function InfoPage() {
-  const [tab, setTab] = useState('collab')
   const [lostDate, setLostDate] = useState('2026-09-29')
   const [keyword, setKeyword] = useState('')
-  const [selection, setSelection] = useState(null)
   const notices = NOTICE_LIST_MOCK_RESPONSE.data.items
+  const navigate = useNavigate()
+  const { collabSlug, noticeId, lostItemId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedTab = searchParams.get('tab')
+  const tab = INFO_TABS.some((item) => item.value === requestedTab)
+    ? requestedTab
+    : 'collab'
 
+  const selectedCollab = COLLAB_MOCKS.find((item) => item.id === collabSlug)
+  const selectedNotice = noticeId
+    ? (getNoticeDetailMock(noticeId).data ?? null)
+    : null
+  const selectedLostItem = lostItemId
+    ? (getLostItemDetailMock(lostItemId).data ?? null)
+    : null
   const lostItems = useMemo(() => {
     return getLostItemListMock({
       found_date: lostDate,
@@ -35,34 +53,48 @@ export default function InfoPage() {
     }).data.items
   }, [keyword, lostDate])
 
-  const selectedItem = useMemo(() => {
-    if (!selection) return null
-    if (selection.type === 'notice') {
-      return getNoticeDetailMock(selection.id).data ?? null
-    }
-    if (selection.type === 'lostfound') {
-      return getLostItemDetailMock(selection.id).data ?? null
-    }
-
-    const collections = {
-      collab: COLLAB_MOCKS,
-    }
-    return collections[selection.type]?.find((item) => item.id === selection.id) ?? null
-  }, [selection])
-
   const changeTab = (nextTab) => {
-    setTab(nextTab)
-    setSelection(null)
+    setSearchParams(nextTab === 'collab' ? {} : { tab: nextTab })
   }
 
-  const openDetail = (type, id) => setSelection({ type, id })
-  const closeDetail = () => setSelection(null)
+  if (collabSlug && !selectedCollab) {
+    return <Navigate to="/info" replace />
+  }
+
+  if (noticeId && !selectedNotice) {
+    return <Navigate to="/info?tab=notice" replace />
+  }
+
+  if (lostItemId && !selectedLostItem) {
+    return <Navigate to="/info?tab=lostfound" replace />
+  }
 
   const detail = (() => {
-    if (!selection || !selectedItem) return null
-    if (selection.type === 'collab') return <CollabDetail collab={selectedItem} onBack={closeDetail} />
-    if (selection.type === 'notice') return <NoticeDetail notice={selectedItem} onBack={closeDetail} />
-    if (selection.type === 'lostfound') return <LostFoundDetail item={selectedItem} onBack={closeDetail} />
+    if (collabSlug && selectedCollab) {
+      return (
+        <CollabDetail
+          collab={selectedCollab}
+          onBack={() => navigate('/info')}
+        />
+      )
+    }
+    if (noticeId && selectedNotice) {
+      return (
+        <NoticeDetail
+          notice={selectedNotice}
+          onBack={() => navigate('/info?tab=notice')}
+        />
+      )
+    }
+    if (lostItemId && selectedLostItem) {
+      return (
+        <LostFoundDetail
+          item={selectedLostItem}
+          onBack={() => navigate('/info?tab=lostfound')}
+        />
+      )
+    }
+
     return null
   })()
 
@@ -71,16 +103,30 @@ export default function InfoPage() {
       {!detail && <TopHeader title="안내" appearance="light" />}
       <S.Content>
         {!detail && (
-          <SegmentedTabs items={INFO_TABS} value={tab} onChange={changeTab} ariaLabel="안내 메뉴" />
+          <SegmentedTabs
+            items={INFO_TABS}
+            value={tab}
+            onChange={changeTab}
+            ariaLabel="안내 메뉴"
+          />
         )}
-        <S.Section role={detail ? undefined : 'tabpanel'} $isDetail={Boolean(detail)}>
+        <S.Section
+          role={detail ? undefined : 'tabpanel'}
+          $isDetail={Boolean(detail)}
+        >
           {detail ?? (
             <>
               {tab === 'collab' && (
-                <CollabList collabs={COLLAB_MOCKS} onSelect={(id) => openDetail('collab', id)} />
+                <CollabList
+                  collabs={COLLAB_MOCKS}
+                  onSelect={(id) => navigate(`/info/collab/${id}`)}
+                />
               )}
               {tab === 'notice' && (
-                <NoticeList notices={notices} onSelect={(id) => openDetail('notice', id)} />
+                <NoticeList
+                  notices={notices}
+                  onSelect={(id) => navigate(`/info/notices/${id}`)}
+                />
               )}
               {tab === 'lostfound' && (
                 <LostFoundList
@@ -89,7 +135,7 @@ export default function InfoPage() {
                   keyword={keyword}
                   onDateChange={setLostDate}
                   onKeywordChange={setKeyword}
-                  onSelect={(id) => openDetail('lostfound', id)}
+                  onSelect={(id) => navigate(`/info/lost-items/${id}`)}
                 />
               )}
               {tab === 'developer' && <DevTeamList teams={DEV_TEAM_MOCKS} />}

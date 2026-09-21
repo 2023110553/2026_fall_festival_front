@@ -1,6 +1,13 @@
 import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
+  :root {
+    /* 프리텐다드 전역 폰트 설정 */
+    --font-pretendard: 'Pretendard Variable', 'Pretendard', -apple-system,
+      BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR',
+      sans-serif;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -18,12 +25,15 @@ export const GlobalStyle = createGlobalStyle`
     background-attachment: fixed;
     background-repeat: no-repeat;
     color: ${({ theme }) => theme.color.text};
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: var(--font-pretendard);
     -webkit-tap-highlight-color: transparent;
   }
 
-  button {
+  button, input, textarea, select {
     font-family: inherit;
+  }
+
+  button {
     cursor: pointer;
   }
 

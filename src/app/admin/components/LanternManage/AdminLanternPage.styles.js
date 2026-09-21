@@ -86,7 +86,7 @@ export const ReportBadge = styled.span`
   border-radius: 999px;
   background: #F2D6D6;
   color: #D62525;
-  font-family: 'Pretendard', sans-serif;
+  font-family: var(--font-pretendard);
   font-size: 8px;
   font-style: normal;
   font-weight: 500;

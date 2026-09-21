@@ -18,6 +18,29 @@ export const ItemList = styled.ul`
   list-style: none;
 `
 
+// 로딩 / 에러 / 빈 목록 안내 문구
+export const StatusMessage = styled.p`
+  margin: 0;
+  padding: 24px 0;
+  color: #8A8A8A;
+  text-align: center;
+  font-size: 13px;
+  font-family: var(--font-pretendard);
+`
+
+// has_next일 때만 노출 — 다음 page를 이어서 불러온다
+export const LoadMoreButton = styled.button`
+  margin: 16px auto 0;
+  padding: 10px 20px;
+  border: 1px solid #E6E6E6;
+  border-radius: 99px;
+  background: #FDFDFD;
+  color: #000;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--font-pretendard);
+`
+
 export const DateTag = styled.span`
   display: flex;
   justify-content: center;
@@ -31,7 +54,7 @@ export const DateTag = styled.span`
   font-size: 10px;
   font-weight: 400;
   white-space: nowrap;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const ItemCard = styled.li`
@@ -68,7 +91,7 @@ export const Keyword = styled.span`
   font-size: 10px;
   white-space: nowrap; 
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `
 
 export const Thumbnail = styled.div`

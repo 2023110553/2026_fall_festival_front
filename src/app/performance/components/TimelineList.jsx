@@ -2,6 +2,9 @@ import * as S from './TimelineList.styles'
 import { formatTime } from '../../../utils/time'
 
 export default function TimelineList({ performances = [], onSelect }) {
+  if (performances.length === 0) {
+    return <S.Empty>등록된 공연이 없어요.</S.Empty>
+  }
   return (
     <S.List>
       {performances.map((p) => (

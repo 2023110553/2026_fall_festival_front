@@ -76,6 +76,12 @@ export const ImageButton = styled.button`
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+
+  /* 업로드 요청 중 중복 선택 방지 상태 */
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 `
 
 export const HiddenFileInput = styled.input`
@@ -99,7 +105,7 @@ export const Toast = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   color: #000;
   font-size: 10px;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 
   svg {
     flex-shrink: 0;
@@ -147,5 +153,5 @@ export const TypeTag = styled.span`
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-  font-family: 'pretendard', sans-serif;
+  font-family: var(--font-pretendard);
 `

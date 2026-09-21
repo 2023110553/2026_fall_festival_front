@@ -11,6 +11,7 @@ export default function LanternCard({
     }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const menuRef = useRef(null)
+    const hasMenuActions = isMine ? Boolean(onEdit || onDelete) : Boolean(onReport)
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -33,14 +34,26 @@ export default function LanternCard({
 
     return (
         <S.CardContainer>
-        <S.Header>
-            <S.TitleGroup>
-            <S.Nickname>{lantern.nickname || '익명의 코끼리'}</S.Nickname>
-            {lantern.boothName && <S.BoothName>{lantern.boothName}</S.BoothName>}
-            </S.TitleGroup>
-            <S.MoreButton type="button" onClick={toggleMenu}>
-            ⋮
+         <S.Header>
+          <S.TitleGroup>
+            <S.Nickname>
+              {lantern.nickname || '익명의 코끼리'}
+            </S.Nickname>
+
+            {lantern.boothName && (
+              <S.BoothName>{lantern.boothName}</S.BoothName>
+            )}
+          </S.TitleGroup>
+
+          {hasMenuActions && (
+            <S.MoreButton
+              type="button"
+              onClick={toggleMenu}
+              aria-label="등불 더보기"
+            >
+              ⋮
             </S.MoreButton>
+          )}
         </S.Header>
 
         <S.Content>{lantern.message || lantern.content}</S.Content>
@@ -48,7 +61,7 @@ export default function LanternCard({
         {/* 수정된 적 있으면 수정 시각, 없으면 작성 시각 */}
         <S.Time>{formatLanternDateTime(lantern.updatedAt ?? lantern.createdAt)}</S.Time>
 
-        {isMenuOpen && (
+        {hasMenuActions && isMenuOpen && (
             <S.DropdownMenu ref={menuRef}>
             {isMine ? (
                 <>
