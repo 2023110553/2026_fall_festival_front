@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import * as S from './AdminNoticePage.styles'
 import { getAdminNotices } from '../../../../api/admin'
-import { NOTICE_TYPE_LABEL } from './mockNotices'
+import { getNoticeTypeLabel, isUrgentNotice } from './mockNotices'
 import NoticeTypeSelectModal from './NoticeTypeSelectModal'
 
 // 한 번에 불러오는 개수 (명세상 size 최대 100)
@@ -56,19 +56,15 @@ export default function AdminNoticePage() {
     <S.Page>
       <S.TotalCount>{totalCount}개</S.TotalCount>
       <S.NoticeList>
-        {notices.map((n) => {
-          // 서버는 긴급 공지를 EMERGENCY로 내려주고, 화면 쪽 라벨/등록 흐름은 URGENT 키를 쓴다
-          const isUrgent = n.type === 'EMERGENCY'
-          return (
-            <S.NoticeCard key={n.notice_id} onClick={() => navigate(`/admin/notices/${n.notice_id}`)}>
-              <S.TitleRow>
-                <S.TypeTag $urgent={isUrgent}>{NOTICE_TYPE_LABEL[isUrgent ? 'URGENT' : 'NORMAL']}</S.TypeTag>
-                <S.Title>{n.title}</S.Title>
-              </S.TitleRow>
-              <S.Preview>{n.content_preview}</S.Preview>
-            </S.NoticeCard>
-          )
-        })}
+        {notices.map((n) => (
+          <S.NoticeCard key={n.notice_id} onClick={() => navigate(`/admin/notices/${n.notice_id}`)}>
+            <S.TitleRow>
+              <S.TypeTag $urgent={isUrgentNotice(n.type)}>{getNoticeTypeLabel(n.type)}</S.TypeTag>
+              <S.Title>{n.title}</S.Title>
+            </S.TitleRow>
+            <S.Preview>{n.content_preview}</S.Preview>
+          </S.NoticeCard>
+        ))}
       </S.NoticeList>
 
       {error && <S.StatusMessage role="alert">{error}</S.StatusMessage>}

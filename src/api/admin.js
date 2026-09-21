@@ -13,7 +13,11 @@ export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/admin/la
 // 정렬은 서버가 처리(긴급 우선 → 일반 최신순), 긴급 공지 제목엔 [M/D]가 붙어서 온다. 이미지 없으면 image_url: null
 export const getAdminNotices = ({ type = 'ALL', page = 0, size = 20 } = {}) =>
   apiClient.get('/api/notices/', { params: { type, page, size } })
-export const createAdminNotice = (payload) => apiClient.post('/api/admin/notices', payload)
+// 상세 조회 — 수정 화면 초기값 바인딩에도 사용. 없거나 삭제된 공지는 404(NOTICE_NOT_FOUND)
+// 응답 data: { notice_id, type, title, content, image_url, created_at, updated_at }
+export const getAdminNoticeDetail = (noticeId) =>
+  apiClient.get(`/api/notices/${noticeId}/`)
+export const createAdminNotice =(payload) => apiClient.post('/api/admin/notices', payload)
 export const updateAdminNotice = (noticeId, payload) => apiClient.put(`/api/admin/notices/${noticeId}`, payload)
 export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/admin/notices/${noticeId}`)
 

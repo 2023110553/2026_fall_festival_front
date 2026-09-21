@@ -48,6 +48,15 @@ export const HeaderTitle = styled.h1`
   font-weight: 400;
 `
 
+export const StatusMessage = styled.p`
+  margin: 0;
+  padding: 24px 16px;
+  color: #8A8A8A;
+  text-align: center;
+  font-size: 13px;
+  font-family: var(--font-pretendard);
+`
+
 export const TitleRow = styled.div`
   display: flex;
   align-items: flex-start;
