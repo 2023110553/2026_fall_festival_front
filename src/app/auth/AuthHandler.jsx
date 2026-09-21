@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../../store/useAuthStore'
+import { useAuthStore, subscribeToAuthStorage } from '../../store/useAuthStore'
 import LoginModal from './LoginModal'
-import { completeKakaoLogin, loginErrorMessage } from './kakaoOAuth'
-import { authMockEnabled } from '../../api/mocks/authMock'
-import AuthMockPanel from './AuthMockPanel'
+import { completeKakaoLogin, clearKakaoCallback, loginErrorMessage } from './kakaoOAuth'
 
 export default function AuthHandler({ children }) {
   const location = useLocation()
@@ -12,6 +10,11 @@ export default function AuthHandler({ children }) {
   const [message, setMessage] = useState('')
   const params = new URLSearchParams(location.search)
   const isCallback = location.pathname === '/' && (params.has('code') || params.has('error'))
+
+  useEffect(() => subscribeToAuthStorage(() => {
+    setMessage('')
+    navigate('/', { replace: true })
+  }), [navigate])
 
   useEffect(() => {
     const onExpired = () => {
@@ -23,14 +26,25 @@ export default function AuthHandler({ children }) {
   }, [navigate])
 
   useEffect(() => {
+    const onLogout = () => {
+      setMessage('')
+      navigate('/', { replace: true })
+    }
+    window.addEventListener('auth:logout', onLogout)
+    return () => window.removeEventListener('auth:logout', onLogout)
+  }, [navigate])
+
+  useEffect(() => {
     if (!isCallback) return undefined
     let active = true
     completeKakaoLogin(location.search).then(({ auth, returnTo }) => {
       if (!active) return
+      clearKakaoCallback(location.search)
       useAuthStore.getState().login(auth)
       navigate(returnTo, { replace: true })
     }).catch((error) => {
       if (!active) return
+      clearKakaoCallback(location.search)
       setMessage(loginErrorMessage(error))
       navigate('/', { replace: true })
     })
@@ -40,6 +54,5 @@ export default function AuthHandler({ children }) {
   return <>
     {isCallback ? <p role="status">카카오 로그인 중입니다…</p> : children}
     <LoginModal open={Boolean(message)} message={message} onClose={() => setMessage('')} />
-    {authMockEnabled && !isCallback && <AuthMockPanel />}
   </>
 }
