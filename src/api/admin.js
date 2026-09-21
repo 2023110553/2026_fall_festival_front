@@ -17,7 +17,17 @@ export const getAdminNotices = ({ type = 'ALL', page = 0, size = 20 } = {}) =>
 // 응답 data: { notice_id, type, title, content, image_url, created_at, updated_at }
 export const getAdminNoticeDetail = (noticeId) =>
   apiClient.get(`/api/notices/${noticeId}/`)
-export const createAdminNotice =(payload) => apiClient.post('/api/admin/notices', payload)
+// 등록 — multipart/form-data. type(EMERGENCY/NORMAL)·title·content 필수, image는 선택
+// 긴급 공지 제목의 [M/D]는 서버가 붙이므로 제목만 보낸다
+export const createAdminNotice = ({ type, title, content, imageFile }) => {
+  const formData = new FormData()
+  formData.append('type', type)
+  formData.append('title', title)
+  formData.append('content', content)
+  if (imageFile) formData.append('image', imageFile)
+  // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
+  return apiClient.post('/api/notices/', formData)
+}
 // 수정 — multipart/form-data. type(EMERGENCY/NORMAL)·title·content는 필수라 바뀌지 않아도 매번 보낸다
 // image는 새 사진으로 교체할 때만, delete_image는 기존 사진을 지울 때만 true (기본 false → 기존 사진 유지)
 // 성공 200 → { type, title, content, image_url }

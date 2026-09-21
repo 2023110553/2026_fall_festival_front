@@ -3,7 +3,16 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import * as S from './NoticeEditor.styles'
 import NoticeEditor from './NoticeEditor'
+import { createAdminNotice } from '../../../../api/admin'
 import { NOTICE_TYPE_LABEL } from './mockNotices'
+
+// 서버 400은 errors에 필드별 메시지가 오므로 있으면 그걸, 없으면 message를 보여준다
+const toErrorMessage = (error) => {
+  const data = error.response?.data
+  const fieldMessages = Object.values(data?.errors ?? {}).filter(Boolean)
+  if (fieldMessages.length) return fieldMessages.join(' ')
+  return data?.message ?? '공지 등록에 실패했습니다.'
+}
 
 export default function AdminNoticeCreatePage() {
   const navigate = useNavigate()
@@ -12,9 +21,20 @@ export default function AdminNoticeCreatePage() {
 
   const listPath = '/admin/notices'
 
-  const handleCreate = ({ title, content, imageFile }) => {
-    console.log('create notice', { type, title, content, imageFile })
-    navigate(listPath)
+  // 실패 시 에디터가 토스트로 띄울 메시지를 돌려준다 (성공하면 목록으로)
+  const handleCreate = async ({ title, content, imageFile }) => {
+    try {
+      // 화면에선 URGENT 키를 쓰지만 서버 유형 값은 EMERGENCY
+      await createAdminNotice({
+        type: type === 'URGENT' ? 'EMERGENCY' : 'NORMAL',
+        title: title.trim(),
+        content: content.trim(),
+        imageFile,
+      })
+      navigate(listPath)
+    } catch (err) {
+      return toErrorMessage(err)
+    }
   }
 
   const typeSlot = (
