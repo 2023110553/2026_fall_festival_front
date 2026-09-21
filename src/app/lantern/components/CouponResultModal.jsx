@@ -7,7 +7,7 @@ export default function CouponResultModal({ isOpen, onClose, coupon, onUseClick 
   const isUsed = coupon.status === 'used'
   const isExpired = coupon.status === 'expired'
   const description = isLose ? '아쉽지만 내일 다시 도전해봐요.'
-    : isUsed ? '사용된 쿠폰이에요.' : isExpired ? '사용 기간이 만료된 쿠폰이에요.' : '주점에서 직접 서버한테 보여주세요.'
+    : isUsed ? '사용된 쿠폰이에요.' : isExpired ? '사용 기간이 만료된 쿠폰이에요.' : '당첨된 쿠폰을 확인해보세요.'
   return <Modal isOpen={isOpen} onClose={onClose} style={S.panelStyle}>
     <S.Title>등불을 성공적으로 남겼어요!</S.Title>
     <S.Description>{description}</S.Description>

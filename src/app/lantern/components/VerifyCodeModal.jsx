@@ -45,7 +45,7 @@ function VerifyCodeModal({ isOpen, onClose, onSubmit }) {
           확인 코드를 입력해주세요.
         </S.Title>
         <S.Description>
-          주점에서 직접 서버한테 보여주세요.
+          당첨된 쿠폰을 확인해보세요.
         </S.Description>
 
         <S.CodeInput
