@@ -8,7 +8,11 @@ export const getAdminLanterns = (sort = 'report') => apiClient.get('/api/admin/l
 export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/admin/lanterns/${lanternId}`)
 
 // 공지 관리
-export const getAdminNotices = () => apiClient.get('/api/admin/notices')
+// 목록 조회 — type: ALL(기본) / EMERGENCY / NORMAL, page는 0부터, size는 최대 100 (기본 20)
+// 응답 data: { total_count, page, size, has_next, items: [{ notice_id, type, title, content_preview, image_url, created_at }] }
+// 정렬은 서버가 처리(긴급 우선 → 일반 최신순), 긴급 공지 제목엔 [M/D]가 붙어서 온다. 이미지 없으면 image_url: null
+export const getAdminNotices = ({ type = 'ALL', page = 0, size = 20 } = {}) =>
+  apiClient.get('/api/notices/', { params: { type, page, size } })
 export const createAdminNotice = (payload) => apiClient.post('/api/admin/notices', payload)
 export const updateAdminNotice = (noticeId, payload) => apiClient.put(`/api/admin/notices/${noticeId}`, payload)
 export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/admin/notices/${noticeId}`)
