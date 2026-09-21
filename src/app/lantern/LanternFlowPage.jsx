@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCreateLanternFlow } from './hooks/useCreateLanternFlow'
 import { useLanterns } from './context/LanternProvider'
-import { getTodayLanternCount, getTodayUsedBoothIds } from './utils/getCurrentFestivalDate'
+import { getTodayLanternCount, getTodayUsedBoothIds, getCurrentFestivalDate } from './utils/getCurrentFestivalDate'
 import { revealCoupon, markCouponUsed } from './utils/couponRules'
 
 // app/lantern/components/ 모달 import
@@ -22,7 +22,7 @@ export default function LanternFlowPage() {
   const { isLoggedIn } = useAuth()
 
   // --- 상태 관리 --- (등불 리스트는 LanternProvider로 전역 공유 — MyPage 등 다른 화면과 같은 목록을 본다)
-  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers, activeBoothId } = useLanterns()
+  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers, activeBooth } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
   const usedBoothIds = getTodayUsedBoothIds(lanterns) // 오늘 이미 등불을 단 부스 — 드롭다운 재선택 방지
 
@@ -61,6 +61,8 @@ export default function LanternFlowPage() {
   })
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  // null | 'past' | 'future' — 지도에서 오늘이 아닌 날짜의 부스를 보다가 등불 달기를 누른 경우
+  const [wrongDateVariant, setWrongDateVariant] = useState(null)
 
   // BottomNav('+' 버튼)가 호출할 오픈 함수 — 로그인 여부 확인 후 등불 작성 모달(또는 제한 모달) 오픈
   const handleOpenCreateFlow = () => {
@@ -72,6 +74,12 @@ export default function LanternFlowPage() {
       return
     }
     // -------------------------------------------------------------
+
+    // 당일 부스에만 등불을 달 수 있음 — 전날/다음날 부스면 문구를 다르게 안내
+    if (activeBooth?.festivalDate && activeBooth.festivalDate !== getCurrentFestivalDate()) {
+      setWrongDateVariant(activeBooth.festivalDate < getCurrentFestivalDate() ? 'past' : 'future')
+      return
+    }
 
     openCreateModal()
   }
@@ -145,7 +153,7 @@ export default function LanternFlowPage() {
         onSubmitSuccess={handleCreateLantern}
         currentCount={todayLanternCount}
         usedBoothIds={usedBoothIds}
-        presetBoothId={activeBoothId}
+        presetBoothId={activeBooth?.boothId ?? null}
       />
 
       {/* 2. 첫 등불 스크래치 복권 모달 */}
@@ -209,6 +217,14 @@ export default function LanternFlowPage() {
         onClose={() => setIsNoLanternModalOpen(false)}
         title="등불이 아직 없습니다"
         subTitle="첫 등불을 달고 스크래치 쿠폰을 받아보세요"
+      />
+
+      {/* 9. 오늘이 아닌 날짜의 부스에서 등불 달기를 시도한 경우 안내 */}
+      <AlertModal
+        isOpen={wrongDateVariant !== null}
+        onClose={() => setWrongDateVariant(null)}
+        title={wrongDateVariant === 'past' ? '지난 날에는 등불을 달 수 없어요.' : '내일 등불은 아직 달 수 없어요.'}
+        subTitle="상단의 날짜 선택을 변경해주세요."
       />
     </>
   )

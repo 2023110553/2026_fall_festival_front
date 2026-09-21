@@ -36,9 +36,10 @@ const fetchAllFestivalDaysLanterns = async () => {
 export function LanternProvider({ children }) {
   const { isLoggedIn } = useAuth()
   const [lanterns, setLanterns] = useState([])
-  // 부스 상세에서 현재 보고 있는 부스 ID — map 도메인이 상세 진입/이탈 시 세팅해준다.
-  // 등불 달기 모달이 그 부스를 미리 선택해두는 데 쓰인다.
-  const [activeBoothId, setActiveBoothId] = useState(null)
+  // 부스 상세에서 현재 보고 있는 부스 — map 도메인이 상세 진입/이탈 시 세팅해준다.
+  // { boothId, festivalDate } | null — 등불 달기 모달이 그 부스를 미리 선택해두고,
+  // festivalDate가 오늘이 아니면 등불 달기 자체를 막는 데 쓰인다.
+  const [activeBooth, setActiveBooth] = useState(null)
 
   // 로그인 상태일 때만 본인 등불을 조회 — 로그아웃 시엔 목록을 비운다
   useEffect(() => {
@@ -139,8 +140,8 @@ export function LanternProvider({ children }) {
         requestCreateModal,
         requestLanternList,
         requestCoupon,
-        activeBoothId,
-        setActiveBoothId,
+        activeBooth,
+        setActiveBooth,
       }}
     >
       {children}
