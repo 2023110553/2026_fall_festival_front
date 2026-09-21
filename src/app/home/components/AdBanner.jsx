@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import donggam from '../assets/donggam.png'
+import ecoco from '../assets/ecoco.png'
+import scien from '../assets/scien.png'
+
 // 상단 광고 배너 (기능명세서 바탕으로) 일정 시간(5초)마다 자동 롤링, 클릭 시 안내>협업 페이지로 이동
 
 // TODO(API): 배너 목록 API가 정해지면 연결할거고 일단 지금은 더미 데이터로 구현해둿습니다
 // image에 실제 배너 이미지가 들어오면 Wrapper 배경으로 깔린다 (title은 스크린리더용)
 const BANNERS = [
-  { id: 1, title: '부스 방문하고 선물 받기', image: null },
-  { id: 2, title: '협업 부스 이벤트 참여하기', image: null },
-  { id: 3, title: '등불 달고 쿠폰 받기', image: null },
-  { id: 4, title: '이번 주 공연 라인업 확인', image: null },
+  { id: 1, title: '동감', image: donggam, href: null, to: null },
+  { id: 2, title: '에코코', image: ecoco, href: null, to: null },
+  { id: 3, title: '자연과함께', image: scien, href: null, to: null },
 ]
 
 const ROLLING_INTERVAL = 5000
@@ -53,14 +56,28 @@ export default function AdBanner() {
     return () => clearInterval(timer)
   }, [])
 
+  if (BANNERS.length === 0) {
+    return null
+  }
+
   const banner = BANNERS[index]
+
+  const handleClick = () => {
+    if (banner.href) {
+      window.open(banner.href, '_blank', 'noopener,noreferrer')
+      return
+    }
+    if (banner.to) {
+      navigate(banner.to)
+    }
+  }
 
   return (
     <Wrapper
       type="button"
       $image={banner.image}
       aria-label={banner.title}
-      onClick={() => navigate('/info')}
+      onClick={handleClick}
     >
       <Indicator aria-hidden="true">
         {index + 1}/{BANNERS.length}
