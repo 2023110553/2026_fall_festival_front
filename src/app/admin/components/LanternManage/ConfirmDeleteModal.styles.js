@@ -21,3 +21,11 @@ export const Description = styled.p`
   font-size: 11px;
   font-family: var(--font-pretendard);
 `
+
+// 삭제 요청이 실패했을 때 모달을 닫지 않고 그 자리에 이유를 보여준다
+export const ErrorMessage = styled.p`
+  margin: 10px 0 0;
+  color: #AD0000;
+  font-size: 11px;
+  font-family: var(--font-pretendard);
+`

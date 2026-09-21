@@ -11,9 +11,27 @@ import scien from '../assets/scien.png'
 // TODO(API): 배너 목록 API가 정해지면 연결할거고 일단 지금은 더미 데이터로 구현해둿습니다
 // image에 실제 배너 이미지가 들어오면 Wrapper 배경으로 깔린다 (title은 스크린리더용)
 const BANNERS = [
-  { id: 1, title: '동감', image: donggam, href: null, to: null },
-  { id: 2, title: '에코코', image: ecoco, href: null, to: null },
-  { id: 3, title: '자연과함께', image: scien, href: null, to: null },
+  {
+    id: 1,
+    title: '동감',
+    image: donggam,
+    href: null,
+    to: '/info/collab/donggam',
+  },
+  {
+    id: 2,
+    title: '에코코',
+    image: ecoco,
+    href: null,
+    to: '/info/collab/ecoco',
+  },
+  {
+    id: 3,
+    title: '자연科 함께',
+    image: scien,
+    href: null,
+    to: '/info/collab/with-nature',
+  },
 ]
 
 const ROLLING_INTERVAL = 5000

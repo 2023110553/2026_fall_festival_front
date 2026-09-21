@@ -45,11 +45,24 @@ export default function BottomSheet() {
   }, [isSheetOpen, isSearching])
 
   const handleDragStart = (event) => {
-    if (isSearching) return
     if (!event.isPrimary || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
-    const styles = getComputedStyle(sheetRef.current)
-    const startHeight = sheetRef.current.getBoundingClientRect().height
+    const sheet = sheetRef.current
+    const startHeight = sheet.getBoundingClientRect().height
+    // min()/max()/calc() 값은 parseFloat로 읽을 수 없으므로 브라우저가 계산한 높이를 사용한다.
+    const originalHeight = sheet.style.height
+    const originalTransition = sheet.style.transition
+    sheet.style.transition = 'none'
+    const points = [
+      { position: 'low', cssHeight: 'var(--collapsed-height)' },
+      { position: 'middle', cssHeight: 'var(--middle-height)' },
+      { position: 'high', cssHeight: 'calc(100dvh - var(--sheet-top-gap))' },
+    ].map(({ position, cssHeight }) => {
+      sheet.style.height = cssHeight
+      return { position, height: sheet.getBoundingClientRect().height }
+    })
+    sheet.style.height = originalHeight
+    sheet.style.transition = originalTransition
     setSheetHeight(startHeight)
     setIsDragging(true)
     dragRef.current = {
@@ -57,9 +70,9 @@ export default function BottomSheet() {
       startY: event.clientY,
       startHeight,
       currentHeight: startHeight,
-      minHeight: parseFloat(styles.minHeight),
-      maxHeight: parseFloat(styles.maxHeight),
-      topGap: parseFloat(styles.getPropertyValue('--sheet-top-gap')),
+      minHeight: points[0].height,
+      maxHeight: points[2].height,
+      points,
     }
   }
 
@@ -74,12 +87,7 @@ export default function BottomSheet() {
   const handleDragEnd = (event) => {
     if (dragRef.current?.pointerId !== event.pointerId) return
     const drag = dragRef.current
-    const points = [
-      { position: 'low', height: drag.minHeight },
-      { position: 'middle', height: Math.min(drag.maxHeight, Math.max(drag.minHeight, (drag.maxHeight + drag.topGap) * 0.75)) },
-      { position: 'high', height: drag.maxHeight },
-    ]
-    const nearest = points.reduce((closest, point) =>
+    const nearest = drag.points.reduce((closest, point) =>
       Math.abs(point.height - drag.currentHeight) < Math.abs(closest.height - drag.currentHeight)
         ? point : closest
     )

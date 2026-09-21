@@ -133,6 +133,7 @@ export const DEV_TEAM_MOCKS = [
         '정보통신학과',
         '노윤서',
         frontYoonseoImage,
+        //윤서 정보통신공학과로
       ),
       createMember(
         'front-6',

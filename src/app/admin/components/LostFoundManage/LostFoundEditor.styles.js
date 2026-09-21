@@ -82,6 +82,12 @@ export const KeywordRemoveButton = styled.button`
   border: none;
   background: transparent;
   cursor: pointer;
+
+  /* 마지막 남은 키워드칩 — 지우면 400이라 삭제를 막아둔 상태 */
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
 `
 
 export const KeywordInput = styled.input`

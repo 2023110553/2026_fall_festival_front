@@ -76,6 +76,12 @@ export const ImageButton = styled.button`
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+
+  /* 업로드 요청 중 중복 선택 방지 상태 */
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 `
 
 export const HiddenFileInput = styled.input`
