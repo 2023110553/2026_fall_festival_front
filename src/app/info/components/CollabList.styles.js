@@ -98,12 +98,23 @@ export const Chevron = styled.span`
 
 export const More = styled.button`
   align-self: center;
-  min-height: 32px;
-  padding: 6px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  background: rgba(253, 253, 253, 0.8);
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
-  color: #737373;
+  background: transparent;
+  color: #100b0b;
   font-size: 14px;
 `
+
+export const MoreArrow = styled.span`
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: ${({ $expanded }) =>
+    $expanded ? 'rotate(225deg)' : 'rotate(45deg)'};
+`
+

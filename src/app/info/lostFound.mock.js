@@ -1,6 +1,6 @@
 import lostWalletImage from '../../assets/info/lost-wallet.svg'
-import lostEarbudsImage from '../../assets/info/lost-earbuds.svg'
-import lostUmbrellaImage from '../../assets/info/lost-umbrella.svg'
+import lostUmbrellaImage from '../../assets/info/lost-item-landscape-test.jpg'
+import lostSmallImage from '../../assets/info/lost-item-landscape-small-test.jpg'
 import lostStudentIdImage from '../../assets/info/lost-student-id.svg'
 
 const LOST_ITEM_DETAILS = [
@@ -17,7 +17,7 @@ const LOST_ITEM_DETAILS = [
     lost_item_id: 2,
     title: '푸드트럭 존 흰색 무선 이어폰',
     found_date: '2026-09-29',
-    image_urls: [lostEarbudsImage],
+    image_urls: [lostSmallImage],
     tags: ['무선이어폰', '흰색', '푸드트럭존'],
     created_at: '2026-09-29T16:05:00',
     instagram_url: 'https://www.instagram.com/',
