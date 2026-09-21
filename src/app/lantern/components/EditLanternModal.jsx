@@ -57,7 +57,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
         // 닉네임은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback
         await onSubmit(lantern.id, {
             nickname: nickname.trim(),
-            message,
+            message: message.trim(),
         })
         onClose()
         } catch (err) {
