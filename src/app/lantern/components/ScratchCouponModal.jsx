@@ -13,7 +13,7 @@ const COVER_SRC = `${import.meta.env.BASE_URL}images/scratch-cover.png`
 
 // onReveal: 스크래치가 기준치 이상 진행되면 호출 → 상위에서 CouponResultModal로 전환
 // coupon: 발급 시점에 이미 확정된 결과(isWin/reward) — 스크래치 레이어 밑에 미리 그려서 긁는 도중에 보이게 함
-export default function ScratchCouponModal({ isOpen, onClose, onReveal, coupon, isNewCoupon = false }) {
+export default function ScratchCouponModal({ isOpen, onClose, onScratchStart, onReveal, coupon, isNewCoupon = false }) {
   const canvasRef = useRef(null)
   const ctxRef = useRef(null)
   const isScratchingRef = useRef(false)
@@ -21,6 +21,9 @@ export default function ScratchCouponModal({ isOpen, onClose, onReveal, coupon, 
   const checkFrameRef = useRef(null)
   const coverReadyRef = useRef(false)
   const lastPointRef = useRef(null)
+  const scratchRequestRef = useRef(null)
+  const scratchReadyRef = useRef(false)
+  const pendingPointRef = useRef(null)
 
   // 모달이 열릴 때마다 캔버스를 은색 스크래치 면으로 초기화
   useEffect(() => {
@@ -46,6 +49,9 @@ export default function ScratchCouponModal({ isOpen, onClose, onReveal, coupon, 
     isScratchingRef.current = false
     revealedRef.current = false
     lastPointRef.current = null
+    scratchRequestRef.current = null
+    scratchReadyRef.current = false
+    pendingPointRef.current = null
 
     const image = new Image()
     let cancelled = false
@@ -141,14 +147,33 @@ export default function ScratchCouponModal({ isOpen, onClose, onReveal, coupon, 
     canvasRef.current.setPointerCapture(e.pointerId)
     isScratchingRef.current = true
     lastPointRef.current = null
-    const { x, y } = getPoint(e)
-    scratchTo(x, y)
-    scheduleScratchedCheck()
+    pendingPointRef.current = getPoint(e)
+
+    if (!scratchRequestRef.current) {
+      scratchRequestRef.current = Promise.resolve(onScratchStart?.())
+        .then(() => {
+          scratchReadyRef.current = true
+          if (!isScratchingRef.current || !pendingPointRef.current) return
+          scratchTo(pendingPointRef.current.x, pendingPointRef.current.y)
+          scheduleScratchedCheck()
+        })
+        .catch(() => {
+          scratchRequestRef.current = null
+          scratchReadyRef.current = false
+        })
+    }
+
+    if (scratchReadyRef.current) {
+      scratchTo(pendingPointRef.current.x, pendingPointRef.current.y)
+      scheduleScratchedCheck()
+    }
   }
 
   const handlePointerMove = (e) => {
     if (!isScratchingRef.current || revealedRef.current) return
     const { x, y } = getPoint(e)
+    pendingPointRef.current = { x, y }
+    if (!scratchReadyRef.current) return
     scratchTo(x, y)
     scheduleScratchedCheck()
   }

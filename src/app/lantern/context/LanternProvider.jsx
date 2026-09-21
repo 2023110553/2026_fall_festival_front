@@ -1,18 +1,35 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { useAuthStore } from '../../../store/useAuthStore'
+import { FESTIVAL_DATES } from '../../../constants/festivalDates'
+import {
+  createLantern as createLanternRequest,
+  deleteLantern as deleteLanternRequest,
+  getLanterns as getLanternsRequest,
+  updateLantern as updateLanternRequest,
+} from '../../../api/lantern'
 
 const LanternContext = createContext(null)
 
-const storageKey = (userId) => `festival-lanterns:${userId}`
-const couponKey = (userId) => `festival-coupon:${userId}`
 
-function readStored(key, fallback) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key))
-    return value ?? fallback
-  } catch {
-    return fallback
-  }
+// 목록 조회 응답엔 festival_date가 없으므로, 축제 3일치를 날짜별로 따로 조회해서
+// 조회에 쓴 날짜를 그대로 festivalDate로 태깅한다 (MyLanternList의 DAY 1/2/3 탭 필터 기준).
+const fetchAllFestivalDaysLanterns = async () => {
+  const responses = await Promise.all(
+    FESTIVAL_DATES.map((date) => getLanternsRequest({ mine: true, date }))
+  )
+  return responses.flatMap((res, index) =>
+    (res.data.data.items ?? []).map((item) => ({
+      id: item.lantern_id,
+      boothId: item.booth_id,
+      boothName: item.booth_name,
+      nickname: item.nickname,
+      message: item.message,
+      content: item.message,
+      status: item.status ?? 'active',
+      festivalDate: FESTIVAL_DATES[index],
+      createdAt: item.created_at,
+    }))
+  )
 }
 
 // 등불 리스트를 앱 전역에서 공유하기 위한 컨텍스트.
@@ -21,44 +38,85 @@ function readStored(key, fallback) {
 export function LanternProvider({ children }) {
   const userId = useAuthStore((state) => state.user?.id)
   const sessionId = useAuthStore((state) => state.sessionId)
-  return <AccountLanternProvider key={`${userId ?? 'guest'}:${sessionId ?? ''}`} userId={userId}>{children}</AccountLanternProvider>
+  return (
+    <AccountLanternProvider key={`${userId ?? 'guest'}:${sessionId ?? ''}`} userId={userId}>
+      {children}
+    </AccountLanternProvider>
+  )
 }
 
 function AccountLanternProvider({ children, userId }) {
-  // 지도 상세에서 보고 있는 부스와 날짜. 상세를 나가면 null로 초기화한다.
+  // 부스 상세에서 현재 보고 있는 부스 — map 도메인이 상세 진입/이탈 시 세팅해준다.
+  // { boothId, festivalDate } | null — 등불 달기 모달이 그 부스를 미리 선택해두고,
+  // festivalDate가 오늘이 아니면 등불 달기 자체를 막는 데 쓰인다.
   const [activeBooth, setActiveBooth] = useState(null)
-  // 마운트 시 1회만 localStorage에서 초기값을 읽어온다 (읽기용 별도 useEffect보다
-  // lazy initializer가 더 단순하고, "쓰기 이펙트가 초기값을 덮어쓰는" 순서 문제도 없다)
-  const [lanterns, setLanterns] = useState(() => {
-    const saved = readStored(storageKey(userId), [])
-    return Array.isArray(saved) ? saved : []
-  })
-  const [coupon, setCoupon] = useState(() => readStored(couponKey(userId), null))
+  const [lanterns, setLanterns] = useState([])
+  const [coupon, setCoupon] = useState(null)
 
-  // lanterns가 바뀔 때마다(추가/삭제/수정 전부 setLanterns를 거치므로) 자동으로 저장
+  // 로그인 상태일 때만 본인 등불을 서버에서 조회 — 로그아웃/게스트면 목록을 비운다
   useEffect(() => {
-    if (userId != null) localStorage.setItem(storageKey(userId), JSON.stringify(lanterns))
-  }, [lanterns, userId])
+    if (userId == null) {
+      setLanterns([])
+      return
+    }
 
-  useEffect(() => {
-    if (userId != null) localStorage.setItem(couponKey(userId), JSON.stringify(coupon))
-  }, [coupon, userId])
+    let cancelled = false
+    fetchAllFestivalDaysLanterns()
+      .then((items) => {
+        if (!cancelled) setLanterns(items)
+      })
+      .catch(() => {
+        // 조회 실패 시엔 빈 목록 유지 — 등록 시점에 서버가 다시 검증해준다
+      })
 
-  const addLantern = (lantern) => setLanterns((prev) => [...prev, lantern])
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
 
-  const deleteLantern = (id) =>
+  // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
+  // boothName은 등록 응답에 없어서, 등불 달기 모달에서 이미 알고 있는 값을 그대로 받아 로컬에만 붙여둔다
+  const addLantern = async ({ boothId, boothName, nickname, message }) => {
+    const res = await createLanternRequest({ boothId, nickname, message })
+    const data = res.data.data
+    const created = {
+      id: data.lantern_id,
+      boothId: data.booth_id,
+      boothName,
+      nickname: data.nickname,
+      message: data.message,
+      content: data.message,
+      status: 'active',
+      festivalDate: data.festival_date,
+      createdAt: data.created_at,
+      isFirstToday: data.is_first_today,
+    }
+    setLanterns((prev) => [...prev, created])
+    // 오늘 첫 등불인지는 서버가 실제 DB 기준으로 판정한 값을 그대로 쓴다 (로컬 카운트 추측 금지)
+    return { ...created, isFirstToday: Boolean(data.is_first_today) }
+  }
+
+  // soft delete라 목록에서 지우지 않고 status만 바꾼다 (마이페이지 회색 처리용)
+  // 실패 시(본인 아님/이미 삭제됨 등) 그대로 reject해서 호출부가 안내 문구로 보여주게 둔다
+  const deleteLantern = async (id) => {
+    await deleteLanternRequest(id)
     setLanterns((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isDeleted: true } : item))
+      prev.map((item) => (item.id === id ? { ...item, status: 'deleted_by_user' } : item))
     )
+  }
 
-  const editLantern = (id, { nickname, message }) =>
+  // 실패 시(금칙어/본인 아님/이미 삭제됨 등) 그대로 reject해서 EditLanternModal이 안내 문구로 보여주게 둔다
+  const editLantern = async (id, { nickname, message }) => {
+    const res = await updateLanternRequest(id, { nickname, message })
+    const data = res.data.data
     setLanterns((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, nickname, message, content: message, updatedAt: new Date().toISOString() }
+          ? { ...item, nickname: data.nickname, message: data.message, content: data.message, updatedAt: data.updated_at }
           : item
       )
     )
+  }
 
   // BottomNav(+버튼)/TopHeader(나의 등불) 등은 LanternFlowPage와 형제 컴포넌트라 그 로컬 상태를
   // 직접 못 건드린다. 대신 LanternFlowPage가 마운트 시 자신의 오픈 함수를 여기에 등록해두고,

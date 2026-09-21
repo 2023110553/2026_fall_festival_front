@@ -4,6 +4,7 @@ export const MOCK_SERVER_TIME =
 export const MOCK_PERFORMANCES = [
     {
         performance_id: 1,
+        has_setlist: true,
         team_name: '음샘',
         affiliation: '밴드동아리',
 
@@ -48,6 +49,7 @@ export const MOCK_PERFORMANCES = [
 
     {
         performance_id: 2,
+        has_setlist: true,
         team_name: '소리터',
         affiliation: '풍물패',
 
@@ -79,6 +81,7 @@ export const MOCK_PERFORMANCES = [
 
     {
         performance_id: 3,
+        has_setlist: false,
         team_name: '초대가수 A',
         affiliation: null,
 
@@ -103,6 +106,7 @@ export const MOCK_PERFORMANCES = [
 
     {
         performance_id: 4,
+        has_setlist: true,
         team_name: '댄스동아리 하이킥',
         affiliation: '중앙동아리',
 
@@ -140,6 +144,7 @@ export const MOCK_PERFORMANCES = [
 
     {
         performance_id: 5,
+        has_setlist: true,
         team_name: '어쿠스틱 소모임',
         affiliation: '음악동아리',
 
@@ -178,6 +183,7 @@ export const MOCK_PERFORMANCES = [
 
     {
         performance_id: 6,
+        has_setlist: true,
         team_name: '졸업생 밴드',
         affiliation: '동문',
 
@@ -209,6 +215,7 @@ export const MOCK_PERFORMANCES = [
 
     {
         performance_id: 7,
+        has_setlist: false,
         team_name: '초대가수 B',
         affiliation: null,
 
@@ -248,12 +255,7 @@ export const MOCK_NOW_RESPONSE = {
 
         // 현재 서버 시간이 9/29이므로
         // 9/29 공연만 반환
-        performances:
-            MOCK_PERFORMANCES.filter(
-                (performance) =>
-                    performance.festival_date ===
-                    MOCK_SERVER_TIME.slice(0, 10)
-            ),
+        performances: getMockNowPerformances(MOCK_SERVER_TIME),
     },
 }
 
@@ -263,4 +265,33 @@ export function getMockPerformanceById(id) {
             performance.performance_id ===
             Number(id)
     )
+}
+// Shared list-item shape for the timetable and now-playing mocks.
+export function getMockPerformanceList(festivalDate, serverTime = MOCK_SERVER_TIME) {
+    const now = new Date(serverTime).getTime()
+    return MOCK_PERFORMANCES
+        .filter((p) => p.festival_date === festivalDate)
+        .sort((a, b) => new Date(a.start_at) - new Date(b.start_at) || a.performance_id - b.performance_id)
+        .map((p) => ({
+            performance_id: p.performance_id,
+            team_name: p.team_name,
+            affiliation: p.affiliation,
+            image_url: p.image_url,
+            start_at: p.start_at,
+            end_at: p.end_at,
+            has_setlist: p.has_setlist,
+            is_live: new Date(p.start_at).getTime() <= now && now < new Date(p.end_at).getTime(),
+        }))
+}
+
+export function getMockNowPerformances(serverTime = MOCK_SERVER_TIME) {
+    const date = new Date(serverTime)
+    const now = date.getTime()
+    const festivalDate = typeof serverTime === 'string'
+        ? serverTime.slice(0, 10)
+        : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    const remaining = getMockPerformanceList(festivalDate, serverTime)
+        .filter((p) => new Date(p.end_at).getTime() > now)
+    if (!remaining.length || new Date(remaining[0].start_at).getTime() - now > 60 * 60 * 1000) return []
+    return remaining.slice(0, 3)
 }

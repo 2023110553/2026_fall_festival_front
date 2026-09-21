@@ -4,30 +4,26 @@ import TimelineList from './components/TimelineList'
 import TopHeader from '../../components/common/TopHeader'
 import FestivalDateTabs from '../../components/common/FestivalDateTabs'
 import NowPlaying from './components/NowPlaying'
-import { PERFORMANCE_MOCKS, SERVER_TIME_MOCK } from './Performance.mock'
+import { MOCK_SERVER_TIME, getMockPerformanceList } from './mocks/performanceMock'
 import useServerTime from '../../hooks/useServerTime'
 
 const FESTIVAL_DATES = ['2026-09-29', '2026-09-30', '2026-10-01']
-
-function getDefaultDate(serverTime) {
-  const today = serverTime.slice(0, 10)
-  return FESTIVAL_DATES.includes(today) ? today : '2026-09-29'
-}
 
 // 공연 안내(STAGE) — 날짜 탭 + 지금 공연중 하이라이트 + 시간대별 타임라인
 export default function PerformancePage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const now = useServerTime(SERVER_TIME_MOCK)
-  const selectedDate = searchParams.get('date') ?? getDefaultDate(SERVER_TIME_MOCK)
-
+  const dateParam = searchParams.get('date')
+  const now = useServerTime(MOCK_SERVER_TIME)
+  const defaultDate = FESTIVAL_DATES.includes(MOCK_SERVER_TIME.slice(0, 10))
+    ? MOCK_SERVER_TIME.slice(0, 10)
+    : FESTIVAL_DATES[0]
+  const selectedDate = FESTIVAL_DATES.includes(dateParam) ? dateParam : defaultDate
   const handleDateChange = (date) => {
     setSearchParams({ date })
   }
 
-  const performances = PERFORMANCE_MOCKS.filter(
-    (p) => p.festival_date === selectedDate
-  )
+  const performances = getMockPerformanceList(selectedDate, now ?? MOCK_SERVER_TIME)
   const nowPlaying = performances.find((p) => p.is_live) ?? null
 
   return (
@@ -42,7 +38,11 @@ export default function PerformancePage() {
       </CardArea>
       <TimelineList
         performances={performances}
-        onSelect={(id) => navigate(`/performance/${id}`)}
+        onSelect={(id) => {
+          if (performances.find((p) => p.performance_id === id)?.has_setlist === true) {
+            navigate(`/performance/${id}`)
+          }
+        }}
       />
     </Page>
   )

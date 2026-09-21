@@ -23,7 +23,6 @@ export default function DevAuthPanel() {
     const previousId = localStorage.getItem(lastNewAccountKey)
     if (previousId?.startsWith('dev-test-new-')) {
       localStorage.removeItem(`festival-lanterns:${previousId}`)
-      localStorage.removeItem(`festival-coupon:${previousId}`)
     }
     const id = `dev-test-new-${crypto.randomUUID()}`
     localStorage.setItem(lastNewAccountKey, id)

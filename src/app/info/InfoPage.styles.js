@@ -15,3 +15,11 @@ export const Content = styled.div`
 export const Section = styled.section`
   padding-top: ${({ $isDetail }) => ($isDetail ? '0' : '16px')};
 `
+
+export const StatusMessage = styled.p`
+  margin: 0;
+  padding: 48px 16px;
+  color: #737373;
+  font-size: 14px;
+  text-align: center;
+`

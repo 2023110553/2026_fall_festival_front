@@ -35,6 +35,7 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
   const [selectedDayIndex, setSelectedDayIndex] = useState(getDefaultDayIndex)
   const [isDayDropdownOpen, setIsDayDropdownOpen] = useState(false)
   const [isEditRestrictedOpen, setIsEditRestrictedOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const dayPickerRef = useRef(null)
 
   // 드롭다운 바깥 클릭 시 닫기 (LanternCard의 더보기 메뉴와 동일한 패턴)
@@ -69,18 +70,23 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
     }
   }
 
-  // 삭제 확인 동작
-  const handleConfirmDelete = () => {
-    if (deletingId && onDelete) {
-      onDelete(deletingId)
-    }
+  // 삭제 확인 동작 — 실패하면 카드는 그대로 두고 안내 모달을 띄운다
+  const handleConfirmDelete = async () => {
+    const id = deletingId
     setDeletingId(null)
+    if (!id || !onDelete) return
+
+    try {
+      await onDelete(id)
+    } catch (err) {
+      setDeleteError(err?.response?.data?.message || '등불 삭제에 실패했어요. 다시 시도해주세요.')
+    }
   }
 
-  // 수정 완료 제출 시
-  const handleConfirmEdit = (id, updates) => {
+  // 수정 완료 제출 시 — 실패하면 throw가 그대로 EditLanternModal로 올라가 안내 문구로 뜬다
+  const handleConfirmEdit = async (id, updates) => {
     if (onEdit) {
-      onEdit(id, updates)
+      await onEdit(id, updates)
     }
     setEditingLantern(null) // 수정 모달 닫힘 -> 조건에 의해 다시 나의 등불 목록 모달이 뜸
   }
@@ -170,8 +176,8 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
             <S.EmptyState>아직 남긴 등불이 없습니다.</S.EmptyState>
           ) : (
             dayLanterns.map((l) => {
-              const isAdmin = l.status === 'DELETED_BY_ADMIN'
-              const isUserDeleted = l.isDeleted || l.status === 'DELETED_BY_USER'
+              const isAdmin = l.status === 'deleted_by_admin'
+              const isUserDeleted = l.status === 'deleted_by_user'
 
               if (isAdmin || isUserDeleted) {
                 return (
@@ -249,6 +255,14 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
         onClose={() => setIsEditRestrictedOpen(false)}
         title="지난 등불은 수정할 수 없어요"
         subTitle="지난 날짜의 등불은 삭제만 가능해요"
+      />
+
+      {/* 등불 삭제 실패 안내 */}
+      <AlertModal
+        isOpen={Boolean(deleteError)}
+        onClose={() => setDeleteError('')}
+        title="삭제하지 못했어요"
+        subTitle={deleteError}
       />
     </>
   )

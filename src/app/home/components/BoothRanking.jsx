@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Modal from '../../../components/common/Modal'
-import { MapProvider } from '../../map/context/MapProvider'
 import BoothDetailPanel from '../../map/components/BottomSheet/BoothDetailPanel'
+import { getCurrentFestivalDate } from '../../lantern/utils/getCurrentFestivalDate'
 import styled from 'styled-components'
 
 const Wrapper = styled.div`
@@ -24,6 +24,16 @@ const Row = styled.div`
   border-bottom: 1px solid #e4e4e4;
   background: transparent;
   text-align: left;
+  font: inherit;
+
+  &[type='button'] {
+    cursor: pointer;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #dc7054;
+    outline-offset: 2px;
+  }
 
   &:last-child {
     border-bottom: 0;
@@ -81,16 +91,11 @@ const LanternDot = styled.span`
   filter: blur(2px);
 `
 
-const ArrowBox = styled.button`
-  &:disabled {
-    cursor: default;
-    opacity: 0.4;
-  }
-
+const ArrowBox = styled.span`
+  opacity: ${({ $disabled }) => ($disabled ? 0.4 : 1)};
   border: 0;
   padding: 0;
   background: transparent;
-  cursor: pointer;
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
@@ -110,6 +115,7 @@ function ArrowRightIcon() {
 
 export default function BoothRanking({ ranking = [], isLoading = false, isError = false }) {
   const [selectedBoothId, setSelectedBoothId] = useState(null)
+  const [sheetTab, setSheetTab] = useState('info')
   const triggerRef = useRef(null)
   const sheetRef = useRef(null)
   const closeSheet = useCallback(() => {
@@ -156,15 +162,23 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           <CountGroup>
             <LanternDot aria-hidden="true" />
             <Count>-</Count>
-            <ArrowBox type="button" disabled aria-label="부스 정보 없음">
+            <ArrowBox $disabled aria-hidden="true">
               <ArrowRightIcon />
             </ArrowBox>
           </CountGroup>
         </Row>
       )) : ranking.map((booth) => (
         <Row
+          as="button"
+          type="button"
           key={booth.booth_id}
-          aria-label={`${booth.rank}위 ${booth.name}, 등불 ${booth.lantern_count}개`}
+          aria-label={`${booth.rank}위 ${booth.name}, 등불 ${booth.lantern_count}개, 상세 보기`}
+          aria-haspopup="dialog"
+          onClick={(event) => {
+            triggerRef.current = event.currentTarget
+            setSheetTab('info')
+            setSelectedBoothId(booth.booth_id)
+          }}
         >
           <NameGroup>
             <Rank aria-hidden="true">{String(booth.rank).padStart(2, '0')}</Rank>
@@ -173,15 +187,7 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           <CountGroup>
             <LanternDot aria-hidden="true" />
             <Count aria-hidden="true">{booth.lantern_count.toLocaleString('ko-KR')}개</Count>
-            <ArrowBox
-              type="button"
-              aria-label={`${booth.name} 상세 보기`}
-              aria-haspopup="dialog"
-              onClick={(event) => {
-                triggerRef.current = event.currentTarget
-                setSelectedBoothId(booth.booth_id)
-              }}
-            >
+            <ArrowBox aria-hidden="true">
               <ArrowRightIcon />
             </ArrowBox>
           </CountGroup>
@@ -200,9 +206,13 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           }}
         >
           <div ref={sheetRef}>
-            <MapProvider key={selectedBoothId}>
-              <BoothDetailPanel boothId={selectedBoothId} onBack={closeSheet} />
-            </MapProvider>
+            <BoothDetailPanel
+              boothId={selectedBoothId}
+              onBack={closeSheet}
+              sheetTab={sheetTab}
+              setSheetTab={setSheetTab}
+              selectedDate={getCurrentFestivalDate()}
+            />
           </div>
         </Modal>
       )}

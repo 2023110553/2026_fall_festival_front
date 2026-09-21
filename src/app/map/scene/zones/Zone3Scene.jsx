@@ -26,6 +26,18 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 // 2026-09-19(3차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
 //   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
 //     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
+//
+// 2026-09-21: 지도 크기 2배 — 재원 요청("현재 구조·구성은 그대로 두고 크기만 2배").
+// 만해광장 모델(bbox 42×30m)이 실측(OSM 타원 약 66×84m)보다 작게 만들어져 있어서, 실제 크기(6×3m)인
+// 부스에 비해 광장이 좁아 보였다. glb는 그대로 두고 여기서 통째로 MAP_SCALE배 키운다(약 84×59m).
+//   - 부스는 실제 크기를 유지해야 해서 이 배율을 받지 않는다(ZoneBooths는 primitive의 형제 노드).
+//     대신 부스 좌표(zone3-booths.sample.json)를 전부 2배 값으로 바꿔 같은 자리에 오게 했다.
+//   - 그래서 이 구역만 "씬 좌표 = glb(블렌더) 좌표 × MAP_SCALE"이다. 위 좌표계 메모의 bbox·높이는
+//     glb 기준 값이고, 블렌더에서 새 좌표를 뽑으면 MAP_SCALE을 곱해서 넣어야 한다.
+//   - 카메라(MapCanvas의 ZONE_CAMERAS.zone3)도 원점 기준으로 똑같이 2배라 화면 구도는 그대로다.
+//   - .blend를 고치지 않았으므로, 후문쪽 거리를 추가해 glb를 다시 뽑아도 이 배율이 그대로 적용된다.
+const MAP_SCALE = 2
+
 export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
   const { booths } = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone3.glb')
@@ -42,7 +54,7 @@ export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
 
   return (
     <>
-      <primitive object={scene} />
+      <primitive object={scene} scale={MAP_SCALE} />
       <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )

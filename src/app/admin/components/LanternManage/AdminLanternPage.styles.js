@@ -144,3 +144,24 @@ export const DeleteButton = styled.button`
     height: 10px;
   }
 `
+export const StatusMessage = styled.p`
+  margin: 0;
+  padding: 24px 0;
+  color: #8A8A8A;
+  text-align: center;
+  font-size: 13px;
+  font-family: var(--font-pretendard);
+`
+
+// has_next일 때만 노출 — 다음 page를 이어서 불러온다
+export const LoadMoreButton = styled.button`
+  margin: 16px auto 0;
+  padding: 10px 20px;
+  border: 1px solid #E6E6E6;
+  border-radius: 99px;
+  background: #FDFDFD;
+  color: #000;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--font-pretendard);
+`

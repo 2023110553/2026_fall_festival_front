@@ -103,6 +103,14 @@ export const CharCount = styled.span`
     color: #aaaaaa;
 `
 
+export const ErrorText = styled.p`
+    font-size: 8px;
+    font-family: Pretendard;
+    font-weight: 400;
+    color: #E53935;
+    margin: 1px 0 4px 0;
+`
+
 export const Footer = styled.div`
     display: flex;
     flex-direction: column;

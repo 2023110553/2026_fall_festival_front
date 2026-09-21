@@ -17,8 +17,8 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res = await adminLogin(adminKey)
-      loginAsAdmin(res.data.token)
+      // 앞뒤 공백이 섞이면 백엔드의 정확 일치 비교에서 401이 나므로 잘라서 보낸다
+      loginAsAdmin(await adminLogin(adminKey.trim()))
       navigate('/admin/lanterns')
     } catch {
       setError('관리자 키가 맞지 않습니다.')
