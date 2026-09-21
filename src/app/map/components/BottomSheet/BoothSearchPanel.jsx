@@ -4,6 +4,7 @@ import { useMapContext } from '../../context/MapProvider'
 import BoothCardList from '../BoothCardList/BoothCardList'
 import searchIcon from '../../../../assets/map/search.svg'
 import * as S from './BoothSearchPanel.styles'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 const STORAGE_KEY = 'map-booth-recent-searches'
 
@@ -17,6 +18,7 @@ function readHistory() {
 }
 
 export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) {
+  const { t } = useTranslation()
   const { selectedDate } = useMapContext()
   const [keyword, setKeyword] = useState('')
   const [history, setHistory] = useState(readHistory)
@@ -39,7 +41,7 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
     const term = value.trim()
     requestRef.current?.abort()
     if (!term || term.length > 50) {
-      setError(!term ? '검색어를 입력해주세요.' : '검색어는 50자 이내로 입력해주세요.')
+      setError(!term ? t('map.enterKeyword') : t('map.keywordTooLong'))
       setStatus('error')
       return
     }
@@ -63,8 +65,8 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
     } catch (error) {
       if (controller.signal.aborted) return
       setError(error.response?.status === 400
-        ? '검색어를 확인해주세요. 1~50자로 입력해야 해요.'
-        : '검색 결과를 불러오지 못했어요. 다시 시도해주세요.')
+        ? t('map.invalidKeyword')
+        : t('map.searchError'))
       setStatus('error')
     }
   }
@@ -73,15 +75,15 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
     <S.Panel onKeyDown={(event) => { if (event.key === 'Escape') onCancel() }}>
       <S.SearchRow onSubmit={(event) => { event.preventDefault(); search(keyword) }} role="search">
         <S.InputWrapper>
-          <S.IconButton type="submit" aria-label="검색" title="검색">
+          <S.IconButton type="submit" aria-label={t('map.search')} title={t('map.search')}>
             <img src={searchIcon} alt="" width="24" height="24" />
           </S.IconButton>
           <S.Input
             type="search"
             maxLength={50}
             enterKeyHint="search"
-            aria-label="전체 검색"
-            placeholder="전체 검색"
+            aria-label={t('map.searchAll')}
+            placeholder={t('map.searchAll')}
             value={keyword}
             onChange={(event) => {
               setKeyword(event.target.value)
@@ -92,29 +94,29 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
             autoFocus
           />
         </S.InputWrapper>
-        <S.TextButton type="button" onClick={onCancel}>취소</S.TextButton>
+        <S.TextButton type="button" onClick={onCancel}>{t('common.cancel')}</S.TextButton>
       </S.SearchRow>
       {status !== 'idle' ? (
-        <section aria-label="검색 결과">
-          <S.Heading>검색 결과</S.Heading>
-          {status === 'loading' ? <S.Empty role="status">검색 중이에요...</S.Empty>
+        <section aria-label={t('map.searchResults')}>
+          <S.Heading>{t('map.searchResults')}</S.Heading>
+          {status === 'loading' ? <S.Empty role="status">{t('map.searching')}</S.Empty>
             : status === 'error' ? <S.Empty role="alert">{error}</S.Empty>
-            : results.length === 0 ? <S.Empty>검색 결과가 없습니다.</S.Empty>
+            : results.length === 0 ? <S.Empty>{t('map.noSearchResults')}</S.Empty>
             : <BoothCardList booths={results} filterBySearchTerm={false} onSelectBooth={onSelectBooth} />}
 
         </section>
       ) : (
-        <section aria-label="최근 검색어">
+        <section aria-label={t('map.recentSearches')}>
           <S.HistoryHeader>
-            <S.Heading>최근 검색어</S.Heading>
-            <S.TextButton type="button" disabled={!history.length} onClick={() => updateHistory([])}>전체 삭제</S.TextButton>
+            <S.Heading>{t('map.recentSearches')}</S.Heading>
+            <S.TextButton type="button" disabled={!history.length} onClick={() => updateHistory([])}>{t('map.clearAll')}</S.TextButton>
           </S.HistoryHeader>
-          {!history.length && <S.Empty>최근 검색어가 없어요.</S.Empty>}
+          {!history.length && <S.Empty>{t('map.noRecentSearches')}</S.Empty>}
           <S.HistoryList>
             {history.map((term) => (
               <S.HistoryItem key={term}>
                 <S.TermButton type="button" onClick={() => search(term)}>{term}</S.TermButton>
-                <S.IconButton type="button" aria-label={`${term} 삭제`} title="검색어 삭제" onClick={() => updateHistory(history.filter((item) => item !== term))}>
+                <S.IconButton type="button" aria-label={t('map.deleteSearch', { term })} title={t('map.deleteSearchTitle')} onClick={() => updateHistory(history.filter((item) => item !== term))}>
                   <S.CloseMark aria-hidden="true">×</S.CloseMark>
                 </S.IconButton>
               </S.HistoryItem>

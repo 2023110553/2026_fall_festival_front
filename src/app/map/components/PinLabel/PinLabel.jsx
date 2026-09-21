@@ -17,6 +17,7 @@
 
 import * as S from './PinLabel.styles'
 import { BOOTH_CATEGORIES } from '../../../../constants/categories'
+import { useTranslation } from '../../../../i18n/useTranslation'
 
 const DEFAULT_PIN_COLOR = '#DC7054'
 
@@ -25,13 +26,16 @@ function getCategoryColor(category) {
 }
 
 export default function PinLabel({ onClick, label, category, lanternCount = 0 }) {
+  const { t } = useTranslation()
   const pinColor = getCategoryColor(category)
 
   return (
     <S.PinLabelWrapper
       type="button"
       onClick={onClick}
-      aria-label={label ? `${label} 부스, 등불 ${lanternCount}개` : `부스, 등불 ${lanternCount}개`}
+      aria-label={label
+        ? t('map.boothLanterns', { name: label, count: lanternCount })
+        : t('map.lanterns', { count: lanternCount })}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

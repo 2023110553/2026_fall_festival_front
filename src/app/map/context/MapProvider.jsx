@@ -2,6 +2,7 @@ import { getBooths } from '../../../api/map'
 import { useAuthStore } from '../../../store/useAuthStore'
 import { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { MAP_ZONES } from '../../../constants/zones'
+import { useTranslation } from '../../../i18n/useTranslation'
 
 // 지도 섹션(검색/구역/주야/날짜/바텀시트/등불보기 탭)에서만 쓰는 로컬 상태를 묶어두는 Context.
 // map-section-scope-and-roles.md 합의사항: "여전히 전역 상태까지는 불필요 —
@@ -14,6 +15,7 @@ const MapContext = createContext(null)
 // 나중에 실시간 시계 기반 자동 전환으로 바꿀 때도 이 자리에서 setTimeOfDay를 호출하는
 // 방식만 유지하면 되므로 MapCanvas/SceneEnvironment 쪽 렌더링 코드는 손댈 필요가 없다.
 export function MapProvider({ children }) {
+  const { t } = useTranslation()
   const [zoneId, setZoneId] = useState(MAP_ZONES[0].id)
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
@@ -79,11 +81,11 @@ export function MapProvider({ children }) {
       .catch((error) => {
         if (controller.signal.aborted) return
         setListResponse({ key: queryKey, error: error.response?.status === 400
-          ? '날짜와 시간대 또는 카테고리를 확인해주세요.'
-          : '부스 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.' })
+          ? t('map.invalidFilter')
+          : t('map.boothListError') })
       })
     return () => controller.abort()
-  }, [selectedDate, listTimeOfDay, selectedCategory, accessToken, queryKey, boothRevision])
+  }, [selectedDate, listTimeOfDay, selectedCategory, accessToken, queryKey, boothRevision, t])
 
   const value = useMemo(
     () => ({

@@ -8,7 +8,7 @@
 - `zone2` — 팔정도 → `public/models/zone2.glb` (`Zone2Scene.jsx`, API 부스 좌표 사용)
 - `zone3` — 만해광장 + 후문쪽 거리 → `public/models/zone3.glb` (`Zone3Scene.jsx`, API 부스 좌표 사용; 씬에서 glb를 2배로 키워 씀)
 - `zone4` — 학림관 → `public/models/hangnimgwan.glb` (`Zone4Scene.jsx`, API 부스 좌표 사용)
-- `zone5` — 원흥관 (2026-09-20 추가, 별개 독립 구역) → `public/models/zone5.glb` (`Zone5Scene.jsx`, 부스 목데이터 `zone5-booths.sample.json` 3개 — 2026-09-21 건물 후면 광장 4개 삭제; 씬에서 glb를 2배로 키워 씀)
+- `zone5` — 원흥관 (2026-09-20 추가, 별개 독립 구역) → `public/models/zone5.glb` (`Zone5Scene.jsx`; 씬에서 glb를 2배로 키워 씀)
 
 최종 export된 `.glb` 파일 자체는 `public/models/`에 두고, 이 폴더에는 구역별 로딩 컴포넌트(예: `Zone1Scene.jsx`)와 부스 앵커 좌표 JSON 연동 코드를 둔다.
 
@@ -16,7 +16,7 @@
 
 - zone1~4는 `useMapZoneBooths`에서 받은 API 데이터를 `ZoneBooths`와 `BoothMarker`로 렌더링한다.
 - `map_x`, `map_y`, `map_elevation`, `rotation`, `lantern_count`는 API 응답을 그대로 사용한다.
-- zone5는 아직 `zone5-booths.sample.json`의 정적 좌표를 사용하므로 API 전환 전까지 해당 파일을 유지한다.
+- zone5를 포함한 모든 구역의 부스 좌표는 장소 목록 API 응답을 사용한다.
 - zone3·zone5는 씬의 `MAP_SCALE`이 2이므로 부스 좌표에도 같은 배율이 반영되어야 한다.
 
 ## glb 최적화 파이프라인 (2026-09-16, 이슈 #33)

@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import ZoneBooths from './ZoneBooths'
-import boothData from './zone5-booths.sample.json'
+import { useMapZoneBooths } from '../../hooks/useMapZones'
 
-// 구역 5(원흥관) 씬 — 지형/건물 .glb 로드 + 부스 목데이터 배치.
+// 구역 5(원흥관) 씬 — 지형/건물 .glb 로드 + API 부스 좌표 배치.
 //
 // 2026-09-20: public/models/zone5.glb 최초 연결. 원흥관은 팔정도에서 법학관 쪽으로 올라간 위치라
 // 기존 네 구역(경영관·혜화관 / 팔정도 / 만해광장 / 학림관) 어디에도 붙지 않아서 zone5로 새로 팠다.
@@ -21,7 +21,7 @@ import boothData from './zone5-booths.sample.json'
 //   - 익랑       x  -2.4~3.5,  z  6.5~23.9
 //   - 본관       x   9.2~27.0, z  0.2~25.0
 //   - 골목       x   4.3~9.55 (아스팔트 윗면 y=0.02), 광장 윗면 y=0.12
-// 부스 좌표(zone5-booths.sample.json)도 전부 이 three 좌표계 값이다.
+// API의 부스 좌표도 전부 이 three 좌표계 값이다.
 //
 // 카메라 메모: 이 구역 시점은 MapCanvas의 ZONE_CAMERAS.zone5가 맡는다(2026-09-20 구역별 카메라 분리,
 // 2026-09-21 재원 요청으로 본동 정면이 있는 -z 쪽에서 보도록 변경). 화면 구도는 카메라 쪽에서 맞추므로
@@ -38,13 +38,14 @@ import boothData from './zone5-booths.sample.json'
 // 캠퍼스 좌표 문서의 OSM 값). 그래서 실제 크기(6×3m)인 부스에 비해 건물·골목이 작아 보였다.
 // glb는 그대로 두고 여기서 통째로 MAP_SCALE배 키운다(본동 23.4m, 본관 15.6m, 골목 폭 5.25m → 10.5m).
 //   - 부스는 실제 크기를 유지해야 해서 이 배율을 받지 않는다(ZoneBooths는 primitive의 형제 노드).
-//     대신 부스 좌표(zone5-booths.sample.json)를 전부 2배 값으로 바꿔 같은 자리에 오게 했다.
+//     대신 API가 2배 배율을 반영한 부스 좌표를 내려줘 같은 자리에 오게 한다.
 //   - 그래서 이 구역만 "씬 좌표 = glb(블렌더) 좌표 × MAP_SCALE"이다. 위 좌표계 메모의 범위는 glb 기준
 //     값이고, 블렌더에서 새 좌표를 뽑으면 MAP_SCALE을 곱해서 넣어야 한다.
 //   - 카메라(MapCanvas의 ZONE_CAMERAS.zone5)도 원점 기준으로 똑같이 2배라 화면 구도는 그대로다.
 const MAP_SCALE = 2
 
 export default function Zone5Scene({ brightnessLevel = null, onBoothClick }) {
+  const { booths } = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone5.glb')
 
   // Zone1~4Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요).
@@ -60,7 +61,7 @@ export default function Zone5Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} scale={MAP_SCALE} />
-      <ZoneBooths booths={boothData.booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
     </>
   )
 }
