@@ -22,7 +22,7 @@ export default function LanternFlowPage() {
   const { isLoggedIn } = useAuth()
 
   // --- 상태 관리 --- (등불 리스트는 LanternProvider로 전역 공유 — MyPage 등 다른 화면과 같은 목록을 본다)
-  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers } = useLanterns()
+  const { lanterns, addLantern, deleteLantern, editLantern, registerTriggers, activeBoothId } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns) // 3개 제한은 전체 누적이 아니라 오늘(축제일) 기준
   const usedBoothIds = getTodayUsedBoothIds(lanterns) // 오늘 이미 등불을 단 부스 — 드롭다운 재선택 방지
 
@@ -145,6 +145,7 @@ export default function LanternFlowPage() {
         onSubmitSuccess={handleCreateLantern}
         currentCount={todayLanternCount}
         usedBoothIds={usedBoothIds}
+        presetBoothId={activeBoothId}
       />
 
       {/* 2. 첫 등불 스크래치 복권 모달 */}
