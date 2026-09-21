@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import TopHeader from '../../components/common/TopHeader'
 import SegmentedTabs from '../../components/common/SegmentedTabs'
 import CollabList from './components/CollabList'
@@ -22,7 +23,9 @@ const INFO_TABS = [
 ]
 
 export default function InfoPage() {
-  const [tab, setTab] = useState('collab')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedTab = searchParams.get('tab')
+  const tab = INFO_TABS.some((item) => item.value === requestedTab) ? requestedTab : 'collab'
   const [lostDate, setLostDate] = useState('2026-09-29')
   const [keyword, setKeyword] = useState('')
   const [selection, setSelection] = useState(null)
@@ -51,7 +54,11 @@ export default function InfoPage() {
   }, [selection])
 
   const changeTab = (nextTab) => {
-    setTab(nextTab)
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous)
+      next.set('tab', nextTab)
+      return next
+    }, { replace: true })
     setSelection(null)
   }
 
