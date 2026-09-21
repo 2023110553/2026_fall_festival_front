@@ -5,7 +5,7 @@ import BoothDetailPanel from './BoothDetailPanel'
 import * as S from './BottomSheet.styles'
 
 export default function BottomSheet() {
-  const { isSheetOpen, selectedBoothId, setSelectedBoothId, setSheetTab, setSearchTerm } = useMapContext()
+  const { isSheetOpen, selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate, setSearchTerm } = useMapContext()
   const [isSearching, setIsSearching] = useState(false)
   const previousSnap = useRef('middle')
   const [sheetHeight, setSheetHeight] = useState(null)
@@ -144,7 +144,13 @@ export default function BottomSheet() {
           }}
         />
       ) : (
-        <BoothDetailPanel boothId={selectedBoothId} onBack={() => setSelectedBoothId(null)} />
+        <BoothDetailPanel
+          boothId={selectedBoothId}
+          onBack={() => setSelectedBoothId(null)}
+          sheetTab={sheetTab}
+          setSheetTab={setSheetTab}
+          selectedDate={selectedDate}
+        />
         )}
       </S.Content>
     </S.Sheet>

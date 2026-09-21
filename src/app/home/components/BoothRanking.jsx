@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Modal from '../../../components/common/Modal'
-import { MapProvider } from '../../map/context/MapProvider'
 import BoothDetailPanel from '../../map/components/BottomSheet/BoothDetailPanel'
+import { getCurrentFestivalDate } from '../../lantern/utils/getCurrentFestivalDate'
 import styled from 'styled-components'
 
 const Wrapper = styled.div`
@@ -115,6 +115,7 @@ function ArrowRightIcon() {
 
 export default function BoothRanking({ ranking = [], isLoading = false, isError = false }) {
   const [selectedBoothId, setSelectedBoothId] = useState(null)
+  const [sheetTab, setSheetTab] = useState('info')
   const triggerRef = useRef(null)
   const sheetRef = useRef(null)
   const closeSheet = useCallback(() => {
@@ -175,6 +176,7 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           aria-haspopup="dialog"
           onClick={(event) => {
             triggerRef.current = event.currentTarget
+            setSheetTab('info')
             setSelectedBoothId(booth.booth_id)
           }}
         >
@@ -204,9 +206,13 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           }}
         >
           <div ref={sheetRef}>
-            <MapProvider key={selectedBoothId}>
-              <BoothDetailPanel boothId={selectedBoothId} onBack={closeSheet} />
-            </MapProvider>
+            <BoothDetailPanel
+              boothId={selectedBoothId}
+              onBack={closeSheet}
+              sheetTab={sheetTab}
+              setSheetTab={setSheetTab}
+              selectedDate={getCurrentFestivalDate()}
+            />
           </div>
         </Modal>
       )}
