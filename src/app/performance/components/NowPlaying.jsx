@@ -9,7 +9,7 @@ export default function NowPlaying({ performance, now }) {
     if (!performance) {
         return (
             <S.Card>
-                <S.Empty>오늘 공연이 모두 종료되었어요.</S.Empty>
+                <S.Empty>진행 중인 공연이 없어요.</S.Empty>
             </S.Card>
         )
     }
