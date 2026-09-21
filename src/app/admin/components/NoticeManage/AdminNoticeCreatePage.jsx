@@ -19,9 +19,8 @@ export default function AdminNoticeCreatePage() {
     if (isImageTooLarge(imageFile)) return IMAGE_SIZE_MESSAGE
     try {
       const imageUrl = imageFile ? await uploadNoticeImage(imageFile) : null
-      // 화면에선 URGENT 키를 쓰지만 서버 유형 값은 EMERGENCY
       await createAdminNotice({
-        type: type === 'URGENT' ? 'EMERGENCY' : 'NORMAL',
+        type,
         title: title.trim(),
         content: content.trim(),
         imageUrl,

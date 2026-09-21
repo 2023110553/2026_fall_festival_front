@@ -41,8 +41,8 @@ export default function AdminNoticeEditPage() {
       // image_url: 새 사진을 골랐으면 업로드한 새 URL, 아니면 기존 URL 그대로(없으면 null) → 기존 사진 유지
       const imageUrl = imageFile ? await uploadNoticeImage(imageFile) : notice.image_url ?? null
       // 이 화면에선 유형을 바꾸지 않지만 type은 필수라 기존 값을 그대로 보낸다
-      await updateAdminNotice(notice.notice_id, {
-        type: isUrgentNotice(notice.type) ? 'EMERGENCY' : 'NORMAL',
+      await updateAdminNotice(notice.id, {
+        type: notice.type,
         title: title.trim(),
         content: content.trim(),
         imageUrl,
