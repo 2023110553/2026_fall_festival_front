@@ -7,7 +7,7 @@ export const modalStyle = {
 export const Container = styled.div`
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
     margin: 4px 0 -8px 0;
 `
@@ -39,8 +39,14 @@ export const SubTitle = styled.p`
     word-break: keep-all;
 `
 
-export const CloseBtn = styled.button`
+export const ButtonRow = styled.div`
+    display: flex;
     width: 100%;
+    gap: 8px;
+`
+
+export const CloseBtn = styled.button`
+    flex: 1;
     padding: 10px 0;
     border: none;
     border-radius: 8px;
@@ -54,5 +60,23 @@ export const CloseBtn = styled.button`
 
     &:hover {
         background: #e0e0e0;
+    }
+`
+
+export const ConfirmBtn = styled.button`
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: #737373;
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 500;
+    color: #FDFDFD;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #333333;
     }
 `

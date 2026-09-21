@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginModal from '../../app/auth/LoginModal'
+import ConfirmLogoutModal from '../../app/mypage/components/auth/ConfirmLogoutModal'
 import { useAuth } from '../../hooks/useAuth'
 import { useLanterns } from '../../app/lantern/context/LanternProvider'
 
@@ -33,6 +34,7 @@ export default function TopHeader({
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const headerRef = useRef(null)
   const languageMenuId = useId()
   const profileMenuId = useId()
@@ -75,8 +77,13 @@ export default function TopHeader({
     closeProfileMenu()
   }
   const handleLogout = () => {
-    logout()
+    setIsLogoutModalOpen(true)
     closeProfileMenu()
+  }
+
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false)
+    logout()
     navigate('/')
   }
 
@@ -169,6 +176,11 @@ export default function TopHeader({
         )}
       </S.Header>
       <LoginModal open={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <ConfirmLogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </>
   )
 }
