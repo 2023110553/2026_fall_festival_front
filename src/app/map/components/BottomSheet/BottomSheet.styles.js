@@ -9,8 +9,9 @@ export const Sheet = styled.div`
     width: 100%;
     max-width: 375px;
     --sheet-top-gap: 40px;
+    --middle-height: 62dvh;
     --collapsed-height: min(calc(100dvh - var(--sheet-top-gap)), max(26dvh, calc(${({ theme }) => theme.nav.height} + 142px + env(safe-area-inset-bottom))));
-    height: ${({ $snapPosition }) => $snapPosition === 'high' ? 'calc(100dvh - var(--sheet-top-gap))' : $snapPosition === 'low' ? 'var(--collapsed-height)' : '62dvh'};
+    height: ${({ $snapPosition }) => $snapPosition === 'high' ? 'calc(100dvh - var(--sheet-top-gap))' : $snapPosition === 'low' ? 'var(--collapsed-height)' : 'var(--middle-height)'};
     min-height: var(--collapsed-height);
     max-height: calc(100dvh - var(--sheet-top-gap));
     transition: ${({ $isDragging }) => $isDragging ? 'none' : 'height 240ms ease, border-radius 240ms ease'};
