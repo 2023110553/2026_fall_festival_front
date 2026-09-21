@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import * as S from './EditLanternModal.styles'
 import { formatLanternTime } from '../utils/formatLanternDateTime'
 
-export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
+export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit, pending = false, error = '', closeOnSubmit = true }) {
     const [nickname, setNickname] = useState('')
     const [message, setMessage] = useState('')
 
@@ -31,7 +31,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
 
     // 완료 버튼 클릭 시 변경 사항 전달 후 닫기
     const handleSubmit = () => {
-        if (!message.trim()) return
+        if (pending || !message.trim()) return
         if (onSubmit && lantern) {
         // 닉네임은 빈 값 그대로 저장 — '익명의 코끼리'는 표시 전용 fallback
         onSubmit(lantern.id, {
@@ -39,17 +39,18 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
             message,
         })
         }
-        onClose()
+        if (closeOnSubmit) onClose()
     }
 
     return (
-        <S.Overlay onClick={onClose}>
+        <S.Overlay onClick={pending ? undefined : onClose}>
             <S.Container onClick={(e) => e.stopPropagation()}>
                 {lantern?.boothName && <S.BoothLabel>{lantern.boothName}</S.BoothLabel>}
 
                 <S.InputGroup>
                     <S.NicknameBox>
                         <S.NicknameInput
+                            disabled={pending}
                             value={nickname}
                             onChange={handleNicknameChange}
                             placeholder="닉네임을 입력해주세요"
@@ -60,6 +61,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
 
                     <S.MessageBox>
                         <S.MessageTextArea
+                            disabled={pending}
                             value={message}
                             onChange={handleMessageChange}
                             placeholder="응원의 한마디를 남겨주세요"
@@ -69,13 +71,14 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
                     </S.MessageBox>
                 </S.InputGroup>
 
+                {error && <p role="alert">{error}</p>}
                 <S.Footer>
                     <S.Time>{formatLanternTime(lantern?.createdAt)}</S.Time>
                     <S.ButtonGroup>
-                        <S.CancelButton type="button" onClick={onClose}>
+                        <S.CancelButton type="button" disabled={pending} onClick={onClose}>
                         취소
                         </S.CancelButton>
-                        <S.SubmitButton type="button" onClick={handleSubmit}>
+                        <S.SubmitButton type="button" disabled={pending || !message.trim()} onClick={handleSubmit}>
                         완료
                         </S.SubmitButton>
                     </S.ButtonGroup>

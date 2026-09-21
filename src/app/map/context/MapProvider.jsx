@@ -1,6 +1,6 @@
 import { getBooths } from '../../../api/map'
 import { useAuthStore } from '../../../store/useAuthStore'
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { MAP_ZONES } from '../../../constants/zones'
 
 // 지도 섹션(검색/구역/주야/날짜/바텀시트/등불보기 탭)에서만 쓰는 로컬 상태를 묶어두는 Context.
@@ -46,6 +46,8 @@ export function MapProvider({ children }) {
 
   const [listTimeOfDay, setListTimeOfDay] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [boothRevision, setBoothRevision] = useState(0)
+  const refreshBooths = useCallback(() => setBoothRevision((value) => value + 1), [])
   const [listResponse, setListResponse] = useState(null)
   const accessToken = useAuthStore((state) => state.accessToken)
   const queryKey = JSON.stringify([selectedDate, listTimeOfDay, selectedCategory, accessToken])
@@ -81,10 +83,11 @@ export function MapProvider({ children }) {
           : '부스 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.' })
       })
     return () => controller.abort()
-  }, [selectedDate, listTimeOfDay, selectedCategory, accessToken, queryKey])
+  }, [selectedDate, listTimeOfDay, selectedCategory, accessToken, queryKey, boothRevision])
 
   const value = useMemo(
     () => ({
+      boothRevision, refreshBooths,
       booths, isLoading, isError, listError,
       listTimeOfDay, setListTimeOfDay, selectedCategory, setSelectedCategory,
       zoneId,
@@ -105,6 +108,7 @@ export function MapProvider({ children }) {
       setBoothBrightnessPreview,
     }),
     [
+      boothRevision, refreshBooths,
       booths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
       zoneId,
       timeOfDay,
