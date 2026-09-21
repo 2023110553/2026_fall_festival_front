@@ -5,14 +5,7 @@ import * as S from './NoticeEditor.styles'
 import NoticeEditor from './NoticeEditor'
 import { getAdminNoticeDetail, updateAdminNotice } from '../../../../api/admin'
 import { getNoticeTypeLabel, isUrgentNotice } from './noticeTypes'
-
-// 서버 400은 errors에 필드별 메시지가 오므로 있으면 그걸, 없으면 message를 보여준다
-const toErrorMessage = (error) => {
-  const data = error.response?.data
-  const fieldMessages = Object.values(data?.errors ?? {}).filter(Boolean)
-  if (fieldMessages.length) return fieldMessages.join(' ')
-  return data?.message ?? '공지 수정에 실패했습니다.'
-}
+import { IMAGE_SIZE_MESSAGE, isImageTooLarge, toNoticeErrorMessage, uploadNoticeImage } from './noticeForm'
 
 export default function AdminNoticeEditPage() {
   const { noticeId } = useParams()
@@ -43,18 +36,20 @@ export default function AdminNoticeEditPage() {
 
   // 실패 시 에디터가 토스트로 띄울 메시지를 돌려준다 (성공하면 상세로)
   const handleSave = async ({ title, content, imageFile }) => {
+    if (isImageTooLarge(imageFile)) return IMAGE_SIZE_MESSAGE
     try {
+      // image_url: 새 사진을 골랐으면 업로드한 새 URL, 아니면 기존 URL 그대로(없으면 null) → 기존 사진 유지
+      const imageUrl = imageFile ? await uploadNoticeImage(imageFile) : notice.image_url ?? null
       // 이 화면에선 유형을 바꾸지 않지만 type은 필수라 기존 값을 그대로 보낸다
-      // imageFile은 새 사진을 골랐을 때만 있음 → 없으면 image 미전송으로 기존 사진 유지
       await updateAdminNotice(notice.notice_id, {
         type: isUrgentNotice(notice.type) ? 'EMERGENCY' : 'NORMAL',
         title: title.trim(),
         content: content.trim(),
-        imageFile,
+        imageUrl,
       })
       navigate(detailPath)
     } catch (err) {
-      return toErrorMessage(err)
+      return toNoticeErrorMessage(err, '공지 수정에 실패했습니다.')
     }
   }
 

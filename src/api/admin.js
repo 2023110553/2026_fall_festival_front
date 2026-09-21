@@ -17,30 +17,25 @@ export const getAdminNotices = ({ type = 'ALL', page = 0, size = 20 } = {}) =>
 // 응답 data: { notice_id, type, title, content, image_url, created_at, updated_at }
 export const getAdminNoticeDetail = (noticeId) =>
   apiClient.get(`/api/notices/${noticeId}/`)
-// 등록 — multipart/form-data. type(EMERGENCY/NORMAL)·title·content 필수, image는 선택
+// 이미지 업로드 — multipart(field name: image), JPG/PNG/WebP · 10MB 이하
+// 성공 201 → data: { image_url }. 이 URL을 등록 body의 image_url에 담아 보낸다
+// 실패 400(INVALID_IMAGE_FILE, errors.image) / 413(FILE_SIZE_EXCEEDED)
+export const uploadAdminNoticeImage = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+  // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
+  return apiClient.post('/api/notices/images/', formData)
+}
+
+// 등록 — JSON. type(EMERGENCY/NORMAL)·title·content 필수, image_url은 업로드 API로 받은 URL (없으면 null)
 // 긴급 공지 제목의 [M/D]는 서버가 붙이므로 제목만 보낸다
-export const createAdminNotice = ({ type, title, content, imageFile }) => {
-  const formData = new FormData()
-  formData.append('type', type)
-  formData.append('title', title)
-  formData.append('content', content)
-  if (imageFile) formData.append('image', imageFile)
-  // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
-  return apiClient.post('/api/notices/', formData)
-}
-// 수정 — multipart/form-data. type(EMERGENCY/NORMAL)·title·content는 필수라 바뀌지 않아도 매번 보낸다
-// image는 새 사진으로 교체할 때만, delete_image는 기존 사진을 지울 때만 true (기본 false → 기존 사진 유지)
-// 성공 200 → { type, title, content, image_url }
-export const updateAdminNotice = (noticeId, { type, title, content, imageFile, deleteImage = false }) => {
-  const formData = new FormData()
-  formData.append('type', type)
-  formData.append('title', title)
-  formData.append('content', content)
-  if (imageFile) formData.append('image', imageFile)
-  formData.append('delete_image', String(deleteImage))
-  // Content-Type은 axios가 boundary까지 붙여서 자동 설정하므로 직접 지정하지 않는다
-  return apiClient.put(`/api/notices/${noticeId}/`, formData)
-}
+export const createAdminNotice = ({ type, title, content, imageUrl = null }) =>
+  apiClient.post('/api/notices/', { type, title, content, image_url: imageUrl })
+// 수정 — JSON. type(EMERGENCY/NORMAL)·title·content는 필수라 바뀌지 않아도 매번 보낸다
+// image_url: 기존 사진 유지 시 기존 URL, 교체 시 업로드 API로 받은 새 URL, 삭제 시 null
+// 성공 200 → data: { notice_id, type, title, content, image_url, updated_at }
+export const updateAdminNotice = (noticeId, { type, title, content, imageUrl = null }) =>
+  apiClient.put(`/api/notices/${noticeId}/`, { type, title, content, image_url: imageUrl })
 // 삭제 — Soft Delete(deleted_at 갱신). 사용자 공지 목록·홈 롤링 바에서도 즉시 빠진다
 // 성공 200 → data: { notice_id, deleted_at }
 export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/notices/${noticeId}/`)
