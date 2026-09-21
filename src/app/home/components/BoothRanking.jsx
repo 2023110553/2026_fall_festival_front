@@ -1,16 +1,8 @@
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Modal from '../../../components/common/Modal'
+import { MapProvider } from '../../map/context/MapProvider'
+import BoothDetailPanel from '../../map/components/BottomSheet/BoothDetailPanel'
 import styled from 'styled-components'
-
-import EmptyState from '../../../components/common/EmptyState'
-
-// 부스별 등불 수 내림차순 랭킹. 0개 부스는 전부 동점 처리 (기능명세서 참고햇습니다!)
-
-// TODO(API): 등불 랭킹 API 응답으로 교체
-const RANKED_BOOTHS = [
-  { id: 1, name: '멋쟁이사자처럼', lanternCount: 500 },
-  { id: 2, name: '멋쟁이사자처럼', lanternCount: 500 },
-  { id: 3, name: '멋쟁이사자처럼', lanternCount: 500 },
-]
 
 const Wrapper = styled.div`
   width: 100%;
@@ -21,7 +13,7 @@ const Wrapper = styled.div`
   padding: 0 12px 8px;
 `
 
-const Row = styled.button`
+const Row = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
@@ -84,11 +76,21 @@ const LanternDot = styled.span`
   flex: 0 0 7px;
   aspect-ratio: 1 / 1;
   border-radius: 99px;
-  background: #dc7054;
-  box-shadow: 0 0 4px 0 rgba(220, 112, 84, 0.6);
+  opacity: 0.7;
+  background: var(--aurora_orange, #DC7054);
+  filter: blur(2px);
 `
 
-const ArrowBox = styled.span`
+const ArrowBox = styled.button`
+  &:disabled {
+    cursor: default;
+    opacity: 0.4;
+  }
+
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
@@ -106,35 +108,104 @@ function ArrowRightIcon() {
   )
 }
 
-export default function BoothRanking() {
-  const navigate = useNavigate()
+export default function BoothRanking({ ranking = [], isLoading = false, isError = false }) {
+  const [selectedBoothId, setSelectedBoothId] = useState(null)
+  const triggerRef = useRef(null)
+  const sheetRef = useRef(null)
+  const closeSheet = useCallback(() => {
+    setSelectedBoothId(null)
+    triggerRef.current?.focus()
+  }, [])
 
-  if (RANKED_BOOTHS.length === 0) {
-    return <EmptyState>아직 등불이 달린 부스가 없습니다.</EmptyState>
-  }
+  useEffect(() => {
+    if (selectedBoothId == null) return
+    const panel = sheetRef.current
+    panel?.querySelector('button')?.focus()
+    const trapFocus = (event) => {
+      if (event.key !== 'Tab') return
+      const controls = [...panel.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), [tabindex="0"]')]
+      const first = controls[0]
+      const last = controls.at(-1)
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus()
+      }
+    }
+    panel?.addEventListener('keydown', trapFocus)
+    return () => panel?.removeEventListener('keydown', trapFocus)
+  }, [selectedBoothId])
+
+  const hasRanking = !isLoading && !isError && Array.isArray(ranking) && ranking.length > 0
+  const emptyLabel = isLoading
+    ? '불러오는 중입니다.'
+    : isError
+      ? '정보를 불러오지 못했습니다.'
+      : '등록된 부스가 없습니다.'
 
   return (
     <Wrapper aria-label="부스 등불 랭킹">
-      {RANKED_BOOTHS.map((booth, index) => (
-        <Row
-          key={booth.id}
-          type="button"
-          aria-label={`${index + 1}위 ${booth.name}, 등불 ${booth.lanternCount}개`}
-          onClick={() => navigate('/map')}
-        >
+      {!hasRanking ? Array.from({ length: 3 }, (_, index) => (
+        <Row key={`empty-${index}`}>
           <NameGroup>
             <Rank aria-hidden="true">{String(index + 1).padStart(2, '0')}</Rank>
+            <Name>{emptyLabel}</Name>
+          </NameGroup>
+          <CountGroup>
+            <LanternDot aria-hidden="true" />
+            <Count>-</Count>
+            <ArrowBox type="button" disabled aria-label="부스 정보 없음">
+              <ArrowRightIcon />
+            </ArrowBox>
+          </CountGroup>
+        </Row>
+      )) : ranking.map((booth) => (
+        <Row
+          key={booth.booth_id}
+          aria-label={`${booth.rank}위 ${booth.name}, 등불 ${booth.lantern_count}개`}
+        >
+          <NameGroup>
+            <Rank aria-hidden="true">{String(booth.rank).padStart(2, '0')}</Rank>
             <Name>{booth.name}</Name>
           </NameGroup>
           <CountGroup>
             <LanternDot aria-hidden="true" />
-            <Count aria-hidden="true">{booth.lanternCount}개</Count>
-            <ArrowBox>
+            <Count aria-hidden="true">{booth.lantern_count.toLocaleString('ko-KR')}개</Count>
+            <ArrowBox
+              type="button"
+              aria-label={`${booth.name} 상세 보기`}
+              aria-haspopup="dialog"
+              onClick={(event) => {
+                triggerRef.current = event.currentTarget
+                setSelectedBoothId(booth.booth_id)
+              }}
+            >
               <ArrowRightIcon />
             </ArrowBox>
           </CountGroup>
         </Row>
       ))}
+      {selectedBoothId != null && (
+        <Modal
+          open
+          onClose={closeSheet}
+          style={{
+            position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 375, maxHeight: 'calc(100dvh - 40px)',
+            overflowY: 'auto', overscrollBehavior: 'contain', boxSizing: 'border-box',
+            borderRadius: '28px 28px 0 0', textAlign: 'left',
+            padding: '20px 20px calc(20px + env(safe-area-inset-bottom))',
+          }}
+        >
+          <div ref={sheetRef}>
+            <MapProvider key={selectedBoothId}>
+              <BoothDetailPanel boothId={selectedBoothId} onBack={closeSheet} />
+            </MapProvider>
+          </div>
+        </Modal>
+      )}
     </Wrapper>
   )
 }
