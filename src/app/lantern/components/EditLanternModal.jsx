@@ -8,7 +8,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
 
     useEffect(() => {
         if (lantern) {
-        setNickname(lantern.nickname || '')
+        // '익명의 코끼리'는 미입력 시 표시 전용 기본값이라, 수정할 땐 빈 입력으로 되돌려둔다
+        setNickname(lantern.nickname === '익명의 코끼리' ? '' : lantern.nickname || '')
         setMessage(lantern.message || lantern.content || '')
         }
     }, [lantern])
