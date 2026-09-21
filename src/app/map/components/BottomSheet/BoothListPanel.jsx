@@ -33,7 +33,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
   }
 
   if (isSearching) {
-    return <BoothSearchPanel booths={zoneBooths} onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
+    return <BoothSearchPanel timeSlot={listTimeOfDay} onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
   }
   return (
     <>

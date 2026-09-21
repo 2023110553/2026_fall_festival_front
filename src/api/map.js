@@ -23,3 +23,10 @@ export const getFestivalSchedule = () => apiClient.get('/api/map/schedule')
 
 // 부스 상세 (바텀시트/장소상세 공용)
 export const getBoothDetail = (boothId) => apiClient.get(`/api/booths/${boothId}/`)
+
+// 장소 검색: 날짜를 지정한 경우에만 시간대 필터를 적용한다.
+export const searchBooths = ({ keyword, date, timeSlot }, { signal } = {}) =>
+  apiClient.get('/api/booths/search/', {
+    params: { keyword: keyword.trim(), ...(date ? { date, time_slot: timeSlot } : {}) },
+    signal,
+  })
