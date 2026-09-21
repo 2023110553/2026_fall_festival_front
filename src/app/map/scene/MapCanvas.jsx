@@ -1,5 +1,5 @@
-import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useEffect } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, Selection, SelectiveBloom, ToneMapping } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
@@ -8,6 +8,7 @@ import Zone1Scene from './zones/Zone1Scene'
 import Zone2Scene from './zones/Zone2Scene'
 import Zone3Scene from './zones/Zone3Scene'
 import Zone4Scene from './zones/Zone4Scene'
+import Zone5Scene from './zones/Zone5Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 import { TimeOfDayContext } from './environment/TimeOfDayContext'
 
@@ -92,10 +93,52 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 // 번지도록 했다. 예전(4번 항목, 부스 지붕/처마가 emissive였던 시절)에는 이 정도로 올리면
 // 지붕 색이 하얗게 날아가는 문제가 있었지만, 지금은 지붕/처마가 emissive를 아예 안 쓰므로
 // (BoothMarker.jsx 9번 항목) 그 부작용 없이 광원만 극적으로 밝힐 수 있다.
+// 2026-09-20: zone5(원흥관) 연결 + 카메라를 구역별로 분리.
+// 지금까지 네 구역이 zone1 기준 고정 카메라([10,140,90] → target [10,3,-30])를 같이 썼는데,
+// 구역마다 모델의 위치·크기가 달라서 zone3(만해광장)는 멀리, zone4(학림관)는 화면 위쪽에 치우쳐
+// 보이는 문제가 있었다(zones/README.md에도 TODO로 적혀 있던 것). 원흥관은 씬 중심이 z≈8인데
+// 타깃이 z=-30이라 아예 화면 구석으로 밀려나서, 이번에 ZONE_CAMERAS 표로 분리했다.
+//
+// 중요 — **zone1~zone4 값은 기존 고정값 그대로 옮겨 적었다.** 즉 이번 변경으로 기존 네 구역의
+// 화면은 1픽셀도 바뀌지 않는다. 각 구역에 맞는 값으로 튜닝하는 건 구역 전환 연출을 정할 때
+// 한꺼번에 하기로 한 상태라, 여기서는 "구역별로 다른 값을 줄 수 있는 구조"만 만들어 두고
+// zone5에만 실제로 맞춘 값을 넣었다.
+//
+// R3F의 <Canvas camera={...}> prop 은 마운트 시점에 한 번만 적용돼서, 구역을 바꿔도 카메라가
+// 따라가지 않는다. 그래서 위치는 ZoneCamera 가 zoneId 변경 때마다 직접 옮기고, 회전 중심은
+// OrbitControls 의 target prop 으로 넘긴다. 타깃까지 ref 로 잡아서 controls.target 을 직접
+// 건드리는 방법도 되긴 하는데(헤드리스 렌더로 둘 다 확인 — 결과는 픽셀 단위로 같다),
+// prop 쪽이 ref 가 언제 붙는지에 기대지 않아 더 안전하고 기존 코드 모양과도 가깝다.
+const ZONE_CAMERAS = {
+  zone1: { position: [10, 140, 90], target: [10, 3, -30] },
+  zone2: { position: [10, 140, 90], target: [10, 3, -30] },
+  zone3: { position: [10, 140, 90], target: [10, 3, -30] },
+  zone4: { position: [10, 140, 90], target: [10, 3, -30] },
+  // 원흥관: bbox x -36~32 / z -16~32, 중심 (-2, 8). 세로 화면에서 좌우가 잘리지 않는 선까지
+  // 당긴 값이다(더 당기면 본관 동쪽 끝이 잘린다).
+  zone5: { position: [-2, 116, 107], target: [-2, 3, 8] },
+}
+
+const DEFAULT_CAMERA = ZONE_CAMERAS.zone1
+
+function ZoneCamera({ zoneId }) {
+  const camera = useThree((state) => state.camera)
+
+  useEffect(() => {
+    const preset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
+    camera.position.set(...preset.position)
+    camera.lookAt(...preset.target)     // OrbitControls 가 붙기 전에도 방향이 맞게
+  }, [zoneId, camera])
+
+  return null
+}
+
 export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, onBoothClick }) {
+  const cameraPreset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
+
   return (
     <Canvas
-      camera={{ position: [10, 140, 90], fov: 45, near: 1, far: 2000 }}
+      camera={{ position: DEFAULT_CAMERA.position, fov: 45, near: 1, far: 2000 }}
       shadows={{ type: THREE.PCFSoftShadowMap }}
     >
       <TimeOfDayContext.Provider value={timeOfDay}>
@@ -110,11 +153,15 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
               <Zone3Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : zoneId === 'zone4' ? (
               <Zone4Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+            ) : zoneId === 'zone5' ? (
+              <Zone5Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : null}
           </Suspense>
           {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
           {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
-          <OrbitControls target={[10, 3, -30]} />
+          {/* 2026-09-20: 타깃이 구역에 따라 바뀐다(ZONE_CAMERAS). 위치는 ZoneCamera 담당. */}
+          <OrbitControls target={cameraPreset.target} />
+          <ZoneCamera zoneId={zoneId} />
           <EffectComposer>
             <SelectiveBloom
               mipmapBlur
