@@ -25,6 +25,7 @@ const LANGUAGES = [
 export default function TopHeader({
   title,
   appearance = 'dark',
+  zIndex = 100,
   isLoggedIn: isLoggedInOverride,
 }) {
   const { isLoggedIn: authIsLoggedIn } = useAuth()
@@ -109,7 +110,7 @@ export default function TopHeader({
 
   return (
     <>
-      <S.Header ref={headerRef}>
+      <S.Header ref={headerRef} $zIndex={zIndex}>
         <S.TitleGroup>
           <S.MarkerBox>
             <S.Marker src={titleMarker} alt="" aria-hidden="true" />
