@@ -11,7 +11,7 @@ export const Overlay = styled.div`
 `
 
 export const Panel = styled.div`
-  width: min(320px, 88vw);
+  width: min(305px, 88vw);
   background: ${({ theme }) => theme.color.bg};
   border-radius: ${({ theme }) => theme.radius.lg};
   padding: 24px 20px;

@@ -51,11 +51,11 @@ function AccountLanternProvider({ children, userId }) {
       prev.map((item) => (item.id === id ? { ...item, isDeleted: true } : item))
     )
 
-  const editLantern = (id, newContent) =>
+  const editLantern = (id, { nickname, message }) =>
     setLanterns((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, message: newContent, content: newContent, updatedAt: new Date().toISOString() }
+          ? { ...item, nickname, message, content: message, updatedAt: new Date().toISOString() }
           : item
       )
     )
