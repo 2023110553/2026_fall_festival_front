@@ -25,6 +25,8 @@ export function LanternProvider({ children }) {
 }
 
 function AccountLanternProvider({ children, userId }) {
+  // 지도 상세에서 보고 있는 부스와 날짜. 상세를 나가면 null로 초기화한다.
+  const [activeBooth, setActiveBooth] = useState(null)
   // 마운트 시 1회만 localStorage에서 초기값을 읽어온다 (읽기용 별도 useEffect보다
   // lazy initializer가 더 단순하고, "쓰기 이펙트가 초기값을 덮어쓰는" 순서 문제도 없다)
   const [lanterns, setLanterns] = useState(() => {
@@ -82,6 +84,8 @@ function AccountLanternProvider({ children, userId }) {
   return (
     <LanternContext.Provider
       value={{
+        activeBooth,
+        setActiveBooth,
         lanterns,
         coupon,
         setCoupon,
