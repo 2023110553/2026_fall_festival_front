@@ -1,4 +1,5 @@
 import {
+    Navigate,
     useNavigate,
     useParams,
 } from 'react-router-dom'
@@ -6,9 +7,7 @@ import {
 import PerformanceInfo from './components/PerformanceInfo'
 import Setlist from './components/Setlist'
 
-import {
-    getMockPerformanceById,
-} from './mocks/performanceMock'
+import { getMockPerformanceById } from './mocks/performanceMock'
 
 import * as S from './PerformanceDetailPage.styles'
 
@@ -16,12 +15,12 @@ export default function PerformanceDetailPage() {
     const { id } = useParams()
     const navigate = useNavigate()
 
-    // TODO(API):
-    // 실제 API 연결 후
-    // GET /api/performances/:id/
-    // 응답 데이터로 교체
-    const performance =
-        getMockPerformanceById(id)
+    const performance = getMockPerformanceById(id)
+
+    // Guard direct URLs as well as card navigation.
+    if (performance?.has_setlist === false) {
+        return <Navigate to={`/performance?date=${performance.festival_date}`} replace />
+    }
 
     return (
         <S.Page>

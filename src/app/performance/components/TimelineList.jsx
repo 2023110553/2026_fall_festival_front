@@ -16,7 +16,7 @@ export default function TimelineList({ performances = [], onSelect }) {
             type="button"
             $isLive={p.is_live}
             disabled={!p.has_setlist}
-            onClick={() => onSelect(p.performance_id)}
+            onClick={() => p.has_setlist === true && onSelect(p.performance_id)}
           >
             <S.Left>
               <S.Thumb />
