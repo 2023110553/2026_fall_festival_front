@@ -31,8 +31,9 @@ export default function AdminNoticePage() {
         const data = res.data?.data ?? {}
         const nextItems = data.items ?? []
         setNotices((prev) => (page === 0 ? nextItems : [...prev, ...nextItems]))
-        setTotalCount(data.total_count ?? 0)
-        setHasNext(data.has_next ?? false)
+        // 페이지 정보는 data.meta에 따로 담겨 온다
+        setTotalCount(data.meta?.total_count ?? 0)
+        setHasNext(data.meta?.has_next ?? false)
         setError('')
       })
       .catch((err) => {
@@ -57,12 +58,13 @@ export default function AdminNoticePage() {
       <S.TotalCount>{totalCount}개</S.TotalCount>
       <S.NoticeList>
         {notices.map((n) => (
-          <S.NoticeCard key={n.notice_id} onClick={() => navigate(`/admin/notices/${n.notice_id}`)}>
+          <S.NoticeCard key={n.id} onClick={() => navigate(`/admin/notices/${n.id}`)}>
             <S.TitleRow>
               <S.TypeTag $urgent={isUrgentNotice(n.type)}>{getNoticeTypeLabel(n.type)}</S.TypeTag>
               <S.Title>{n.title}</S.Title>
             </S.TitleRow>
-            <S.Preview>{n.content_preview}</S.Preview>
+            {/* 목록도 본문 전체가 오므로 한 줄 말줄임으로 미리보기만 보여준다 */}
+            <S.Preview>{n.content}</S.Preview>
           </S.NoticeCard>
         ))}
       </S.NoticeList>
