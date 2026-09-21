@@ -10,16 +10,6 @@ import {
 
 const LanternContext = createContext(null)
 
-const couponKey = (userId) => `festival-coupon:${userId}`
-
-function readStored(key, fallback) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key))
-    return value ?? fallback
-  } catch {
-    return fallback
-  }
-}
 
 // 목록 조회 응답엔 festival_date가 없으므로, 축제 3일치를 날짜별로 따로 조회해서
 // 조회에 쓴 날짜를 그대로 festivalDate로 태깅한다 (MyLanternList의 DAY 1/2/3 탭 필터 기준).
@@ -60,7 +50,7 @@ function AccountLanternProvider({ children, userId }) {
   // festivalDate가 오늘이 아니면 등불 달기 자체를 막는 데 쓰인다.
   const [activeBooth, setActiveBooth] = useState(null)
   const [lanterns, setLanterns] = useState([])
-  const [coupon, setCoupon] = useState(() => readStored(couponKey(userId), null))
+  const [coupon, setCoupon] = useState(null)
 
   // 로그인 상태일 때만 본인 등불을 서버에서 조회 — 로그아웃/게스트면 목록을 비운다
   useEffect(() => {
@@ -83,10 +73,6 @@ function AccountLanternProvider({ children, userId }) {
     }
   }, [userId])
 
-  useEffect(() => {
-    if (userId != null) localStorage.setItem(couponKey(userId), JSON.stringify(coupon))
-  }, [coupon, userId])
-
   // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
   const addLantern = async ({ boothId, nickname, message }) => {
     const res = await createLanternRequest({ boothId, nickname, message })
@@ -100,6 +86,7 @@ function AccountLanternProvider({ children, userId }) {
       status: 'active',
       festivalDate: data.festival_date,
       createdAt: data.created_at,
+      isFirstToday: data.is_first_today,
     }
     setLanterns((prev) => [...prev, created])
     return created

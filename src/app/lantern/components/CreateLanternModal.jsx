@@ -170,7 +170,6 @@ export default function CreateLanternModal({
 
     setIsSubmitting(true);
     setSubmitError('');
-
     try {
       await onSubmitSuccess(lanternData);
       resetForm();
