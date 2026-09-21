@@ -1,239 +1,195 @@
-import LanternViewTab from '../LanternViewTab/LanternViewTab'
-import { useEffect, useState } from 'react'
-import { useLanterns } from '../../../lantern/context/LanternProvider'
-import { useAuth } from '../../../../hooks/useAuth'
-import { getBoothDetail } from '../../../../api/map'
-import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
-import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
-import * as S from './BoothDetailPanel.styles'
+import EditLanternModal from '../../../lantern/components/EditLanternModal'
+import ConfirmDeleteModal from '../../../mypage/components/lantern/ConfirmDeleteModal'
+import { useEffect, useRef, useState } from 'react'
+import styled from 'styled-components'
+import { useAuthStore } from '../../../../store/useAuthStore'
+import { getBoothLanterns, updateLantern, deleteLantern } from '../../../../api/lantern'
+import { useMapContext } from '../../context/MapProvider'
+import EmptyState from '../../../../components/common/EmptyState'
+import LanternCard from '../../../lantern/components/LanternCard'
 
-// 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
-export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTab, selectedDate }) {
-  const { setActiveBooth } = useLanterns()
-  const { isLoggedIn } = useAuth()
-  const [detail, setDetail] = useState(null)
-  const currentDetail = detail?.boothId === boothId && detail?.isLoggedIn === isLoggedIn
-    ? detail : null
-  const booth = currentDetail?.booth ?? null
-  const isLoading = currentDetail == null
+const List = styled.ul`
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  > li { min-width: 0; }
+`
+const Action = styled.button`
+  min-height: 44px;
+  padding: 8px 16px;
+  margin: 8px 0;
+  cursor: pointer;
+`
+
+// 부스·날짜·로그인 상태가 바뀌면 목록과 필터를 초기화한다.
+export default function LanternViewTab({ boothId }) {
+  const { selectedDate } = useMapContext()
+  const { isLoggedIn, accessToken } = useAuthStore()
+  const date = selectedDate ?? '2026-09-29'
+  const key = JSON.stringify([boothId, date, isLoggedIn, accessToken])
+  return <BoothLanternList key={key} boothId={boothId} date={date} isLoggedIn={isLoggedIn} />
+}
+
+function BoothLanternList({ boothId, date, isLoggedIn }) {
+  const [onlyMine, setOnlyMine] = useState(false)
+  return (
+    <section aria-label="부스 등불 목록">
+      <p>등불을 달아 부스를 밝혀주세요! 욕설, 비방과 같은 내용을 게시할 시 처벌을 받을 수 있습니다.</p>
+      <label>
+        <input type="checkbox" checked={onlyMine} disabled={!isLoggedIn}
+          onChange={(event) => setOnlyMine(event.target.checked)} />
+        내가 쓴 등불만 보기
+      </label>
+      <LanternResults key={String(onlyMine)} boothId={boothId} date={date} mine={onlyMine} />
+    </section>
+  )
+}
+
+function LanternResults({ boothId, date, mine }) {
+  const { refreshBooths } = useMapContext()
+  const [editing, setEditing] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+  const [pending, setPending] = useState(false)
+  const [mutationError, setMutationError] = useState('')
+  const busy = useRef(false)
+  const mounted = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => { mounted.current = false }
+  }, [])
+
+  const [items, setItems] = useState([])
+  const [page, setPage] = useState(0)
+  const [attempt, setAttempt] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [status, setStatus] = useState('loading')
+  const [error, setError] = useState('')
+
+  const errorMessageOf = (err) => {
+    const known = {
+      NOT_OWNER: '본인이 작성한 등불만 수정·삭제할 수 있어요.',
+      LANTERN_NOT_FOUND: '존재하지 않는 등불입니다.',
+      ALREADY_DELETED: '이미 삭제된 등불입니다.',
+    }
+    return known[err.response?.data?.code] ?? err.response?.data?.message ?? '처리하지 못했어요. 다시 시도해주세요.'
+  }
+
+  const refetchList = () => {
+    refreshBooths()
+    if (!mounted.current) return
+    setItems([])
+    setPage(0)
+    setStatus('loading')
+    setAttempt((value) => value + 1)
+  }
+
+  // EditLanternModal(공용 컴포넌트, develop 최신 버전)은 pending/error prop이 없고,
+  // onSubmit이 reject되면 스스로 에러 문구를 보여주며 열려있고, resolve되면 스스로
+  // onClose를 호출한다 — 그 계약에 맞춰 에러를 err.response.data.message 모양으로 다시 던진다.
+  const handleEditSubmit = async (id, changes) => {
+    try {
+      const { data } = await updateLantern(id, changes)
+      if (!data?.success) throw new Error('요청을 완료하지 못했어요.')
+    } catch (err) {
+      throw { response: { data: { message: errorMessageOf(err) } } }
+    }
+    refetchList()
+  }
+
+  const handleDelete = async (id) => {
+    if (busy.current) return
+    busy.current = true
+    setPending(true)
+    setMutationError('')
+    try {
+      const { data } = await deleteLantern(id)
+      if (!data?.success) throw new Error('요청을 완료하지 못했어요.')
+      refetchList()
+      if (!mounted.current) return
+      setDeleting(null)
+    } catch (err) {
+      if (!mounted.current) return
+      setMutationError(errorMessageOf(err))
+    } finally {
+      busy.current = false
+      if (mounted.current) setPending(false)
+    }
+  }
 
   useEffect(() => {
-    let ignore = false
-    getBoothDetail(boothId)
+    const controller = new AbortController()
+    getBoothLanterns(boothId, { date, mine, page, size: 20, signal: controller.signal })
       .then(({ data: response }) => {
-        if (ignore) return
-        if (!response?.success || response.data?.booth_id !== Number(boothId)) {
-          throw new Error('Invalid booth detail response')
+        if (controller.signal.aborted) return
+        const data = response?.data
+        if (!response?.success || !Array.isArray(data?.items)
+          || data.page !== page || typeof data.has_next !== 'boolean') {
+          throw new Error('Invalid lantern list response')
         }
-        setDetail({
-          boothId,
-          isLoggedIn,
-          booth: {
-            ...response.data,
-            operations: response.data.operations ?? [],
-            menus: response.data.menus ?? [],
-          },
-        })
+        const nextItems = data.items.map((item) => ({
+          id: item.lantern_id,
+          nickname: item.nickname,
+          message: item.message,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at,
+          isMine: item.is_mine,
+          status: item.status,
+        }))
+        setItems((previous) => [...new Map([...previous, ...nextItems].map((item) => [item.id, item])).values()])
+        setHasNext(data.has_next)
+        setStatus('success')
       })
-      .catch((error) => {
-        if (ignore) return
-        setDetail({
-          boothId,
-          isLoggedIn,
-          booth: null,
-          error: error.response?.status === 404
-            ? '장소를 찾을 수 없습니다.'
-            : '장소 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
-        })
+      .catch((failure) => {
+        if (controller.signal.aborted) return
+        const code = failure.response?.status
+        setError(code === 400 ? '조회 조건을 확인해주세요. 날짜는 YYYY-MM-DD 형식이어야 해요.'
+          : code === 401 ? '로그인이 필요해요. 로그인 상태를 확인해주세요.'
+          : '등불 목록을 불러오지 못했어요. 다시 시도해주세요.')
+        setStatus('error')
       })
-    return () => { ignore = true }
-  }, [boothId, isLoggedIn])
-  const simple =
-    booth &&
-    (booth.place_type === 'FACILITY' ||
-      ['TOILET', 'ALCOHOL'].includes(booth.category))
-  const money = (value) =>
-    value ? `${value.toLocaleString('ko-KR')}원` : '무료'
-
-  const activeBoothId = booth && !simple ? booth.booth_id : null
-  const festivalDate = selectedDate ?? '2026-09-29'
-
-  useEffect(() => {
-    setActiveBooth(activeBoothId == null ? null : {
-      boothId: activeBoothId,
-      festivalDate,
-    })
-
-    // 목록으로 돌아가거나 지도 페이지를 떠날 때 이전 부스 선택을 남기지 않는다.
-    return () => setActiveBooth(null)
-  }, [activeBoothId, festivalDate, setActiveBooth])
+    return () => controller.abort()
+  }, [boothId, date, mine, page, attempt])
 
   return (
-    <S.Panel>
-      <S.Toolbar>
-        <S.Back
-          type="button"
-          onClick={onBack}
-          aria-label="목록으로 돌아가기"
-          title="목록으로 돌아가기"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="14"
-            viewBox="0 0 16 14"
-            fill="none"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              d="M14.375 5.7512H3.00917L6.48792 1.57287C6.65058 1.37716 6.72884 1.12485 6.70548 0.87144C6.68211 0.618031 6.55904 0.384283 6.36333 0.221617C6.16763 0.0589506 5.91531 -0.0193087 5.66191 0.00405519C5.4085 0.0274191 5.17475 0.150493 5.01208 0.3462L0.220417 6.0962C0.187523 6.1415 0.158662 6.18961 0.134167 6.23995C0.134167 6.28787 0.134167 6.31662 0.0670835 6.36453C0.0236456 6.47441 0.000901908 6.59138 0 6.70953C0.000901908 6.82769 0.0236456 6.94465 0.0670835 7.05453C0.0670835 7.10245 0.0670832 7.1312 0.134167 7.17912C0.158662 7.22946 0.187523 7.27756 0.220417 7.32287L5.01208 13.0729C5.10219 13.181 5.21502 13.268 5.34256 13.3277C5.4701 13.3873 5.60921 13.4181 5.75 13.4179C5.97392 13.4183 6.19092 13.3403 6.36333 13.1975C6.46037 13.117 6.54059 13.0182 6.59938 12.9067C6.65818 12.7952 6.6944 12.6732 6.70597 12.5477C6.71755 12.4222 6.70424 12.2956 6.66682 12.1752C6.62941 12.0548 6.56861 11.943 6.48792 11.8462L3.00917 7.66787H14.375C14.6292 7.66787 14.8729 7.5669 15.0526 7.38718C15.2324 7.20745 15.3333 6.9637 15.3333 6.70953C15.3333 6.45537 15.2324 6.21161 15.0526 6.03189C14.8729 5.85217 14.6292 5.7512 14.375 5.7512Z"
-              fill="#9F9C99"
-            />
-          </svg>
-        </S.Back>
-        {booth && !simple && (
-          <S.Tabs aria-label="부스 상세 보기">
-            <S.Tab
-              type="button"
-              $active={sheetTab === 'info'}
-              aria-pressed={sheetTab === 'info'}
-              onClick={() => setSheetTab('info')}
-            >
-              부스 설명
-            </S.Tab>
-            <S.Tab
-              type="button"
-              $active={sheetTab === 'lantern'}
-              aria-pressed={sheetTab === 'lantern'}
-              onClick={() => setSheetTab('lantern')}
-            >
-              등불 보기
-            </S.Tab>
-          </S.Tabs>
-        )}
-      </S.Toolbar>
-      {isLoading ? (
-        <S.Message role="status">장소 정보를 불러오는 중이에요...</S.Message>
-      ) : !booth ? (
-        <S.Message role="alert">{currentDetail.error}</S.Message>
-      ) : (
-        <>
-          <S.Header>
-            <S.Identity>
-              <S.Title>{booth.name}</S.Title>
-              {!simple && booth.subtitle && (
-                <S.Subtitle>{booth.subtitle}</S.Subtitle>
-              )}
-            </S.Identity>
-            {!simple && (
-              <S.Lantern $on={booth.has_my_lantern}>
-                <img
-                  src={booth.has_my_lantern ? lanternOn : lanternOff}
-                  alt={booth.has_my_lantern ? '내 등불 등록됨' : '등불'}
-                />
-                <span>{booth.lantern_count}</span>
-              </S.Lantern>
-            )}
-          </S.Header>
-          {!simple && sheetTab === 'lantern' ? (
-            <LanternViewTab key={booth.booth_id} boothId={booth.booth_id} />
-          ) : (
-            <>
-              {simple ? (
-                <>
-                  <S.Section>
-                    <S.Label>위치</S.Label>
-                    <S.Text>{booth.location_detail || booth.zone}</S.Text>
-                  </S.Section>
-                  {booth.place_type === 'FACILITY' && booth.directions && (
-                    <S.Section>
-                      <S.Label>가는 길</S.Label>
-                      <S.Text>{booth.directions}</S.Text>
-                    </S.Section>
-                  )}
-                </>
-              ) : (
-                <>
-                  {booth.description && (
-                    <S.Section>
-                      <S.Label>소개</S.Label>
-                      <S.Text>{booth.description}</S.Text>
-                    </S.Section>
-                  )}
-                  <S.Section>
-                    <S.LabelRow>
-                      <S.Label>정보</S.Label>
-                      {booth.has_reusable_container && (
-                        
-                        <S.Reusable>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="10" viewBox="0 0 11 10" fill="none">
-                            <path d="M10.8753 0.892131C8.26171 2.42573 8.44891 5.57573 6.61771 6.99713C5.23951 8.06693 3.29491 7.52513 2.17051 7.06493C2.17051 7.06493 1.40851 8.02673 0.861909 9.30893C0.678909 9.73913 -0.124491 9.26513 0.0165087 8.90093C1.80331 4.28993 7.88251 1.98953 7.88251 1.98953C7.88251 1.98953 3.59311 1.80773 0.726309 5.55353C0.649509 4.69793 0.522308 2.38313 2.74231 0.963531C5.75191 -0.963069 11.4855 0.534531 10.8753 0.892131Z" fill="#0D9352"/>
-                          </svg>
-                          다회용기 이용부스</S.Reusable>
-                      )}
-                    </S.LabelRow>
-                    <S.Text>운영 위치: {booth.location_detail || booth.zone}</S.Text>
-                    <S.Operations aria-label="운영 일정">
-                      {booth.operations.map((op) => (
-                        <li key={`${op.festival_date}-${op.time_slot}`}>
-                          운영 시간: {Number(op.festival_date.slice(5, 7))}/
-                          {Number(op.festival_date.slice(8, 10))} ({op.time_slot === 'DAY' ? '주간' : '야간'}){' '}
-                          {op.open_at}–{op.close_at}
-                        </li>
-                      ))}
-                    </S.Operations>
-                    {!booth.operations.length && <S.Text>운영 일정 미정</S.Text>}
-                    <S.Text>입장료: {money(booth.entrance_fee)}</S.Text>
-                  </S.Section>
-                  {booth.category !== 'ECO' && booth.menus.length > 0 && (
-                    <S.Section>
-                      <S.Label>메뉴</S.Label>
-                      <S.MenuList>
-                        {[...booth.menus]
-                          .sort((a, b) => a.sort_order - b.sort_order)
-                          .map((menu) => (
-                            <li key={menu.menu_id}>
-                              <span>{menu.name}</span>
-                              <span>{money(menu.price)}</span>
-                            </li>
-                          ))}
-                      </S.MenuList>
-                    </S.Section>
-                  )}
-                  {booth.event_description && (
-                    <S.Section>
-                      <S.Label>이벤트</S.Label>
-                      <S.Text>{booth.event_description}</S.Text>
-                    </S.Section>
-                  )}
-                  {booth.instagram_id && (
-                    <S.Section>
-                      <S.Label>인스타</S.Label>
-                      <S.Instagram
-                        href={`https://www.instagram.com/${encodeURIComponent(booth.instagram_id)}/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        @{booth.instagram_id}
-                      </S.Instagram>
-                    </S.Section>
-                  )}
-                </>
-              )}
-              {booth.image_url && (
-                <S.Section>
-                  <S.Label>이미지</S.Label>
-                  <S.Poster
-                    src={booth.image_url}
-                    alt={`${booth.name} 안내 이미지`}
-                  />
-                </S.Section>
-              )}
-            </>
-          )}
-        </>
+    <div aria-busy={status === 'loading'}>
+      {editing && (
+        <EditLanternModal isOpen lantern={editing} onClose={() => setEditing(null)} onSubmit={handleEditSubmit} />
       )}
-    </S.Panel>
+      {deleting && (
+        <ConfirmDeleteModal
+          isOpen
+          pending={pending}
+          error={mutationError}
+          onClose={() => { if (!busy.current) setDeleting(null) }}
+          onConfirm={() => handleDelete(deleting.id)}
+        />
+      )}
+
+      <List>
+        {items.map((item) => (
+          <li key={item.id}>
+            {['deleted_by_user', 'deleted_by_admin'].includes(item.status) ? (
+              <p>{item.status === 'deleted_by_admin' ? '관리자에 의해 삭제된 등불입니다.' : '삭제한 등불입니다.'}</p>
+            ) : (
+              <LanternCard
+                lantern={item}
+                isMine={item.isMine}
+                onEdit={item.isMine && item.status === 'active' ? () => { setMutationError(''); setEditing(item) } : undefined}
+                onDelete={item.isMine && item.status === 'active' ? () => { setMutationError(''); setDeleting(item) } : undefined}
+              />
+            )}
+          </li>
+        ))}
+      </List>
+      {status === 'loading' && <p role="status">등불 목록을 불러오는 중이에요...</p>}
+      {status === 'error' && <div role="alert">
+        <p>{error}</p>
+        <Action type="button" onClick={() => { setStatus('loading'); setAttempt((value) => value + 1) }}>다시 시도</Action>
+      </div>}
+      {status === 'success' && items.length === 0 && <EmptyState>{mine ? '이 날짜에 작성한 등불이 없습니다.' : '등불이 아직 없습니다.'}</EmptyState>}
+      {status === 'success' && hasNext && <Action type="button" onClick={() => { setStatus('loading'); setPage((value) => value + 1) }}>더 보기</Action>}
+    </div>
   )
 }
