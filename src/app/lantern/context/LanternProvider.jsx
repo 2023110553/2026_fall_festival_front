@@ -31,6 +31,7 @@ const fetchAllFestivalDaysLanterns = async () => {
     (res.data.data.items ?? []).map((item) => ({
       id: item.lantern_id,
       boothId: item.booth_id,
+      boothName: item.booth_name,
       nickname: item.nickname,
       message: item.message,
       content: item.message,
@@ -88,12 +89,14 @@ function AccountLanternProvider({ children, userId }) {
   }, [coupon, userId])
 
   // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
-  const addLantern = async ({ boothId, nickname, message }) => {
+  // boothName은 등록 응답에 없어서, 등불 달기 모달에서 이미 알고 있는 값을 그대로 받아 로컬에만 붙여둔다
+  const addLantern = async ({ boothId, boothName, nickname, message }) => {
     const res = await createLanternRequest({ boothId, nickname, message })
     const data = res.data.data
     const created = {
       id: data.lantern_id,
       boothId: data.booth_id,
+      boothName,
       nickname: data.nickname,
       message: data.message,
       content: data.message,
@@ -102,7 +105,8 @@ function AccountLanternProvider({ children, userId }) {
       createdAt: data.created_at,
     }
     setLanterns((prev) => [...prev, created])
-    return created
+    // 오늘 첫 등불인지는 서버가 실제 DB 기준으로 판정한 값을 그대로 쓴다 (로컬 카운트 추측 금지)
+    return { ...created, isFirstToday: Boolean(data.is_first_today) }
   }
 
   // soft delete라 목록에서 지우지 않고 status만 바꾼다 (마이페이지 회색 처리용)
