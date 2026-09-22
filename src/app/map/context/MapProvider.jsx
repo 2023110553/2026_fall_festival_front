@@ -1,8 +1,14 @@
 import { getBooths } from '../../../api/map'
 import { useAuthStore } from '../../../store/useAuthStore'
 import { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { MAP_ZONES } from '../../../constants/zones'
 import { useTranslation } from '../../../i18n/useTranslation'
+
+// URL의 ?zone=zoneN이 실제 구역 id일 때만 인정, 아니면 첫 구역(혜화관).
+// 홈 "현재 인기" 지도 미리보기가 /map?zone=zone2 식으로 특정 구역으로 바로 진입할 때 쓴다.
+const resolveZoneId = (candidate) =>
+  MAP_ZONES.some((zone) => zone.id === candidate) ? candidate : MAP_ZONES[0].id
 
 // 지도 섹션(검색/구역/주야/날짜/바텀시트/등불보기 탭)에서만 쓰는 로컬 상태를 묶어두는 Context.
 // map-section-scope-and-roles.md 합의사항: "여전히 전역 상태까지는 불필요 —
@@ -16,7 +22,19 @@ const MapContext = createContext(null)
 // 방식만 유지하면 되므로 MapCanvas/SceneEnvironment 쪽 렌더링 코드는 손댈 필요가 없다.
 export function MapProvider({ children }) {
   const { t } = useTranslation()
-  const [zoneId, setZoneId] = useState(MAP_ZONES[0].id)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [zoneId, setZoneIdState] = useState(() => resolveZoneId(searchParams.get('zone')))
+  // 구역을 바꾸면 URL(?zone=)도 같이 갱신 — 새로고침·공유 시 같은 구역이 열리고,
+  // 홈 미리보기 → 지도 진입 경로와 PlaceSelector 선택이 같은 규칙을 쓴다. replace라 뒤로가기 히스토리는 안 쌓임.
+  const setZoneId = useCallback((nextZoneId) => {
+    const resolved = resolveZoneId(nextZoneId)
+    setZoneIdState(resolved)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('zone', resolved)
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
   const [searchTerm, setSearchTerm] = useState('')
@@ -112,7 +130,7 @@ export function MapProvider({ children }) {
     [
       boothRevision, refreshBooths,
       booths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
-      zoneId,
+      zoneId, setZoneId,
       timeOfDay,
       selectedDate,
       searchTerm,
