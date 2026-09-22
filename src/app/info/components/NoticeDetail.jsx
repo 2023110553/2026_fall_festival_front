@@ -1,6 +1,7 @@
 import Tag from '../../../components/common/Tag'
 import InfoDetailHeader from './InfoDetailHeader'
 import OverflowMarquee from './OverflowMarquee'
+import { formatNoticeDate } from '../utils/formatNoticeDate'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './NoticeDetail.styles'
 
@@ -25,7 +26,7 @@ export default function NoticeDetail({ notice, onBack }) {
         {notice.image_url && <S.Image src={notice.image_url} alt="" />}
         <S.Content>
           <time dateTime={notice.created_at}>
-            {notice.created_at.slice(5, 10).replace('-', '.')}
+            {formatNoticeDate(notice.created_at)}
           </time>{' '}
           {notice.content}
         </S.Content>
