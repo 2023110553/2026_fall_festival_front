@@ -12,20 +12,19 @@ export const adminLogin = async (adminKey) => {
 
 // 등불 관리
 // 목록 조회 — sort: REPORT_DESC(신고 많은 순, 기본) | LATEST(최신순), page는 0부터, size는 최대 100 (기본 20)
-// 응답 data: { total_count, page, size, has_next, items: [{ lantern_id, nickname, booth_id, booth_name,
-//              content, report_count, top_report_reason, created_at }] }
+// 응답 data: { items: [{ id, nickname, message, booth_name, report_count, top_report_reason, created_at }],
+//              meta: { total_count, page, size, has_next } }  ← 백엔드 실제 응답 기준(노션 명세의 lantern_id/content와 다름)
 // top_report_reason은 신고 0건이면 null, 삭제된 등불은 서버에서 제외
 export const getAdminLanterns = ({ sort = 'REPORT_DESC', page = 0, size = 20 } = {}) =>
   apiClient.get('/api/lanterns/', { params: { sort, page, size } })
 
-// 신고 상세 조회(확인 모달용) — 목록과 달리 booth_name에 위치가 빠지고 booth_subtitle(소속 학과)이 붙는다
-// 응답 data: { lantern_id, nickname, booth_name, booth_subtitle, content, report_count, top_report_reason,
-//              report_reason_summary: [{ reason, count }], created_at }
-// 없거나 이미 삭제된 등불은 404(LANTERN_NOT_FOUND)
+// 신고 상세 조회(확인 모달용) — 목록 항목에 booth_department(부스 소속 학과)가 추가된다
+// 응답 data: { id, nickname, message, booth_name, booth_department, report_count, top_report_reason, created_at }
+// 없거나 이미 삭제된 등불은 404(code: NOT_FOUND)
 export const getAdminLanternDetail = (lanternId) => apiClient.get(`/api/lanterns/${lanternId}/`)
 
 // 삭제(블라인드) — Soft Delete(deleted_by='ADMIN'). 부스별/전체 등불 수는 서버에서 즉시 -1 차감
-// 응답 data: { lantern_id, is_deleted, deleted_by, deleted_at }
+// 응답 data: {} (빈 객체)
 export const deleteAdminLantern = (lanternId) => apiClient.delete(`/api/lanterns/${lanternId}/`)
 
 // 공지 관리
@@ -58,7 +57,7 @@ export const createAdminNotice = ({ type, title, content, imageUrl = null }) =>
 export const updateAdminNotice = (noticeId, { type, title, content, imageUrl = null }) =>
   apiClient.put(`/api/notices/${noticeId}/`, { type, title, content, image_url: imageUrl })
 // 삭제 — Soft Delete(deleted_at 갱신). 사용자 공지 목록·홈 롤링 바에서도 즉시 빠진다
-// 성공 200 → data: { notice_id, deleted_at }
+// 성공 200 → data: {} (빈 객체)
 export const deleteAdminNotice = (noticeId) => apiClient.delete(`/api/notices/${noticeId}/`)
 
 // 분실물 관리

@@ -37,8 +37,9 @@ export default function AdminLanternPage() {
         const nextItems = data.items ?? []
         // page 0은 첫 조회/정렬 변경, 그 외에는 "더보기"라 뒤에 이어붙인다
         setLanterns((prev) => (page === 0 ? nextItems : [...prev, ...nextItems]))
-        setTotalCount(data.total_count ?? 0)
-        setHasNext(data.has_next ?? false)
+        // 페이지 정보는 공지 목록과 같이 data.meta에 따로 담겨 온다
+        setTotalCount(data.meta?.total_count ?? 0)
+        setHasNext(data.meta?.has_next ?? false)
         setError('')
       })
       .catch((err) => {
@@ -73,7 +74,7 @@ export default function AdminLanternPage() {
 
   // 목록에서 빼고 총 개수도 같이 줄인다 (서버도 삭제 즉시 카운트를 -1 차감)
   const removeLantern = (lanternId) => {
-    setLanterns((prev) => prev.filter((l) => l.lantern_id !== lanternId))
+    setLanterns((prev) => prev.filter((l) => l.id !== lanternId))
     setTotalCount((prev) => Math.max(prev - 1, 0))
   }
 
@@ -85,7 +86,7 @@ export default function AdminLanternPage() {
 
   // 2단계: 확인 모달의 "삭제하기" → DELETE /api/lanterns/{lantern_id}/ (블라인드 처리)
   const handleDeleteConfirm = async () => {
-    const lanternId = deleteTarget.lantern_id
+    const lanternId = deleteTarget.id
     setIsDeleting(true)
     setDeleteError('')
     try {
@@ -116,14 +117,14 @@ export default function AdminLanternPage() {
       </S.Header>
       <S.LanternList>
         {lanterns.map((l) => (
-          <S.LanternCard key={l.lantern_id} onClick={() => setSelectedLantern(l)}>
+          <S.LanternCard key={l.id} onClick={() => setSelectedLantern(l)}>
             <S.CardContent>
               <S.TitleRow>
                 <S.Nickname>{l.nickname}</S.Nickname>
                 {/* 최다 신고 사유 — 신고 0건이면 null이라 칩을 숨긴다 */}
                 {l.top_report_reason && <S.ReportBadge>{l.top_report_reason}</S.ReportBadge>}
               </S.TitleRow>
-              <S.Message>{l.content}</S.Message>
+              <S.Message>{l.message}</S.Message>
               <S.BoothName>{l.booth_name}</S.BoothName>
             </S.CardContent>
             <S.CardSide>

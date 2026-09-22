@@ -10,7 +10,7 @@ export default function LanternDetailModal({ lantern, onClose, onDelete }) {
   const [detail, setDetail] = useState(null)
   const [error, setError] = useState('')
 
-  const lanternId = lantern?.lantern_id
+  const lanternId = lantern?.id
 
   useEffect(() => {
     if (lanternId == null) return
@@ -53,12 +53,12 @@ export default function LanternDetailModal({ lantern, onClose, onDelete }) {
               <S.SirenIcon src={sirenIcon} alt="신고" />
             </S.ReportCount>
           </S.TopRow>
-          {/* 상세 응답이 오면 부스명 옆에 소속 학과(booth_subtitle)를 붙인다 */}
+          {/* 상세 응답이 오면 부스명 옆에 소속 학과(booth_department)를 붙인다 */}
           <S.BoothName>
             {view.booth_name}
-            {view.booth_subtitle && ` · ${view.booth_subtitle}`}
+            {view.booth_department && ` · ${view.booth_department}`}
           </S.BoothName>
-          <S.MessageBox>{view.content}</S.MessageBox>
+          <S.MessageBox>{view.message}</S.MessageBox>
           {error && <S.ErrorMessage role="alert">{error}</S.ErrorMessage>}
           <S.ButtonRow>
             <S.CloseButton type="button" onClick={onClose}>
