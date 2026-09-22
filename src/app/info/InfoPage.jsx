@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import TopHeader from '../../components/common/TopHeader'
 import SegmentedTabs from '../../components/common/SegmentedTabs'
+import Button from '../../components/common/Button'
 import CollabList from './components/CollabList'
 import CollabDetail from './components/CollabDetail'
 import NoticeList from './components/NoticeList'
@@ -66,6 +67,9 @@ export default function InfoPage() {
   const [noticeList, setNoticeList] = useState({
     ...INITIAL_LIST_STATE,
     isLoading: true,
+    page: 0,
+    hasNext: false,
+    isLoadingMore: false,
   })
   const [lostItemList, setLostItemList] = useState({
     ...INITIAL_LIST_STATE,
@@ -98,6 +102,9 @@ export default function InfoPage() {
           items: response.data.items,
           isLoading: false,
           error: '',
+          page: 0,
+          hasNext: Boolean(response.data.meta?.has_next),
+          isLoadingMore: false,
         })
       })
       .catch((error) => {
@@ -106,11 +113,40 @@ export default function InfoPage() {
           items: [],
           isLoading: false,
           error: getErrorMessage(error, '공지사항을 불러오지 못했습니다.'),
+          page: 0,
+          hasNext: false,
+          isLoadingMore: false,
         })
       })
 
     return () => controller.abort()
   }, [noticeId, tab])
+
+  // 공지 "더보기" — 목록 응답의 meta.has_next를 그대로 따른다 (size=20, 다음 페이지를 이어붙임)
+  const handleLoadMoreNotices = () => {
+    if (noticeList.isLoadingMore || !noticeList.hasNext) return
+
+    const nextPage = noticeList.page + 1
+    setNoticeList((prev) => ({ ...prev, isLoadingMore: true }))
+
+    getNoticeList({ page: nextPage, size: 20 })
+      .then(({ data: response }) => {
+        if (response?.success !== true || !Array.isArray(response.data?.items)) {
+          throw new Error('Invalid notice list response')
+        }
+        setNoticeList((prev) => ({
+          ...prev,
+          items: [...prev.items, ...response.data.items],
+          page: nextPage,
+          hasNext: Boolean(response.data.meta?.has_next),
+          isLoadingMore: false,
+        }))
+      })
+      .catch(() => {
+        // 더보기 실패는 이미 보이는 목록을 지우지 않고 로딩 상태만 되돌린다 — 버튼을 다시 누르면 재시도됨
+        setNoticeList((prev) => ({ ...prev, isLoadingMore: false }))
+      })
+  }
 
   useEffect(() => {
     if (tab !== 'lostfound' || lostItemId) return undefined
@@ -306,10 +342,24 @@ export default function InfoPage() {
                     <S.StatusMessage role="alert">{noticeList.error}</S.StatusMessage>
                   )}
                   {!noticeList.isLoading && !noticeList.error && (
-                    <NoticeList
-                      notices={noticeList.items}
-                      onSelect={(id) => navigate(`/info/notices/${id}`)}
-                    />
+                    <>
+                      <NoticeList
+                        notices={noticeList.items}
+                        onSelect={(id) => navigate(`/info/notices/${id}`)}
+                      />
+                      {noticeList.hasNext && (
+                        <S.LoadMoreArea>
+                          <Button
+                            variant="secondary"
+                            fullWidth
+                            onClick={handleLoadMoreNotices}
+                            disabled={noticeList.isLoadingMore}
+                          >
+                            {noticeList.isLoadingMore ? t('notice.loadingMore') : t('notice.loadMore')}
+                          </Button>
+                        </S.LoadMoreArea>
+                      )}
+                    </>
                   )}
                 </>
               )}

@@ -23,3 +23,7 @@ export const StatusMessage = styled.p`
   font-size: 14px;
   text-align: center;
 `
+
+export const LoadMoreArea = styled.div`
+  padding: 4px 0 8px;
+`

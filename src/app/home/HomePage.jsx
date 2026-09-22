@@ -7,6 +7,7 @@ import LanternPreview from './components/LanternPreview'
 import BoothRanking from './components/BoothRanking'
 import NowPlayingCards from './components/NowPlayingCards'
 import { apiClient } from '../../api/client'
+import { getNowPerformances } from '../../api/performance'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './HomePage.styles'
 
@@ -77,6 +78,21 @@ async function getBoothRanking({ signal } = {}) {
   return response.data
 }
 
+// 홈 "지금 공연 중" 카드 — 서버가 라이브/1시간 이내 예정 공연을 이미 계산해서 내려준다
+async function getNowPlaying({ signal } = {}) {
+  const { data: response } = await getNowPerformances({ signal })
+
+  if (
+    response?.success !== true ||
+    !Array.isArray(response.data?.performances) ||
+    typeof response.data.server_time !== 'string'
+  ) {
+    throw new Error('공연 현황 응답 형식이 올바르지 않습니다.')
+  }
+
+  return response.data
+}
+
 function useHomeData(request) {
   const [state, setState] = useState({ data: null, isLoading: true, isError: false })
 
@@ -107,6 +123,7 @@ export default function HomePage() {
   const [festivalDay, setFestivalDay] = useState(() => getFestivalDay(Date.now(), t('home.ended')))
   const notices = useHomeData(getRollingNotices)
   const boothRanking = useHomeData(getBoothRanking)
+  const nowPlaying = useHomeData(getNowPlaying)
 
   useEffect(() => {
     let timeoutId
@@ -169,7 +186,12 @@ export default function HomePage() {
 
         {/* 카드 ~ 공연 현황 20px */}
         <S.Gap $size={20}>
-          <NowPlayingCards />
+          <NowPlayingCards
+            performances={nowPlaying.data?.performances}
+            serverTime={nowPlaying.data?.server_time}
+            isLoading={nowPlaying.isLoading}
+            isError={nowPlaying.isError}
+          />
         </S.Gap>
       </S.Content>
     </S.Page>
