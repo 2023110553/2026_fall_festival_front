@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import EmptyState from '../../../components/common/EmptyState'
 import performanceThumbnail from '../../performance/assets/performance-thumbnail.png'
 
-import { MOCK_SERVER_TIME, getMockNowPerformances } from '../../performance/mocks/performanceMock'
-
 import useServerTime from '../../../hooks/useServerTime'
 import { getPerformanceProgress } from '../utils/getPerformanceProgress'
 import { formatTime } from '../../../utils/time'
@@ -23,12 +21,19 @@ function ChevronRightIcon() {
   )
 }
 
-export default function NowPlayingCards() {
+// GET /api/performances/now/ 결과(performances, serverTime)는 HomePage가 fetch해서 props로 내려준다
+// (NoticeMarquee/BoothRanking과 동일한 패턴 — 데이터 조회는 페이지, 이 컴포넌트는 표시만 담당).
+export default function NowPlayingCards({ performances = [], serverTime = null, isLoading = false, isError = false }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const now = useServerTime(MOCK_SERVER_TIME)
-  const visiblePerformances = now ? getMockNowPerformances(now) : []
+  const now = useServerTime(serverTime)
+  const visiblePerformances = !isLoading && !isError && now ? performances : []
+  const emptyLabel = isLoading
+    ? t('home.performanceLoading')
+    : isError || !now
+      ? t('home.performanceError')
+      : t('home.performanceEmpty')
 
   return (
     <S.Wrapper>
@@ -49,13 +54,9 @@ export default function NowPlayingCards() {
         </S.MoreLink>
       </S.Header>
 
-      {!now ? (
+      {visiblePerformances.length === 0 ? (
         <EmptyState>
-          {t('home.performanceError')}
-        </EmptyState>
-      ) : visiblePerformances.length === 0 ? (
-        <EmptyState>
-          {t('home.performanceEmpty')}
+          {emptyLabel}
         </EmptyState>
       ) : (
         <S.Scroller>
@@ -139,4 +140,4 @@ export default function NowPlayingCards() {
       )}
     </S.Wrapper>
   )
-}
+}

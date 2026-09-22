@@ -6,9 +6,9 @@ import { useAdminAuthStore } from '../store/useAdminAuthStore'
 export default function AdminRoute() {
   const isAdminAuthed = useAdminAuthStore((state) => state.isAdminAuthed)
 
-  // if (!isAdminAuthed) {
-    // return <Navigate to="/admin/login" replace />
-  // }
+  if (!isAdminAuthed) {
+    return <Navigate to="/admin/login" replace />
+  }
 
   return <Outlet />
 }

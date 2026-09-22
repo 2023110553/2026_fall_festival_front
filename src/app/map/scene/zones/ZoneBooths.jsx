@@ -39,6 +39,12 @@ export default function ZoneBooths({ booths = [], brightnessLevel = null, onBoot
   const { showPin, showLabel } = BOOTH_PIN_PREVIEW
 
   return booths.map((booth, index) => {
+    // map_x/map_y/map_elevation은 백엔드 컬럼이 nullable이라 좌표 미입력 부스는 null로 내려온다.
+    // 그대로 두면 전부 원점(0,0,0)에 겹쳐 그려지므로 3D 씬에서는 건너뛴다(카드 목록 등 2D 리스트는 그대로 노출).
+    if (booth.map_x == null || booth.map_y == null || booth.map_elevation == null) {
+      return null
+    }
+
     const position = [booth.map_x, booth.map_elevation, booth.map_y]
     const handleClick = () => onBoothClick?.(booth.booth_id)
 

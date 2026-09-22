@@ -6,9 +6,6 @@ export const getBooths = ({ date, timeSlot, category } = {}, { signal } = {}) =>
     signal,
   })
 
-// 축제 시간대(주간/야간) 및 날짜 탭 설정 조회
-export const getFestivalSchedule = () => apiClient.get('/api/map/schedule')
-
 // 부스 상세 (바텀시트/장소상세 공용)
 export const getBoothDetail = (boothId) => apiClient.get(`/api/booths/${boothId}/`)
 
