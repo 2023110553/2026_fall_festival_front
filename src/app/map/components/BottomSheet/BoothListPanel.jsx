@@ -1,5 +1,5 @@
 import { useMapContext } from '../../context/MapProvider'
-import { BOOTH_CATEGORIES } from '../../../../constants/categories'
+import { BOOTH_FILTER_CHIPS } from '../../../../constants/categories'
 import BoothCardList from '../BoothCardList/BoothCardList'
 import BoothSearchPanel from './BoothSearchPanel'
 import * as S from './BoothListPanel.styles'
@@ -33,14 +33,14 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
 
     <S.Divider />
       <S.CategoryList>
-        {BOOTH_CATEGORIES.map((category) => (
+        {BOOTH_FILTER_CHIPS.map((category) => (
           <S.CategoryButton
             key={category.value}
             $active={selectedCategory === category.value}
             aria-pressed={selectedCategory === category.value}
             onClick={() => setSelectedCategory(selectedCategory === category.value ? null : category.value)}
           >
-            {t(`map.category.${category.value}`)}
+            {t(category.labelKey)}
           </S.CategoryButton>
         ))}
       </S.CategoryList>

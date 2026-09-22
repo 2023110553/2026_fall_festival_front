@@ -11,3 +11,12 @@ export const BOOTH_CATEGORIES = [
   { value: 'COLLAB', label: '협업', color: '#6B5FCE' },
   { value: 'ECO', label: '동빛/에코코', color: '#4C9A6B' },
 ]
+// 부스 목록 필터 칩 전용 — 백엔드 GET /api/booths/?category= 가 받는 값(BOOTH / TOILET / ALCOHOL / ECO).
+// 'BOOTH'는 서버가 협업(COLLAB)+일반(ETC) 부스를 묶어서 내려주는 칩이라 COLLAB/ETC를 따로 보내면 400이 난다.
+// 마커 색상 구분(BOOTH_CATEGORIES)과 필터 칩(BOOTH_FILTER_CHIPS)은 역할이 달라 분리해둔다.
+export const BOOTH_FILTER_CHIPS = [
+  { value: 'BOOTH', labelKey: 'map.category.BOOTH' },
+  { value: 'TOILET', labelKey: 'map.category.TOILET' },
+  { value: 'ALCOHOL', labelKey: 'map.category.ALCOHOL' },
+  { value: 'ECO', labelKey: 'map.category.ECO' },
+]

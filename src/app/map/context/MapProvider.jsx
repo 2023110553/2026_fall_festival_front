@@ -131,3 +131,8 @@ export function useMapContext() {
   if (!ctx) throw new Error('useMapContext는 MapProvider 안에서만 사용할 수 있어요')
   return ctx
 }
+
+// MapProvider 밖(홈 랭킹 모달 등)에서도 렌더되는 공용 컴포넌트용 — 컨텍스트가 없으면 null을 돌려준다.
+export function useOptionalMapContext() {
+  return useContext(MapContext)
+}
