@@ -9,6 +9,8 @@ import NowPlayingCards from './components/NowPlayingCards'
 import { apiClient } from '../../api/client'
 import { getNowPerformances } from '../../api/performance'
 import { useTranslation } from '../../i18n/useTranslation'
+import { getBooths } from '../../api/map'
+import { pickTopLanternZone } from './utils/getTopLanternZone'
 import * as S from './HomePage.styles'
 
 
@@ -52,6 +54,19 @@ async function getRollingNotices({ signal } = {}) {
   }
 
   return response.data
+}
+
+// 홈 지도 미리보기 — 등불이 가장 많은 구역. 구역별 합계 API가 따로 없어서
+// 지도 페이지와 같은 GET /api/booths/(현재 날짜·시간대 운영 부스)를 받아 프론트에서 구역별로 합산한다.
+// 백엔드에 구역별 랭킹 API가 생기면 이 함수 안만 바꾸면 된다(반환 형태 { zoneId, lanternCount } | null 유지).
+async function getTopLanternZone({ signal } = {}) {
+  const { data: response } = await getBooths({}, { signal })
+
+  if (response?.success !== true || !Array.isArray(response.data?.booths)) {
+    throw new Error('부스 목록 응답 형식이 올바르지 않습니다.')
+  }
+
+  return pickTopLanternZone(response.data.booths)
 }
 
 // 홈 부스별 등불 랭킹
@@ -122,6 +137,7 @@ export default function HomePage() {
   const { t } = useTranslation()
   const [festivalDay, setFestivalDay] = useState(() => getFestivalDay(Date.now(), t('home.ended')))
   const notices = useHomeData(getRollingNotices)
+  const topZone = useHomeData(getTopLanternZone)
   const boothRanking = useHomeData(getBoothRanking)
   const nowPlaying = useHomeData(getNowPlaying)
 
@@ -175,7 +191,12 @@ export default function HomePage() {
 
         {/* 공지사항 ~ 현재 인기 */}
         <S.Gap $size={30}>
-          <LanternPreview>
+          <LanternPreview
+            zoneId={topZone.data?.zoneId}
+            lanternCount={topZone.data?.lanternCount}
+            isLoading={topZone.isLoading}
+            isError={topZone.isError}
+          >
             <BoothRanking
               ranking={boothRanking.data?.ranking}
               isLoading={boothRanking.isLoading}
