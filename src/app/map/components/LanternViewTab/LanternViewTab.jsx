@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useAuthStore } from '../../../../store/useAuthStore'
 import { getBoothLanterns, updateLantern, deleteLantern, reportLantern } from '../../../../api/lantern'
-import { useMapContext } from '../../context/MapProvider'
+import { useOptionalMapContext } from '../../context/MapProvider'
+import { getCurrentFestivalDate } from '../../../lantern/utils/getCurrentFestivalDate'
 import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
 import { useTranslation } from '../../../../i18n/useTranslation'
@@ -27,10 +28,11 @@ const Action = styled.button`
 `
 
 // 부스·날짜·로그인 상태가 바뀌면 목록과 필터를 초기화한다.
-export default function LanternViewTab({ boothId }) {
-  const { selectedDate } = useMapContext()
+// selectedDate는 BoothDetailPanel이 props로 넘겨준다. MapProvider 안이면 컨텍스트 값을, 둘 다 없으면 오늘 축제일을 쓴다.
+export default function LanternViewTab({ boothId, selectedDate }) {
+  const map = useOptionalMapContext()
   const { isLoggedIn, accessToken } = useAuthStore()
-  const date = selectedDate ?? '2026-09-29'
+  const date = selectedDate ?? map?.selectedDate ?? getCurrentFestivalDate()
   const key = JSON.stringify([boothId, date, isLoggedIn, accessToken])
   return <BoothLanternList key={key} boothId={boothId} date={date} isLoggedIn={isLoggedIn} />
 }
@@ -53,7 +55,8 @@ function BoothLanternList({ boothId, date, isLoggedIn }) {
 
 function LanternResults({ boothId, date, mine, isLoggedIn }) {
   const { t } = useTranslation()
-  const { refreshBooths } = useMapContext()
+  // 홈 랭킹 모달처럼 MapProvider 밖에서 열리면 부스 목록 갱신은 건너뛴다.
+  const refreshBooths = useOptionalMapContext()?.refreshBooths
   const [reporting, setReporting] = useState(null)
   const [reportNotice, setReportNotice] = useState(null)
   const [editing, setEditing] = useState(null)
@@ -75,7 +78,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
     try {
       const { data } = await (kind === 'edit' ? updateLantern(id, changes) : deleteLantern(id))
       if (!data?.success) throw new Error(t('map.requestFailed'))
-      refreshBooths()
+      refreshBooths?.()
       if (!mounted.current) return
       setEditing(null)
       setDeleting(null)
@@ -90,8 +93,11 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
         LANTERN_NOT_FOUND: t('map.lanternNotFound'),
         ALREADY_DELETED: t('map.alreadyDeleted'),
       }
-      setMutationError(messages[error.response?.data?.code]
-        ?? error.response?.data?.message ?? t('map.processError'))
+      const message = messages[error.response?.data?.code]
+        ?? error.response?.data?.message ?? t('map.processError')
+      setMutationError(message)
+      // EditLanternModal은 onSubmit이 resolve되면 스스로 닫히므로, 실패는 던져서 모달 안에 메시지를 띄운다.
+      if (kind === 'edit') throw { response: { data: { message } } }
     } finally {
       busy.current = false
       if (mounted.current) setPending(false)
@@ -162,8 +168,8 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
         title={reportNotice === 'duplicate' ? t('map.reportDuplicateTitle') : t('map.reportSuccessTitle')}
         subTitle={reportNotice === 'duplicate' ? t('map.reportDuplicateDescription') : t('map.reportSuccessDescription')} />
 
-      {editing && <EditLanternModal isOpen lantern={editing} pending={pending} error={mutationError}
-        closeOnSubmit={false} onClose={() => { if (!busy.current) setEditing(null) }}
+      {editing && <EditLanternModal isOpen lantern={editing}
+        onClose={() => { if (!busy.current) setEditing(null) }}
         onSubmit={(id, changes) => mutate('edit', id, changes)} />}
       {deleting && <ConfirmDeleteModal isOpen pending={pending} error={mutationError}
         onClose={() => { if (!busy.current) setDeleting(null) }}

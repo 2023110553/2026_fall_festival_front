@@ -381,7 +381,7 @@ const mapTranslations = {
     'map.zone.zone1': '혜화관', 'map.zone.zone2': '팔정도', 'map.zone.zone3': '만해광장',
     'map.zone.zone4': '학림관', 'map.zone.zone5': '원흥관',
     'map.category.ETC': '주야간부스', 'map.category.TOILET': '화장실', 'map.category.ALCOHOL': '주류',
-    'map.category.COLLAB': '협업', 'map.category.ECO': '동빛/에코코',
+    'map.category.COLLAB': '협업', 'map.category.ECO': '동빛/에코코', 'map.category.BOOTH': '부스',
   },
   en: {
     'map.title': 'Map', 'map.day': 'Day', 'map.night': 'Night', 'map.openSearch': 'Open search',
@@ -417,7 +417,7 @@ const mapTranslations = {
     'map.zone.zone1': 'Hyehwa Hall', 'map.zone.zone2': 'Paljeongdo', 'map.zone.zone3': 'Manhae Plaza',
     'map.zone.zone4': 'Haklim Hall', 'map.zone.zone5': 'Wonheung Hall',
     'map.category.ETC': 'Day & night booths', 'map.category.TOILET': 'Restrooms', 'map.category.ALCOHOL': 'Alcohol',
-    'map.category.COLLAB': 'Partners', 'map.category.ECO': 'Dongbit / Ecoco',
+    'map.category.COLLAB': 'Partners', 'map.category.ECO': 'Dongbit / Ecoco', 'map.category.BOOTH': 'Booths',
   },
   ja: {
     'map.title': '地図', 'map.day': '昼間', 'map.night': '夜間', 'map.openSearch': '検索を開く',
@@ -453,7 +453,7 @@ const mapTranslations = {
     'map.zone.zone1': '恵化館', 'map.zone.zone2': '八正道', 'map.zone.zone3': '萬海広場',
     'map.zone.zone4': '学林館', 'map.zone.zone5': '元興館',
     'map.category.ETC': '昼夜ブース', 'map.category.TOILET': 'トイレ', 'map.category.ALCOHOL': '酒類',
-    'map.category.COLLAB': '協力', 'map.category.ECO': 'トンビッ／エココ',
+    'map.category.COLLAB': '協力', 'map.category.ECO': 'トンビッ／エココ', 'map.category.BOOTH': 'ブース',
   },
   zh: {
     'map.title': '地图', 'map.day': '日间', 'map.night': '夜间', 'map.openSearch': '打开搜索',
@@ -489,7 +489,7 @@ const mapTranslations = {
     'map.zone.zone1': '惠化馆', 'map.zone.zone2': '八正道', 'map.zone.zone3': '万海广场',
     'map.zone.zone4': '学林馆', 'map.zone.zone5': '元兴馆',
     'map.category.ETC': '日夜摊位', 'map.category.TOILET': '洗手间', 'map.category.ALCOHOL': '酒类',
-    'map.category.COLLAB': '合作', 'map.category.ECO': 'Dongbit / Ecoco',
+    'map.category.COLLAB': '合作', 'map.category.ECO': 'Dongbit / Ecoco', 'map.category.BOOTH': '摊位',
   },
 }
 
