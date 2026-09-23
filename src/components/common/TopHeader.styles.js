@@ -157,6 +157,16 @@ export const ProfileButton = styled.button`
   border: 0;
   border-radius: 50%;
   background: transparent;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid #9f9c99;
+    outline-offset: 2px;
+  }
 `
 
 export const ProfileIcon = styled.img`
@@ -173,9 +183,20 @@ export const LoginButton = styled.button`
   border: 1px solid #d8d8d8;
   border-radius: 12px;
   background: #fdfdfd;
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
   font-size: 10px;
   font-weight: 400;
   line-height: 22px;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid #9f9c99;
+    outline-offset: 2px;
+  }
 `
 
 export const Menu = styled.div`

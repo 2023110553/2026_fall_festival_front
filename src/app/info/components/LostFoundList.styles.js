@@ -11,19 +11,19 @@ export const SearchWrap = styled.label`
   display: block;
 `
 
-export const SearchIcon = styled.span`
+export const SearchIcon = styled.img`
   position: absolute;
   top: 50%;
   left: 10px;
-  color: #737373;
-  font-size: 16px;
-  transform: translateY(-54%);
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
 `
 
 export const Search = styled.input`
   width: 100%;
   height: 38px;
-  padding: 0 10px 0 34px;
+  padding: 0 10px 0 38px;
   border: 0.6px solid #737373;
   border-radius: 8px;
   outline: none;
