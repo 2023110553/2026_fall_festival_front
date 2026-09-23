@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import Modal from '../../../components/common/Modal'
-import { SCRATCH_THRESHOLD } from '../utils/couponRules'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './ScratchCouponModal.styles'
 
@@ -26,6 +25,9 @@ export default function ScratchCouponModal({ isOpen, onClose, onScratchStart, on
   const scratchRequestRef = useRef(null)
   const scratchReadyRef = useRef(false)
   const pendingPointRef = useRef(null)
+
+  //쿠폰 스트레치 반경
+  const SCRATCH_THRESHOLD = 0.7
 
   // 모달이 열릴 때마다 캔버스를 은색 스크래치 면으로 초기화
   useEffect(() => {
