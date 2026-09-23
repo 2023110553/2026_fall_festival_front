@@ -75,12 +75,10 @@ export default function PerformancePage() {
       <HeaderTab>
         <FestivalDateTabs value={selectedDate} onChange={handleDateChange} />
       </HeaderTab>
-      {state.performances.length > 0 && (
-        <CardArea>
-          <NowPlaying performance={nowPlaying} now={now} />
-          <Divider />
-        </CardArea>
-      )}
+      <CardArea>
+        <NowPlaying performance={nowPlaying} now={now} />
+        <Divider />
+      </CardArea>
       {state.isLoading ? (
         <EmptyState>{t('performance.loading')}</EmptyState>
       ) : state.error ? (
