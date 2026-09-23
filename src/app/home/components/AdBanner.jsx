@@ -57,12 +57,6 @@ const BANNERS = [
     title: '경영학과 야간부스',
     image: ba,
     href: null,
-  },
-  {
-    id: 5,
-    title: '경영학과 야간부스',
-    image: ba,
-    href: null,
     boothId: null,
     to: null,
   },

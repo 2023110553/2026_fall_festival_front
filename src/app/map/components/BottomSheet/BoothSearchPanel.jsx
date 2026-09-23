@@ -55,7 +55,7 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
     try {
       const { data } = await searchBooths({
         keyword: term,
-        date: selectedDate ?? '2026-09-29',
+        date: selectedDate ?? '2026-09-23', // TEMP: 로컬 테스트용 (원래 9/29)
         timeSlot: timeSlot?.toUpperCase(),
       }, { signal: controller.signal })
       if (controller.signal.aborted) return

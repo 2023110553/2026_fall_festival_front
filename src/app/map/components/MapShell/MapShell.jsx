@@ -26,7 +26,8 @@ export default function MapShell() {
       <S.HeaderArea>
       <TopHeader title={t('map.title')} appearance="light" zIndex={2} />
       <S.DateArea data-sheet-collapse-ignore>
-        <FestivalDateTabs value={selectedDate ?? '2026-09-29'} onChange={setSelectedDate} />
+        {/* TEMP: 로컬 테스트용 기본값 (원래 9/29) */}
+        <FestivalDateTabs value={selectedDate ?? '2026-09-23'} onChange={setSelectedDate} />
       </S.DateArea>
       </S.HeaderArea>
       <S.MapArea>
