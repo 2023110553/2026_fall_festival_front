@@ -20,14 +20,13 @@ jobs:
 
     env:
       DEPLOY_BRANCH: ${{ github.ref_name }}
+      FRONT_DIR: /home/ubuntu/2026_fall_festival_front
 
     steps:
       - name: React 자동 배포
         shell: bash
         run: |
           set -euo pipefail
-
-          FRONT_DIR=/home/ubuntu/2026_fall_festival_front
 
           echo "배포 브랜치: $DEPLOY_BRANCH"
 
@@ -47,3 +46,41 @@ jobs:
           # 사용자 빌드와 관리자 빌드가 모두 만들어졌는지 확인
           test -f "$FRONT_DIR/dist-next/user/index.html"
           test -f "$FRONT_DIR/dist-next/admin/index.html"
+
+      - name: 빌드 결과 승격 (dist-next → dist)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          command -v rsync >/dev/null || { echo "승격에는 rsync가 필요합니다 (self-hosted runner)"; exit 1; }
+
+          # nginx가 보는 건 dist 아래이고, dist-next는 빌드 전용이라 마운트하지 않는다.
+          # dist 루트의 기존 파일(전환 전까지 서비스 중인 사용자 사이트)은 건드리지 않는다 —
+          # 아래 작업은 전부 dist/user, dist/admin 폴더 안에서만 일어난다.
+          for app in user admin; do
+            src="$FRONT_DIR/dist-next/$app"
+            dest="$FRONT_DIR/dist/$app"
+            mkdir -p "$dest"
+
+            # 1) index.html을 뺀 에셋을 먼저 복사한다.
+            #    여기서는 아무것도 지우지 않아서, 교체 직전까지 이전 빌드가 그대로 열린다.
+            #    (중간에 실패해도 이전 index.html과 이전 에셋이 짝이 맞는 상태로 남는다)
+            rsync -a --exclude=index.html "$src/" "$dest/"
+
+            # 2) index.html을 마지막에 교체한다.
+            #    rsync는 임시 파일로 받은 뒤 rename하므로 반쯤 쓰인 index.html이 서빙되지 않는다.
+            #    --ignore-times: 빌드마다 index.html 크기가 같아서(에셋 해시 길이 고정) 기본 비교로는
+            #    건너뛸 수 있으므로, 이 파일만은 항상 새로 쓴다.
+            rsync -a --ignore-times "$src/index.html" "$dest/index.html"
+
+            # 3) 새 index.html이 자리 잡은 뒤, 이전 빌드에만 있던 파일을 정리한다.
+            rsync -a --delete --exclude=index.html "$src/" "$dest/"
+
+            echo "승격 완료: dist/$app"
+          done
+
+          # 승격 결과 재검증 — 파일 존재 + 빌드 산출물과 내용 일치
+          for app in user admin; do
+            test -f "$FRONT_DIR/dist/$app/index.html"
+            cmp -s "$FRONT_DIR/dist-next/$app/index.html" "$FRONT_DIR/dist/$app/index.html"
+          done
