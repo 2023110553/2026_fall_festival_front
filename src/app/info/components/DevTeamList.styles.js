@@ -105,26 +105,3 @@ export const CardSlot = styled.button`
 
   &:focus-visible { outline: 2px solid #dc7054; outline-offset: 4px; }
 `
-
-export const Indicators = styled.div`
-  position: absolute;
-  right: 0;
-  bottom: 42px;
-  left: 0;
-  z-index: 6;
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-`
-
-export const Indicator = styled.button`
-  width: ${({ $active }) => ($active ? '18px' : '6px')};
-  height: 6px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: ${({ $active }) => ($active ? '#dc7054' : '#d8d8d8')};
-  cursor: pointer;
-  transition: width 0.2s ease, background 0.2s ease;
-  &:focus-visible { outline: 2px solid #737373; outline-offset: 2px; }
-`

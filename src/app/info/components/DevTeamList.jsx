@@ -138,20 +138,6 @@ export default function DevTeamList({ teams }) {
         })}
       </S.CardStage>
 
-      {members.length > 1 && (
-        <S.Indicators aria-label="개발진 카드 위치">
-          {members.map((member, index) => (
-            <S.Indicator
-              key={member.id}
-              type="button"
-              $active={index === activeIndex}
-              aria-label={`${index + 1}번째 카드 보기`}
-              aria-current={index === activeIndex ? 'true' : undefined}
-              onClick={() => showCard(index)}
-            />
-          ))}
-        </S.Indicators>
-      )}
     </S.Wrapper>
   )
 }
