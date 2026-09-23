@@ -55,6 +55,7 @@ src/
 | `npm run preview` / `npm run preview:admin` | 빌드 결과 미리보기 |
 
 - 배포: nginx가 `dgufesta.com`에 사용자 빌드, `admin.dgufesta.com`에 관리자 빌드를 연결합니다. 관리자는 Cloudflare Access 이메일 로그인 → `/login`에서 관리자 키 입력.
+- 배포 서버는 빌드 결과(`dist-next/user`, `dist-next/admin`)를 확인한 뒤 `dist/user`, `dist/admin`으로 승격하고, nginx는 `dist` 아래만 서빙합니다(`.github/workflows/deploy.yml`).
 - 백엔드는 Host가 `admin.*`일 때만 관리자 API를 열기 때문에, 로컬 관리자 앱도 `.env`의 `VITE_ADMIN_API_BASE_URL`(`http://admin.localhost:8000`)로 요청합니다.
 - 관리자 빌드는 `--mode admin`이라 `.env.production`(`.local`)을 읽지 않습니다(`.env`, `.env.admin`(`.local`)만 읽음).
 - 사용자 도메인의 예전 주소(`/admin/...`)는 관리자 도메인의 같은 화면으로 자동 이동합니다(로컬 `npm run dev`에서는 `dev:admin` 안내만 표시).
