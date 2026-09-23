@@ -7,7 +7,7 @@ export const Card = styled.article`
   overflow: hidden;
   border-radius: 14px;
   background: var(--s_2, linear-gradient(337deg, #ACEEC8 14.51%, #EEC8B9 58.87%));
-  color: #fdfdfd;
+  color: #100b0b;
   box-shadow: ${({ $active }) =>
     $active
       ? '0 3px 6px rgba(255,161,161,.25), 0 -4px 6px rgba(194,255,175,.25), 0 0 6px rgba(243,246,188,.75)'
@@ -33,7 +33,7 @@ export const Glow = styled.div`
   width: 168px;
   height: 151.2px;
   border-radius: 138.6px;
-  background: radial-gradient(50% 50% at 50% 50%, #fffc42 0%, rgba(255, 255, 255, 0) 100%);
+  background: radial-gradient(50% 50% at 50% 50%, #e8f057 0%, rgba(255, 255, 255, 0) 100%);
 `
 
 export const ProfileSlot = styled.div`
@@ -62,7 +62,7 @@ export const Info = styled.div`
   width: 86.8px;
   flex-direction: column;
   align-items: flex-start;
-  color: #fdfdfd;
+  color: #100b0b;
   text-align: left;
 `
 
