@@ -21,7 +21,7 @@ const largeModalStyle = {
   borderRadius: '12px',
   background: '#FFF',
   boxShadow:
-    '0 3px 6px 0 rgba(255, 161, 161, 0.25), 0 -4px 6px 0 rgba(194, 255, 175, 0.25), 0 0 6px 0 rgba(243, 246, 188, 0.75)',
+    '0 0 10px 0 rgba(0, 0, 0, 0.15)',
 };
 
 export default function CreateLanternModal({

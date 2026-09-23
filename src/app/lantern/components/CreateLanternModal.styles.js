@@ -209,7 +209,7 @@ export const NoticeWrapper = styled.div`
 
 export const InfoIcon = styled.svg`
     flex-shrink: 0;
-    margin-top: 1px;
+    margin-top: 0px;
 `
 
 export const NoticeText = styled.p`
