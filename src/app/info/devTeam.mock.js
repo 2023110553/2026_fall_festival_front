@@ -1,5 +1,3 @@
-import profileImage from '../../assets/info/dev-team-profile.png'
-
 import leaderJinhoImage from '../../assets/info/dev-team/leader-jinho.png'
 
 import pmSeohyeonImage from '../../assets/info/dev-team/pm-seohyeon.png'
@@ -31,7 +29,7 @@ import backSuaImage from '../../assets/info/dev-team/back-sua.png'
 import backEunseoImage from '../../assets/info/dev-team/back-eunseo.png'
 import backJunhoImage from '../../assets/info/dev-team/back-junho.png'
 
-const createMember = (id, track, department, name, imageUrl = profileImage) => ({
+const createMember = (id, track, department, name, imageUrl = null) => ({
   id,
   track,
   department,
