@@ -73,7 +73,7 @@ export const ConfirmBtn = styled.button`
     padding: 10px 0;
     border: none;
     border-radius: 8px;
-    background: #737373;
+    background: #272727;
     font-family: Pretendard;
     font-size: 14px;
     font-weight: 500;
