@@ -1,14 +1,8 @@
 import EmptyState from '../../../components/common/EmptyState'
 import { useTranslation } from '../../../i18n/useTranslation'
 import searchIcon from '../../../assets/map/search.svg'
+import { FESTIVAL_DATE_OPTIONS } from '../../../constants/festivalDates'
 import * as S from './LostFoundList.styles'
-
-// TEMP: 로컬 테스트용 (원래 9/29~10/1)
-const DATES = [
-  { value: '2026-09-29', label: '9/29' },
-  { value: '2026-09-30', label: '9/30' },
-  { value: '2026-10-1', label: '10/1' },
-]
 
 export default function LostFoundList({
   items = [],
@@ -37,7 +31,7 @@ export default function LostFoundList({
 
       <S.FilterRow>
         <S.DateFilters aria-label={t('lostFound.dateLabel')}>
-          {DATES.map((item) => (
+          {FESTIVAL_DATE_OPTIONS.map((item) => (
             <S.DateFilter
               key={item.value}
               type="button"
