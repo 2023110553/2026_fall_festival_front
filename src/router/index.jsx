@@ -47,6 +47,7 @@ const userRoutes = [
       { path: 'performance/:id', element: <PerformanceDetailPage /> },
       { path: 'info', element: <InfoPage /> },
       { path: 'info/collab/:collabSlug', element: <InfoPage /> },
+      { path: 'info/collab-booths/:collabBoothSlug', element: <InfoPage /> },
       { path: 'info/notices/:noticeId', element: <InfoPage /> },
       { path: 'info/lost-items/:lostItemId', element: <InfoPage /> },
     ],

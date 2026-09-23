@@ -6,19 +6,28 @@ export const Stack = styled.div`
   gap: 24px;
 `
 
+export const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`
+
 export const Heading = styled.header`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: #100b0b;
+
   h2 {
     margin: 0;
-    color: #100b0b;
     font-size: 16px;
     font-weight: 500;
     line-height: 1;
   }
 
-  p {
-    margin: 12px 0 0;
-    color: #737373;
-    font-size: 12px;
+  span {
+    font-size: 14px;
+    font-weight: 500;
     line-height: 1;
   }
 `
@@ -106,7 +115,7 @@ export const More = styled.button`
   border: 0;
   background: transparent;
   color: #100b0b;
-  font-size: 14px;
+  font-size: 12px;
 `
 
 export const MoreArrow = styled.span`

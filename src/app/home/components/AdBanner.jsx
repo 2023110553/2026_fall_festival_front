@@ -12,6 +12,8 @@ import scien from '../assets/scien.png'
 import sogaeting from '../assets/sogaeting.svg'
 import ba from '../assets/ba.png'
 import ace from '../assets/ace.png'
+import leaders from '../assets/108.png'
+import stu from '../assets/stuco.png'
 
 // 상단 광고 배너 (기능명세서 바탕으로) 일정 시간(5초)마다 자동 롤링, 클릭 시 안내>협업 페이지로 이동
 
@@ -56,7 +58,7 @@ const BANNERS = [
     image: ba,
     href: null,
     boothId: null,
-    to: null,
+    to: '/info/collab-booths/business-administration',
   },
   {
     id: 6,
@@ -64,7 +66,23 @@ const BANNERS = [
     image: ace,
     href: null,
     boothId: null,
-    to: null,
+    to: '/info/collab-booths/medical-ai',
+  },
+  {
+    id: 7,
+    title: '108 리더스',
+    image: leaders,
+    href: null,
+    boothId: null,
+    to: '/info/collab/108-leaders',
+  },
+  {
+    id: 8,
+    title: '축제기획단',
+    image: stu,
+    href: null,
+    boothId: null,
+    to: '/info/collab/festival-planning-team',
   },
 ]
 

@@ -15,7 +15,7 @@ import NoticeDetail from './components/NoticeDetail'
 import LostFoundList from './components/LostFoundList'
 import LostFoundDetail from './components/LostFoundDetail'
 import DevTeamList from './components/DevTeamList'
-import { COLLAB_MOCKS } from './info.mock'
+import { COLLAB_BOOTH_MOCKS, COLLAB_MOCKS } from './info.mock'
 import { DEV_TEAM_MOCKS } from './devTeam.mock'
 import {
   getLostItemDetail,
@@ -78,7 +78,7 @@ export default function InfoPage() {
   const [noticeDetail, setNoticeDetail] = useState(INITIAL_DETAIL_STATE)
   const [lostItemDetail, setLostItemDetail] = useState(INITIAL_DETAIL_STATE)
   const navigate = useNavigate()
-  const { collabSlug, noticeId, lostItemId } = useParams()
+  const { collabSlug, collabBoothSlug, noticeId, lostItemId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedTab = searchParams.get('tab')
   const tab = INFO_TABS.some((item) => item.value === requestedTab)
@@ -86,6 +86,9 @@ export default function InfoPage() {
     : 'collab'
 
   const selectedCollab = COLLAB_MOCKS.find((item) => item.id === collabSlug)
+  const selectedCollabBooth = COLLAB_BOOTH_MOCKS.find(
+    (item) => item.id === collabBoothSlug,
+  )
 
   useEffect(() => {
     if (tab !== 'notice' || noticeId) return undefined
@@ -260,6 +263,10 @@ export default function InfoPage() {
     return <Navigate to="/info" replace />
   }
 
+  if (collabBoothSlug && !selectedCollabBooth) {
+    return <Navigate to="/info" replace />
+  }
+
   if (noticeId && noticeDetail.notFound) {
     return <Navigate to="/info?tab=notice" replace />
   }
@@ -273,6 +280,16 @@ export default function InfoPage() {
       return (
         <CollabDetail
           collab={selectedCollab}
+          onBack={() => navigate('/info')}
+        />
+      )
+    }
+
+    if (collabBoothSlug && selectedCollabBooth) {
+      return (
+        <CollabDetail
+          collab={selectedCollabBooth}
+          headerTitle={t('collab.booths')}
           onBack={() => navigate('/info')}
         />
       )
@@ -330,7 +347,9 @@ export default function InfoPage() {
               {tab === 'collab' && (
                 <CollabList
                   collabs={COLLAB_MOCKS}
+                  booths={COLLAB_BOOTH_MOCKS}
                   onSelect={(id) => navigate(`/info/collab/${id}`)}
+                  onSelectBooth={(id) => navigate(`/info/collab-booths/${id}`)}
                 />
               )}
               {tab === 'notice' && (
