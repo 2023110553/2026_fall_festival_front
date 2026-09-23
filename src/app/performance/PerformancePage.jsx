@@ -10,7 +10,7 @@ import { getPerformances } from '../../api/performance'
 import useServerTime from '../../hooks/useServerTime'
 import { useTranslation } from '../../i18n/useTranslation'
 
-const FESTIVAL_DATES = ['2026-09-23', '2026-09-24', '2026-09-25'] // TEMP: 로컬 테스트용 (원래 9/29~10/1)
+const FESTIVAL_DATES = ['2026-09-29', '2026-09-30', '2026-10-01'] // TEMP: 로컬 테스트용 (원래 9/29~10/1)
 
 const INITIAL_STATE = {
   performances: [],
@@ -66,7 +66,7 @@ export default function PerformancePage() {
 
   // server_time 기준으로 로컬에서 1분마다 갱신 — is_live 자체는 서버가 계산해서 내려주므로
   // now는 상단 "지금 공연중" 카드의 진행률(progress bar) 표시에만 쓰인다.
-  const now = useServerTime(state.serverTime)
+  const now = useServerTime('2026-10-01T16:10:00')
   const nowPlaying = state.performances.find((p) => p.is_live) ?? null
 
   return (
