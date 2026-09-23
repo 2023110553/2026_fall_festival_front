@@ -3,7 +3,7 @@ import { BOOTH_FILTER_CHIPS } from '../../../../constants/categories'
 import BoothCardList from '../BoothCardList/BoothCardList'
 import BoothSearchPanel from './BoothSearchPanel'
 import * as S from './BoothListPanel.styles'
-import search from '../../../../assets/map/search.svg'
+import SearchIcon from '../Search/SearchIcon'
 import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearch, onCancelSearch }) {
@@ -12,7 +12,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
     selectedCategory, setSelectedCategory } = useMapContext()
 
   if (isSearching) {
-    return <BoothSearchPanel timeSlot={listTimeOfDay} onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
+    return <BoothSearchPanel onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
   }
   return (
     <>
@@ -23,7 +23,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
           <S.Button type="button" $active={listTimeOfDay === 'night'} aria-pressed={listTimeOfDay === 'night'} onClick={() => setListTimeOfDay('night')}>{t('map.night')}</S.Button>
         </S.ButtonWrapper>
         <S.SearchButton type="button" onClick={onOpenSearch} aria-label={t('map.openSearch')} title={t('map.openSearch')}>
-          <S.Search src={search} alt="" />
+          <SearchIcon />
         </S.SearchButton>
       </S.Top>
       <S.Time>

@@ -21,7 +21,7 @@ export const InputWrapper = styled.div`
   flex: 1;
   min-width: 0;
   height: 40px;
-  border: 1px solid #D8D8D8;
+  border: 1px solid #272727;
   border-radius: 8px;
 `
 export const Input = styled.input`
@@ -33,7 +33,7 @@ export const Input = styled.input`
   font: inherit;
   font-size: 16px;
   color: #272727;
-  &::placeholder { color: #9F9C99; }
+  &::placeholder { color: #272727; opacity: 1; }
 `
 export const TextButton = styled.button`
   padding: 4px 0;
