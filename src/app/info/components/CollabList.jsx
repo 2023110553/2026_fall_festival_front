@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from '../../../i18n/useTranslation'
+import toggleArrowIcon from '../../../assets/info/collab-toggle-arrow.svg'
 import * as S from './CollabList.styles'
 
 function CollabSection({ title, items, initialVisibleCount, onSelect }) {
@@ -35,7 +36,12 @@ function CollabSection({ title, items, initialVisibleCount, onSelect }) {
           aria-expanded={expanded}
         >
           <span>{t(expanded ? 'collab.collapse' : 'collab.expand')}</span>
-          <S.MoreArrow $expanded={expanded} aria-hidden="true" />
+          <S.MoreArrow
+            src={toggleArrowIcon}
+            $expanded={expanded}
+            alt=""
+            aria-hidden="true"
+          />
         </S.More>
       )}
     </S.Section>

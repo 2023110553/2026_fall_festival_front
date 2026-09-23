@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Modal from '../../../components/common/Modal'
@@ -125,6 +125,7 @@ const Indicator = styled.span`
 
 export default function AdBanner() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [index, setIndex] = useState(0)
   const [openBoothId, setOpenBoothId] = useState(null)
   const [sheetTab, setSheetTab] = useState('info')
@@ -161,7 +162,9 @@ export default function AdBanner() {
       return
     }
     if (banner.to) {
-      navigate(banner.to)
+      navigate(banner.to, {
+        state: { from: `${location.pathname}${location.search}` },
+      })
     }
   }
 
