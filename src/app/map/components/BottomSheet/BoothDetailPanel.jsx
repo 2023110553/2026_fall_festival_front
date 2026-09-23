@@ -63,7 +63,7 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
     : t('map.free')
 
   const activeBoothId = booth && !simple ? booth.booth_id : null
-  const festivalDate = selectedDate ?? '2026-09-29'
+  const festivalDate = selectedDate ?? '2026-09-23' // TEMP: 로컬 테스트용 (원래 9/29)
 
   useEffect(() => {
     setActiveBooth(activeBoothId == null ? null : {
