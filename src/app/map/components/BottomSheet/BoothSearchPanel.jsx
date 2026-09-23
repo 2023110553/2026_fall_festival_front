@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { searchBooths } from '../../../../api/map'
+import { useMapContext } from '../../context/MapProvider'
 import BoothCardList from '../BoothCardList/BoothCardList'
-import SearchIcon from '../Search/SearchIcon'
+import searchIcon from '../../../../assets/map/search.svg'
 import * as S from './BoothSearchPanel.styles'
 import { useTranslation } from '../../../../i18n/useTranslation'
+import { DEFAULT_FESTIVAL_DATE } from '../../../../constants/festivalDates'
 
 const STORAGE_KEY = 'map-booth-recent-searches'
 
@@ -16,18 +18,16 @@ function readHistory() {
   }
 }
 
-export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
+export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) {
   const { t } = useTranslation()
+  const { selectedDate } = useMapContext()
   const [keyword, setKeyword] = useState('')
   const [history, setHistory] = useState(readHistory)
   const [results, setResults] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const requestRef = useRef(null)
-  const composingRef = useRef(false)
-  useEffect(() => () => {
-    requestRef.current?.abort()
-  }, [])
+  useEffect(() => () => requestRef.current?.abort(), [])
 
   const updateHistory = (next) => {
     setHistory(next)
@@ -38,34 +38,26 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
     }
   }
 
-  const rememberSearch = (value) => {
-    const term = value.trim()
-    if (term) updateHistory([term, ...history.filter((item) => item !== term)].slice(0, 10))
-  }
-
-  const search = async (value, saveHistory = false) => {
+  const search = async (value) => {
     const term = value.trim()
     requestRef.current?.abort()
-    if (!term) {
-      setResults([])
-      setError('')
-      setStatus('idle')
-      return
-    }
-    if (term.length > 50) {
-      setError(t('map.keywordTooLong'))
+    if (!term || term.length > 50) {
+      setError(!term ? t('map.enterKeyword') : t('map.keywordTooLong'))
       setStatus('error')
       return
     }
     const controller = new AbortController()
     requestRef.current = controller
+    setKeyword(term)
     setResults([])
     setError('')
     setStatus('loading')
-    if (saveHistory) rememberSearch(term)
+    updateHistory([term, ...history.filter((item) => item !== term)].slice(0, 10))
     try {
       const { data } = await searchBooths({
         keyword: term,
+        date: selectedDate ?? DEFAULT_FESTIVAL_DATE,
+        timeSlot: timeSlot?.toUpperCase(),
       }, { signal: controller.signal })
       if (controller.signal.aborted) return
       if (!data?.success || !Array.isArray(data.data?.booths)) throw new Error('Invalid search response')
@@ -80,20 +72,12 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
     }
   }
 
-  const handleKeywordChange = (value) => {
-    setKeyword(value)
-    search(value)
-  }
-
   return (
     <S.Panel onKeyDown={(event) => { if (event.key === 'Escape') onCancel() }}>
-      <S.SearchRow onSubmit={(event) => {
-        event.preventDefault()
-        if (!composingRef.current) search(keyword, true)
-      }} role="search">
+      <S.SearchRow onSubmit={(event) => { event.preventDefault(); search(keyword) }} role="search">
         <S.InputWrapper>
           <S.IconButton type="submit" aria-label={t('map.search')} title={t('map.search')}>
-            <SearchIcon />
+            <img src={searchIcon} alt="" width="24" height="24" />
           </S.IconButton>
           <S.Input
             type="search"
@@ -102,13 +86,12 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
             aria-label={t('map.searchAll')}
             placeholder={t('map.searchAll')}
             value={keyword}
-            onCompositionStart={() => {
-              composingRef.current = true
+            onChange={(event) => {
+              setKeyword(event.target.value)
+              requestRef.current?.abort()
+              setStatus('idle')
+              setError('')
             }}
-            onCompositionEnd={() => {
-              composingRef.current = false
-            }}
-            onChange={(event) => handleKeywordChange(event.target.value)}
             autoFocus
           />
         </S.InputWrapper>
@@ -120,10 +103,7 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
           {status === 'loading' ? <S.Empty role="status">{t('map.searching')}</S.Empty>
             : status === 'error' ? <S.Empty role="alert">{error}</S.Empty>
             : results.length === 0 ? <S.Empty>{t('map.noSearchResults')}</S.Empty>
-            : <BoothCardList booths={results} filterBySearchTerm={false} onSelectBooth={(boothId) => {
-              rememberSearch(keyword)
-              onSelectBooth(boothId)
-            }} />}
+            : <BoothCardList booths={results} filterBySearchTerm={false} onSelectBooth={onSelectBooth} />}
 
         </section>
       ) : (
@@ -136,10 +116,7 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
           <S.HistoryList>
             {history.map((term) => (
               <S.HistoryItem key={term}>
-                <S.TermButton type="button" onClick={() => {
-                  setKeyword(term)
-                  search(term, true)
-                }}>{term}</S.TermButton>
+                <S.TermButton type="button" onClick={() => search(term)}>{term}</S.TermButton>
                 <S.IconButton type="button" aria-label={t('map.deleteSearch', { term })} title={t('map.deleteSearchTitle')} onClick={() => updateHistory(history.filter((item) => item !== term))}>
                   <S.CloseMark aria-hidden="true">×</S.CloseMark>
                 </S.IconButton>
