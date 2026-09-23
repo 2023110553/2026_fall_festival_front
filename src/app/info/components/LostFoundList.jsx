@@ -2,10 +2,11 @@ import EmptyState from '../../../components/common/EmptyState'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './LostFoundList.styles'
 
+// TEMP: 로컬 테스트용 (원래 9/29~10/1)
 const DATES = [
-  { value: '2026-09-29', label: '9/29' },
-  { value: '2026-09-30', label: '9/30' },
-  { value: '2026-10-01', label: '10/1' },
+  { value: '2026-09-23', label: '9/23' },
+  { value: '2026-09-24', label: '9/24' },
+  { value: '2026-09-25', label: '9/25' },
 ]
 
 export default function LostFoundList({
