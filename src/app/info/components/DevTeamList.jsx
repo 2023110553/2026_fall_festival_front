@@ -1,10 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
+import { useTranslation } from '../../../i18n/useTranslation'
 import DevTeamCard from './DevTeamCard'
 import * as S from './DevTeamList.styles'
 
 const getCardPosition = (index, activeIndex) => index - activeIndex
 
 export default function DevTeamList({ teams }) {
+  const { t } = useTranslation()
   const [activeRole, setActiveRole] = useState(teams[0]?.id ?? '')
   const [activeIndex, setActiveIndex] = useState(0)
   const pointerRef = useRef(null)
@@ -95,7 +97,7 @@ export default function DevTeamList({ teams }) {
         ))}
       </S.RoleTabs>
 
-      <S.Hint>카드를 양 옆으로 스와이프해보세요!</S.Hint>
+      <S.Hint>{t('devTeam.swipeHint')}</S.Hint>
 
       <S.CardStage
         role="region"

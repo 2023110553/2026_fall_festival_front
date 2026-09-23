@@ -33,16 +33,21 @@ export const RoleTabs = styled.div`
 
 export const RoleTab = styled.button`
   flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
   padding: 4px 12px;
   border: 0;
   border-radius: 8px;
-  background: ${({ $active }) => ($active ? '#737373' : '#d8d8d8')};
-  color: ${({ $active }) => ($active ? '#fdfdfd' : '#9f9c99')};
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font: inherit;
+  opacity: 0.9;
+  background: ${({ $active }) => ($active ? '#272727' : '#fdfdfd')};
+  color: ${({ $active }) => ($active ? '#fdfdfd' : '#272727')};
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: normal;
   white-space: nowrap;
   cursor: pointer;
   transition: color 0.2s ease, background 0.2s ease;
