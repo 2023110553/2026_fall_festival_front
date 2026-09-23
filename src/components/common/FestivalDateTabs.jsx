@@ -1,15 +1,25 @@
 import SegmentedTabs from './SegmentedTabs'
 import { useTranslation } from '../../i18n/useTranslation'
+import { FESTIVAL_DATES } from '../../constants/festivalDates'
 
-// TEMP: 로컬 테스트용으로 value만 오늘 기준 3일로 변경 (원래 9/29~10/1) — labelKey 텍스트는 그대로라 탭 표기(9/29 등)와 실제 값(9/23 등)이 다르게 보임
-const FESTIVAL_DATES=[
-  {value:'2026-09-23',labelKey:'festival.day29'},
-  {value:'2026-09-24',labelKey:'festival.day30'},
-  {value:'2026-09-25',labelKey:'festival.day1'},
-]
+// 탭 라벨(29일/30일/1일)은 i18n 키로, 실제 값(ISO 날짜)은 constants/festivalDates.js에서 가져온다.
+// 날짜 값을 여기에 직접 쓰면 페이지 쪽 날짜 목록과 어긋나서 탭을 눌러도 다른 날짜가 요청된다(2026-09-24 버그).
+const LABEL_KEYS = ['festival.day29', 'festival.day30', 'festival.day1']
 
-export default function FestivalDateTabs({value,onChange}){
+export default function FestivalDateTabs({ value, onChange }) {
   const { t } = useTranslation()
-  const items = FESTIVAL_DATES.map((item) => ({ ...item, label: t(item.labelKey) }))
-  return <SegmentedTabs items={items} value={value} onChange={onChange} ariaLabel={t('festival.selectDate')} selectedWidth="120px" />
+  const items = FESTIVAL_DATES.map((date, index) => ({
+    value: date,
+    label: t(LABEL_KEYS[index]),
+  }))
+
+  return (
+    <SegmentedTabs
+      items={items}
+      value={value}
+      onChange={onChange}
+      ariaLabel={t('festival.selectDate')}
+      selectedWidth="120px"
+    />
+  )
 }
