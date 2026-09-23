@@ -244,7 +244,7 @@ export const SubmitButton = styled.button`
     flex: 1;
     height: 44px;
     padding: 10px;
-    background-color: #737373;
+    background-color: #272727;
     border: none;
     border-radius: 8px;
     font-family: Pretendard;
