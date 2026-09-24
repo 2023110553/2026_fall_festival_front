@@ -1,7 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import Modal from '../../../components/common/Modal'
-import BoothDetailPanel from '../../map/components/BottomSheet/BoothDetailPanel'
-import { getCurrentFestivalDate } from '../../lantern/utils/getCurrentFestivalDate'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { useTranslation } from '../../../i18n/useTranslation'
 
@@ -27,7 +24,10 @@ const Row = styled.div`
   text-align: left;
   font: inherit;
 
-  &[type='button'] {
+  /* 링크로 렌더되는 줄(순위가 있는 줄)만 누를 수 있는 모양 — 자리 표시용 빈 줄은 그냥 div다 */
+  &:any-link {
+    color: inherit;
+    text-decoration: none;
     cursor: pointer;
   }
 
@@ -114,37 +114,32 @@ function ArrowRightIcon() {
   )
 }
 
-export default function BoothRanking({ ranking = [], isLoading = false, isError = false }) {
-  const { language, t } = useTranslation()
-  const [selectedBoothId, setSelectedBoothId] = useState(null)
-  const [sheetTab, setSheetTab] = useState('info')
-  const triggerRef = useRef(null)
-  const sheetRef = useRef(null)
-  const closeSheet = useCallback(() => {
-    setSelectedBoothId(null)
-    triggerRef.current?.focus()
-  }, [])
+// 랭킹 한 줄이 가리키는 지도 주소. 구역(zoneId)을 알면 같이 실어 보낸다 —
+// 구역 없이 보내도 MapProvider가 부스 목록을 받은 뒤 알아서 맞추지만, 그동안 기본 구역이 한 번
+// 그려졌다가 바뀌는 깜빡임이 생긴다. 구역을 모르는 부스만 booth 하나로 보낸다.
+function buildBoothMapPath(boothId, zoneId) {
+  const params = new URLSearchParams()
+  if (zoneId) params.set('zone', zoneId)
+  params.set('booth', String(boothId))
+  return `/map?${params}`
+}
 
-  useEffect(() => {
-    if (selectedBoothId == null) return
-    const panel = sheetRef.current
-    panel?.querySelector('button')?.focus()
-    const trapFocus = (event) => {
-      if (event.key !== 'Tab') return
-      const controls = [...panel.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), [tabindex="0"]')]
-      const first = controls[0]
-      const last = controls.at(-1)
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault()
-        last?.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault()
-        first?.focus()
-      }
-    }
-    panel?.addEventListener('keydown', trapFocus)
-    return () => panel?.removeEventListener('keydown', trapFocus)
-  }, [selectedBoothId])
+// 홈 "현재 인기" 카드 아래 부스 등불 랭킹(GET /api/booths/ranking/ 상위 3개).
+//
+// 2026-09-23: 부스를 누르면 홈에서 모달로 상세를 띄우던 것을 지도 이동으로 바꿨다(재원 결정).
+// 부스는 지도 위의 장소라서, 상세만 보여주는 것보다 지도에서 그 부스로 데려다주는 편이 자연스럽다.
+// 넘어간 지도에서는 MapProvider가 ?booth=를 읽어 상세 바텀시트를 바로 연다.
+// (같은 홈의 AdBanner는 계속 모달로 상세를 띄운다 — 배너는 지도 위 위치보다 내용이 중요해서 그대로 뒀다.)
+//
+// <button> 대신 react-router <Link>(=<a href>)를 쓴 이유: 실제로 다른 페이지로 가는 동작이라
+// 새 탭으로 열기·링크 주소 복사 같은 브라우저 기본 동작이 그대로 동작하는 게 맞다.
+//
+// props:
+//   - ranking: 랭킹 배열(rank / booth_id / name / lantern_count)
+//   - zoneIdByBoothId: 부스 id → 구역 id. HomePage가 부스 목록에서 만들어 내려준다(없으면 구역 없이 이동)
+//   - isLoading / isError: 자리 표시용 빈 줄 3개를 보여줄지 결정
+export default function BoothRanking({ ranking = [], zoneIdByBoothId, isLoading = false, isError = false }) {
+  const { language, t } = useTranslation()
 
   const hasRanking = !isLoading && !isError && Array.isArray(ranking) && ranking.length > 0
   const emptyLabel = isLoading
@@ -171,16 +166,10 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
         </Row>
       )) : ranking.map((booth) => (
         <Row
-          as="button"
-          type="button"
+          as={Link}
           key={booth.booth_id}
+          to={buildBoothMapPath(booth.booth_id, zoneIdByBoothId?.[booth.booth_id])}
           aria-label={t('home.rankingDetail', { rank: booth.rank, name: booth.name, count: booth.lantern_count })}
-          aria-haspopup="dialog"
-          onClick={(event) => {
-            triggerRef.current = event.currentTarget
-            setSheetTab('info')
-            setSelectedBoothId(booth.booth_id)
-          }}
         >
           <NameGroup>
             <Rank aria-hidden="true">{String(booth.rank).padStart(2, '0')}</Rank>
@@ -195,29 +184,6 @@ export default function BoothRanking({ ranking = [], isLoading = false, isError 
           </CountGroup>
         </Row>
       ))}
-      {selectedBoothId != null && (
-        <Modal
-          open
-          onClose={closeSheet}
-          style={{
-            position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-            width: '100%', maxWidth: 375, maxHeight: 'calc(100dvh - 40px)',
-            overflowY: 'auto', overscrollBehavior: 'contain', boxSizing: 'border-box',
-            borderRadius: '28px 28px 0 0', textAlign: 'left',
-            padding: '20px 20px calc(20px + env(safe-area-inset-bottom))',
-          }}
-        >
-          <div ref={sheetRef}>
-            <BoothDetailPanel
-              boothId={selectedBoothId}
-              onBack={closeSheet}
-              sheetTab={sheetTab}
-              setSheetTab={setSheetTab}
-              selectedDate={getCurrentFestivalDate()}
-            />
-          </div>
-        </Modal>
-      )}
     </Wrapper>
   )
 }
