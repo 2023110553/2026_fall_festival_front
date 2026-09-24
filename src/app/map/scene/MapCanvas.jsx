@@ -164,11 +164,17 @@ const ZONE_CAMERAS = {
 const DEFAULT_CAMERA = ZONE_CAMERAS.zone1
 
 // 2026-09-20(3차): 카메라 시점 고정 — 재원 결정 "확대는 되고, 회전은 잠그고, 좌우 이동은 어느 정도까지만".
+// 2026-09-23: 회전만 다시 열었다 — 기획·디자인 쪽에서 "지도 뷰어(festival-map-viewer)의 자유 회전처럼
+//             돌려 보고 싶다"고 요청. 줌(MIN/MAX_DISTANCE)·좌우 이동(PAN_LIMIT) 한계값은 그대로 두고,
+//             대신 땅 밑으로 내려가지 못하게, 또 핀이 안 보일 만큼 위로 올라가지 못하게
+//             MIN/MAX_POLAR_ANGLE을 추가했다. 자세한 건 아래 <OrbitControls> 주석.
 //
-// 그동안은 OrbitControls를 옵션 없이 써서 사용자가 건물 밑이나 뒤까지 마음대로 돌릴 수 있었다.
-// 구역마다 각도를 맞춰놨는데(ZONE_CAMERAS) 한 번 돌리면 그 구도가 의미가 없어져서 제한을 건다.
+// 09-20에 잠근 이유: OrbitControls를 옵션 없이 쓰면 사용자가 건물 밑이나 뒤까지 마음대로 돌릴 수 있는데,
+// 구역마다 각도를 맞춰놓은 구도(ZONE_CAMERAS)가 한 번 돌리면 의미가 없어져서였다. 09-23에 회전은 다시
+// 열었지만 '기본 시점은 구역마다 맞춰둔 구도로 시작하고, 사용자가 돌려도 구역 밖으로는 못 나간다'는
+// 원칙은 그대로다.
 //
-// 세 가지 한계값은 다섯 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
+// 아래 한계값들은 다섯 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
 // 공통 값이 그대로 들어맞는다. (처음 zone5는 옛 zone1 방향 벡터에서 거리만 줄였고, 이후 다섯 구역
 // 모두 내려보는 각은 두고 방위각만 돌렸다. 새 구역을 맞출 때도 이 48.8°를 지키면 된다.)
 // 구역 크기 차이 때문에 따로 주고 싶어지면 ZONE_CAMERAS 각 항목에 넣고 preset에서 꺼내 쓰면 된다.
@@ -181,6 +187,17 @@ const MIN_DISTANCE = 70      // 가장 가까이 당겼을 때 (부스 지붕이
 // 지금 가장 먼 기본 시점은 원흥관(316)이다. 새 구역 기본 거리가 이보다 커지면 이 값도 같이 올릴 것.
 const MAX_DISTANCE = 360     // 가장 멀리 뺐을 때 (구역 전체 + 여백)
 const PAN_LIMIT = 30         // 구역 중심에서 좌우/앞뒤로 이만큼까지만 끌 수 있다
+// 위아래 회전 한계(2026-09-23). polar 0 = 바로 위에서 내려다보기, π/2 = 지평선 높이.
+// 아래쪽: 지평선 바로 앞(0.03rad ≈ 1.7°)에서 멈춘다 — 그 아래로 내려가면 카메라가 지면을 뚫고 들어가
+//   지도가 뒤집혀 보이고, 배경색만 가득 차서 돌아오기 어려워진다. (지도 뷰어의 자유 회전과 같은 값)
+// 위쪽: 3D 핀은 세로로 선 물방울이라 위에서 볼수록 납작해진다. 혜화관에서 거리 110으로 각도를 바꿔 가며
+//   렌더해 보면 올려본 각 60°까지는 개수 숫자가 읽히고, 65°에서 타원, 70°부터 뭉개지고, 90°(바로 위)에선
+//   색 띠만 남는다. 그래서 올려본 각 65°(= polar 25°)에서 멈춘다 — 지도에서 핀이 가장 중요한 정보라
+//   '바로 위에서 내려다보기'보다 핀 가독성을 택했다.
+//   탑뷰까지 열어야 한다면 이 값을 0으로 두면 되는데, 그땐 BoothPin의 tiltRatio를 살려서 가파른 각도에서만
+//   핀이 카메라 쪽으로 눕도록 해야 읽을 수 있다.
+const MAX_POLAR_ANGLE = Math.PI / 2 - 0.03                   // 아래 한계 — 지평선 직전
+const MIN_POLAR_ANGLE = Math.PI / 2 - (65 * Math.PI) / 180   // 위 한계 — 올려본 각 65°
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
@@ -261,23 +278,31 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
           </Suspense>
           {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
           {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
-          {/* 2026-09-20: 시점 고정 — 회전은 잠그고 확대/좌우 이동만 허용.
-              위치·타깃과 패닝 범위 제한은 ZoneCamera가 담당한다.
-              touches/mouseButtons를 바꾼 이유 — OrbitControls 기본값은 '한 손가락=회전'이라
-              회전을 끄면 한 손가락 조작이 아무것도 안 하게 된다. 지도처럼 한 손가락으로
-              끌 수 있어야 해서 PAN으로 바꿨다(데스크톱 좌클릭 드래그도 마찬가지). */}
+          {/* 2026-09-20: 시점 고정 — 회전은 잠그고 확대/좌우 이동만 허용(2026-09-23에 회전은 다시 열림).
+              위치·타깃과 패닝 범위 제한은 ZoneCamera가 담당한다. */}
+          {/* 2026-09-23: 지도 뷰어의 "자유 회전"과 같은 조작으로 바꿨다(기획·디자인 요청).
+              - 한 손가락 드래그 / 좌클릭 드래그 = 회전 (OrbitControls 기본 조작)
+              - 두 손가락 드래그 / 우클릭 드래그 = 좌우 이동, 핀치 / 휠 = 확대·축소
+              - 위아래 회전은 MIN/MAX_POLAR_ANGLE 사이 — 아래는 지평선 직전, 위는 올려본 각 65°까지
+              줌 범위와 좌우 이동 범위는 그대로 둔다 — 회전까지 열린 상태에서 그 둘까지 풀면 구역을 잃어버리고
+              돌아올 방법이 없다(앱엔 '시점 초기화' 버튼이 없고, 구역을 바꿨다 돌아와야 기본 시점으로 리셋된다).
+              뷰어의 자유 회전은 거리 5~1500에 이동 제한도 없는데, 그건 캡처용 내부 도구라 그렇게 둔 것이다.
+              ※ 회전을 열면 3D 핀이 어느 방향에서도 카메라를 보게 하는 수정(BoothPin.jsx, atan2)이 반드시
+                 함께 있어야 한다 — 없으면 돌릴 때마다 핀이 옆으로 눕거나 뒤돌아 보인다. */}
           <OrbitControls
             ref={controlsRef}
             makeDefault
-            enableRotate={false}
+            enableRotate
             enableZoom
             enablePan
             screenSpacePanning={false}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN }}
+            minPolarAngle={MIN_POLAR_ANGLE}
+            maxPolarAngle={MAX_POLAR_ANGLE}
+            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
             mouseButtons={{
-              LEFT: THREE.MOUSE.PAN,
+              LEFT: THREE.MOUSE.ROTATE,
               MIDDLE: THREE.MOUSE.DOLLY,
               RIGHT: THREE.MOUSE.PAN,
             }}
