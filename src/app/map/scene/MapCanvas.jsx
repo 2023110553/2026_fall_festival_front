@@ -10,6 +10,7 @@ import Zone3Scene from './zones/Zone3Scene'
 import Zone5Scene from './zones/Zone5Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 import { TimeOfDayContext } from './environment/TimeOfDayContext'
+import { getBoothFocus } from './camera/getBoothFocus'
 
 // 재원 담당 — 구역별 3D 씬(터레인+건물+부스 앵커)을 감싸는 진입 컴포넌트.
 // 프론트1은 이 컴포넌트를 지도 메인 레이아웃 안에 그대로 끼워 넣기만 하면 된다.
@@ -22,6 +23,9 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 //     → 6단계 확장), 2026-09-19부터는 부스별 lantern_count로 BoothMarker가 단계를 스스로 계산하므로
 //     기본값이 0 → null(자동)로 바뀌었다. 숫자를 넣으면 네 구역 모든 부스가 그 단계로 강제되는 개발용
 //     스위치로만 남아 있다(BoothMarker.jsx 19번 항목).
+//   - focusBooth: (선택) 카메라를 정면으로 옮길 부스 한 개(GET /api/booths/ 항목) 또는 null.
+//     2026-09-24 추가 — 값이 들어오면 그 부스 앞으로 날아간다. 어디서 골랐는지는 알 필요가 없다.
+//     null로 돌아가도 카메라를 되돌리지는 않는다(ZoneCamera 주석 참고).
 //   - onBoothClick(boothId): 3D 씬에서 부스 앵커를 레이캐스팅으로 클릭했을 때 호출
 //
 // 핀 라벨(등불아이콘+개수+부스명)은 여기서 그리지 않는다 — B안 합의대로
@@ -208,9 +212,24 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
-function ZoneCamera({ zoneId, controlsRef }) {
+// 부스를 고르면 그 부스 정면으로 날아가는 시간(ms)과 가속 곡선(2026-09-24).
+// 순간이동시키면 사용자가 "어디로 간 거지?"가 된다 — 지도에서 위치 감각을 잃으면 돌아올 방법이 없다.
+// 0.7초는 이동한 게 보이면서도 답답하지 않은 정도다. easeInOutCubic으로 시작과 끝을 부드럽게 한다.
+const FOCUS_FLIGHT_MS = 700
+const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2)
+const lerp = (from, to, t) => from + (to - from) * t
+
+function ZoneCamera({ zoneId, focusBooth, controlsRef }) {
   const camera = useThree((state) => state.camera)
   const preset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
+
+  // 좌우 이동을 가두는 기준점(2026-09-24). 기본은 구역 중심이고, 부스를 고르면 그 부스로 옮긴다.
+  // 그러지 않으면 구역 중심에서 PAN_LIMIT(30m)보다 멀리 있는 부스는 카메라를 옮겨놔도
+  // 바로 다음 프레임에 아래 useFrame이 도로 끌어온다(혜화관은 bbox가 x -43~54라 실제로 그런 부스가 있다).
+  const panCenterRef = useRef(preset.target)
+
+  // 진행 중인 카메라 이동. null이면 이동 중이 아니다.
+  const flightRef = useRef(null)
 
   // 구역이 바뀌면 그 구역 기본 시점으로 되돌린다.
   // (zone1에서 확대해둔 채 zone5로 넘어가도 zone5 기본 화면에서 시작한다)
@@ -220,6 +239,8 @@ function ZoneCamera({ zoneId, controlsRef }) {
   // 바텀시트를 열고 닫을 때도 리렌더된다) 타깃이 구역 중심으로 되돌아가 사용자가 끌어둔
   // 좌우 이동이 툭툭 튕겨 돌아온다.
   useEffect(() => {
+    flightRef.current = null
+    panCenterRef.current = preset.target
     camera.position.set(...preset.position)
     const controls = controlsRef.current
     if (controls) {
@@ -230,7 +251,46 @@ function ZoneCamera({ zoneId, controlsRef }) {
     }
   }, [camera, controlsRef, preset])
 
-  // 좌우 이동이 구역 밖으로 나가지 않게 매 프레임 가둔다.
+  // 2026-09-24: 부스를 고르면 그 부스 정면으로 카메라를 옮긴다.
+  // 어디서 골랐는지는 상관없다 — 3D 핀 클릭, 바텀시트 목록·검색 선택, 홈 부스 랭킹(/map?booth=)이
+  // 전부 selectedBoothId를 바꾸고, MapShell이 그 부스를 찾아 focusBooth로 내려준다.
+  //
+  // 목표 위치 계산은 camera/getBoothFocus.js(순수 함수)가 하고, 여기서는 "그 자리까지 어떻게 갈지"만 맡는다.
+  //
+  // 상세 시트를 닫으면 focusBooth가 null이 되는데, 그때 카메라를 되돌리지는 않는다 —
+  // 부스를 보다가 시트만 닫는 건 "그 자리에서 계속 보겠다"는 뜻이라 원래 자리로 튕겨 가면 당황스럽다.
+  // (구역을 바꾸면 위 useEffect가 그 구역 기본 시점으로 되돌린다.)
+  useEffect(() => {
+    if (!focusBooth) return
+    const controls = controlsRef.current
+    if (!controls) return
+
+    const focus = getBoothFocus(focusBooth, camera.position.toArray())
+    if (!focus) return
+
+    // 팬 제한 기준을 먼저 옮겨야 한다 — 이동 중에 아래 useFrame이 옛 기준으로 되돌리지 않도록.
+    panCenterRef.current = focus.target
+    flightRef.current = {
+      startedAt: performance.now(),
+      fromPosition: camera.position.toArray(),
+      fromTarget: controls.target.toArray(),
+      toPosition: focus.position,
+      toTarget: focus.target,
+    }
+  }, [camera, controlsRef, focusBooth])
+
+  // 이동 중에 사용자가 화면을 건드리면 그 자리에서 멈춘다.
+  // 날아가는 도중 손으로 돌리려는데 카메라가 계속 제 갈 길을 가면 조작을 뺏긴 느낌이 든다.
+  useEffect(() => {
+    const controls = controlsRef.current
+    if (!controls) return undefined
+
+    const cancelFlight = () => { flightRef.current = null }
+    controls.addEventListener('start', cancelFlight)
+    return () => controls.removeEventListener('start', cancelFlight)
+  }, [controlsRef])
+
+  // 좌우 이동이 기준점(구역 중심, 부스를 골랐으면 그 부스)에서 너무 멀어지지 않게 매 프레임 가둔다.
   // OrbitControls는 회전(min/maxPolarAngle)과 줌(min/maxDistance)은 한계를 제공하지만
   // 패닝은 막아주지 않아서, 그냥 두면 지도 밖 허공까지 끌고 갈 수 있다.
   //
@@ -240,8 +300,28 @@ function ZoneCamera({ zoneId, controlsRef }) {
     const controls = controlsRef.current
     if (!controls) return
 
+    // 부스로 날아가는 중이면 이번 프레임의 위치를 먼저 채운다.
+    // OrbitControls는 카메라와 타깃을 직접 바꿔도 update()만 불러주면 내부 상태를 따라온다.
+    const flight = flightRef.current
+    if (flight) {
+      const progress = Math.min(1, (performance.now() - flight.startedAt) / FOCUS_FLIGHT_MS)
+      const eased = easeInOutCubic(progress)
+      camera.position.set(
+        lerp(flight.fromPosition[0], flight.toPosition[0], eased),
+        lerp(flight.fromPosition[1], flight.toPosition[1], eased),
+        lerp(flight.fromPosition[2], flight.toPosition[2], eased),
+      )
+      controls.target.set(
+        lerp(flight.fromTarget[0], flight.toTarget[0], eased),
+        lerp(flight.fromTarget[1], flight.toTarget[1], eased),
+        lerp(flight.fromTarget[2], flight.toTarget[2], eased),
+      )
+      controls.update()
+      if (progress >= 1) flightRef.current = null
+    }
+
     const target = controls.target
-    const [centerX, , centerZ] = preset.target
+    const [centerX, , centerZ] = panCenterRef.current
     const beforeX = target.x
     const beforeZ = target.z
 
@@ -257,7 +337,7 @@ function ZoneCamera({ zoneId, controlsRef }) {
   return null
 }
 
-export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, onBoothClick }) {
+export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, focusBooth = null, onBoothClick }) {
   const controlsRef = useRef(null)
 
   return (
@@ -310,7 +390,7 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
               RIGHT: THREE.MOUSE.PAN,
             }}
           />
-          <ZoneCamera zoneId={zoneId} controlsRef={controlsRef} />
+          <ZoneCamera zoneId={zoneId} focusBooth={focusBooth} controlsRef={controlsRef} />
           <EffectComposer>
             <SelectiveBloom
               mipmapBlur
