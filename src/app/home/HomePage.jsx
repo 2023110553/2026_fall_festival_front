@@ -10,7 +10,7 @@ import { apiClient } from '../../api/client'
 import { getNowPerformances } from '../../api/performance'
 import { useTranslation } from '../../i18n/useTranslation'
 import { getBooths } from '../../api/map'
-import { pickTopLanternZone } from './utils/getTopLanternZone'
+import { mapZoneIdByBoothId, pickTopLanternZone } from './utils/getTopLanternZone'
 import * as S from './HomePage.styles'
 
 
@@ -56,17 +56,27 @@ async function getRollingNotices({ signal } = {}) {
   return response.data
 }
 
-// 홈 지도 미리보기 — 등불이 가장 많은 구역. 구역별 합계 API가 따로 없어서
-// 지도 페이지와 같은 GET /api/booths/(현재 날짜·시간대 운영 부스)를 받아 프론트에서 구역별로 합산한다.
-// 백엔드에 구역별 랭킹 API가 생기면 이 함수 안만 바꾸면 된다(반환 형태 { zoneId, lanternCount } | null 유지).
-async function getTopLanternZone({ signal } = {}) {
+// 홈이 부스 목록(GET /api/booths/, 현재 날짜·시간대 운영 부스)에서 뽑아 쓰는 두 가지.
+//   - topZoneId: 등불이 가장 많은 구역 → 지도 미리보기 카드에 쓸 사진
+//   - zoneIdByBoothId: 부스 id → 구역 id → 부스 랭킹의 "지도에서 보기" 링크(/map?zone=..&booth=..)
+// 구역별 합계 API도, 랭킹 응답의 구역 필드도 아직 없어서 지도 페이지와 같은 목록을 받아 프론트에서 만든다.
+// 백엔드에 둘 중 하나라도 생기면 이 함수 안만 바꾸면 된다.
+//
+// 2026-09-23: 반환 형태를 { zoneId, lanternCount } | null → { topZoneId, zoneIdByBoothId }로 바꿨다.
+// 랭킹 링크도 같은 응답이 필요한데 따로 조회하면 똑같은 요청이 두 번 나가기 때문에 한 번에 둘 다 뽑는다.
+async function getBoothZoneSummary({ signal } = {}) {
   const { data: response } = await getBooths({}, { signal })
 
   if (response?.success !== true || !Array.isArray(response.data?.booths)) {
     throw new Error('부스 목록 응답 형식이 올바르지 않습니다.')
   }
 
-  return pickTopLanternZone(response.data.booths)
+  const { booths } = response.data
+
+  return {
+    topZoneId: pickTopLanternZone(booths)?.zoneId ?? null,
+    zoneIdByBoothId: mapZoneIdByBoothId(booths),
+  }
 }
 
 // 홈 부스별 등불 랭킹
@@ -137,7 +147,7 @@ export default function HomePage() {
   const { t } = useTranslation()
   const [festivalDay, setFestivalDay] = useState(() => getFestivalDay(Date.now(), t('home.ended')))
   const notices = useHomeData(getRollingNotices)
-  const topZone = useHomeData(getTopLanternZone)
+  const boothZones = useHomeData(getBoothZoneSummary)
   const boothRanking = useHomeData(getBoothRanking)
   const nowPlaying = useHomeData(getNowPlaying)
 
@@ -191,14 +201,12 @@ export default function HomePage() {
 
         {/* 공지사항 ~ 현재 인기 */}
         <S.Gap $size={30}>
-          <LanternPreview
-            zoneId={topZone.data?.zoneId}
-            lanternCount={topZone.data?.lanternCount}
-            isLoading={topZone.isLoading}
-            isError={topZone.isError}
-          >
+          {/* 2026-09-23: 사진 위 문구가 고정 문구로 바뀌면서 등불 개수·조회 실패 여부는 더 이상 쓰지 않는다 */}
+          <LanternPreview zoneId={boothZones.data?.topZoneId} isLoading={boothZones.isLoading}>
+            {/* 2026-09-23: 랭킹에서 부스를 누르면 지도로 이동한다 — 어느 구역으로 보낼지는 부스 목록에서 뽑은 매핑이 정한다 */}
             <BoothRanking
               ranking={boothRanking.data?.ranking}
+              zoneIdByBoothId={boothZones.data?.zoneIdByBoothId}
               isLoading={boothRanking.isLoading}
               isError={boothRanking.isError}
             />
