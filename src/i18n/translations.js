@@ -29,7 +29,7 @@ export const translations = {
     'performance.detail': '공연 상세', 'performance.notFound': '공연을 찾을 수 없어요.',
     'performance.setlist': '공연순서', 'performance.emptySetlist': '등록된 공연 순서가 없어요.',
     'performance.loading': '공연 정보를 불러오는 중...', 'performance.error': '공연 정보를 불러오지 못했어요.',
-    'performance.emptySchedule': '등록된 공연이 없어요.',
+    'performance.emptySchedule': '오늘 예정된 공연이 없어요.',
     'info.title': '안내', 'info.menu': '안내 메뉴', 'info.collab': '협업', 'info.notice': '공지',
     'info.lostFound': '분실물', 'info.developer': '개발진', 'devTeam.swipeHint': '카드를 양 옆으로 스와이프해보세요!',
     'collab.organizations': '협업 단체', 'collab.booths': '협업 부스', 'collab.count': '{{count}}개',
