@@ -107,6 +107,7 @@ const Track = styled.div`
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
+  scroll-behavior: auto;
 
   &::-webkit-scrollbar {
     display: none;
@@ -158,11 +159,18 @@ export default function AdBanner() {
   }, [])
 
   // 현재 index로 스크롤 위치를 맞춘다 (자동 롤링 / 첫 진입 복원)
+  const isFirstRender = useRef(true)
+
   useEffect(() => {
     lastIndex = index
     const track = trackRef.current
     if (!track || isUserScrolling.current) return
-    track.scrollTo({ left: track.clientWidth * index, behavior: 'smooth' })
+
+    track.scrollTo({
+      left: track.clientWidth * index,
+      behavior: isFirstRender.current ? 'auto' : 'smooth',
+    })
+    isFirstRender.current = false
   }, [index])
 
   // 사용자가 직접 넘긴 경우 index를 스크롤 위치에 맞춘다
