@@ -36,31 +36,40 @@ export default function PerformancePage() {
 
   useEffect(() => {
     const controller = new AbortController()
+
+    const fetchPerformances = () => {
+      getPerformances(selectedDate, { signal: controller.signal })
+        .then(({ data: response }) => {
+          if (response?.success !== true || !Array.isArray(response.data?.performances)) {
+            throw new Error('Invalid performance list response')
+          }
+          setState({
+            performances: response.data.performances,
+            serverTime: response.data.server_time,
+            isLoading: false,
+            error: '',
+          })
+        })
+        .catch((error) => {
+          if (controller.signal.aborted) return
+          setState({
+            performances: [],
+            serverTime: null,
+            isLoading: false,
+            error: error?.response?.data?.message || t('performance.error'),
+          })
+        })
+    }
+
     setState((prev) => ({ ...prev, isLoading: true, error: '' }))
+    fetchPerformances()
 
-    getPerformances(selectedDate, { signal: controller.signal })
-      .then(({ data: response }) => {
-        if (response?.success !== true || !Array.isArray(response.data?.performances)) {
-          throw new Error('Invalid performance list response')
-        }
-        setState({
-          performances: response.data.performances,
-          serverTime: response.data.server_time,
-          isLoading: false,
-          error: '',
-        })
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return
-        setState({
-          performances: [],
-          serverTime: null,
-          isLoading: false,
-          error: error?.response?.data?.message || t('performance.error'),
-        })
-      })
+    const timer = setInterval(fetchPerformances, 60 * 1000)
 
-    return () => controller.abort()
+    return () => {
+      clearInterval(timer)
+      controller.abort()
+    }
   }, [selectedDate, t])
 
   // server_time 기준으로 로컬에서 1분마다 갱신 — is_live 자체는 서버가 계산해서 내려주므로
