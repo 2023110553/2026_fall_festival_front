@@ -104,7 +104,7 @@ export const CharCount = styled.span`
 `
 
 export const ErrorText = styled.p`
-    font-size: 8px;
+    font-size: 10px;
     font-family: Pretendard;
     font-weight: 400;
     color: #E53935;
