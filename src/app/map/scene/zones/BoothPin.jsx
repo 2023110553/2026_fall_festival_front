@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Billboard } from '@react-three/drei'
 import * as THREE from 'three'
 import { BOOTH_CATEGORIES } from '../../../../constants/categories'
 
@@ -28,10 +27,21 @@ import { BOOTH_CATEGORIES } from '../../../../constants/categories'
 //     (꼭짓점 y = -L), 그룹 원점 = 꼭짓점이 되도록 메시를 +L 올려놨다. 이제 아무리 키우고 줄여도
 //     핀 끝은 항상 같은 좌표를 가리킨다.
 //
-//  3. 어느 각도에서도 핀 모양 유지 — Billboard는 Y축만.
+//  3. 어느 각도에서도 핀 모양 유지 — 좌우(방위각)만 카메라를 따라간다.
 //     완전 빌보드(카메라를 정면으로 마주보기)로 하면 위에서 내려다볼 때 핀이 바닥에 누운 것처럼 보인다.
-//     그래서 lockX/lockZ로 좌우 회전만 카메라를 따라가게 하고, 위아래는 따로 계산한다.
-//     현재 지도 카메라([10,140,90] → target [10,3,-30])는 약 49° 내려보기인데, 핀을 꼿꼿이 세우면
+//     그래서 좌우 회전만 카메라를 따라가게 하고, 위아래는 따로 계산한다.
+//
+//     2026-09-21 수정 — 처음엔 drei의 <Billboard lockX lockZ>로 구현했는데, 팔정도 카메라를 북동쪽
+//     (방위각 135°)으로 돌리자 핀이 전부 옆면을 보이며 누워버렸다. drei Billboard는 카메라 쿼터니언을
+//     통째로 복사한 뒤 XYZ 오일러각으로 쪼개서 X·Z만 이전 값(0)으로 되돌리는 방식인데, 카메라가 아래를
+//     내려다보면서(pitch) 동시에 좌우로 90° 넘게 돌아가 있으면(yaw) XYZ 분해가 뒤집혀서
+//     (X≈180°-pitch, Y≈180°-yaw, Z≈180° 식으로 나온다) Y만 남겼을 때 엉뚱한 방향이 된다.
+//     정면(0°)·혜화관(-45°)은 ±90° 안이라 멀쩡했고, 135°에서 처음 드러났다.
+//     그래서 오일러 분해를 아예 거치지 않고, 카메라와 핀의 수평 위치 차이로 방위각을 직접 구한다
+//     (atan2(dx, dz)) — 어느 방향에서 보든 항상 맞는다.
+//
+//     위아래 기울기: 지도 카메라는 약 49° 내려보기인데(구역마다 바라보는 방향은 달라도 내려보는 각은
+//     48.8°로 같다 — MapCanvas.jsx ZONE_CAMERAS 참고), 핀을 꼿꼿이 세우면
 //     그 각도만큼 눌려 보인다(높이가 cos49° ≈ 0.66배로 찌그러짐). 그래서 카메라가 높이 있을수록 핀을
 //     카메라 쪽으로 눕히는 tiltRatio를 넣어 뒀다(카메라 올려본 각 × tiltRatio). 고정 각도로 하지 않은 이유는
 //     OrbitControls로 낮은 각도까지 돌릴 수 있어서, 고정이면 옆에서 볼 때 핀이 뒤로 자빠져 보이기 때문.
@@ -223,6 +233,7 @@ export default function BoothPin({
   useEffect(() => () => countTexture?.dispose(), [countTexture])
 
   const anchorRef = useRef() // 꼭짓점 위치 = 크기 조절 기준점
+  const yawRef = useRef() // 좌우 회전(매 프레임 카메라 방향으로 계산) — 3번 항목
   const tiltRef = useRef() // 위아래 기울기(매 프레임 카메라 각도로 계산)
   const worldPos = useMemo(() => new THREE.Vector3(), [])
 
@@ -238,11 +249,20 @@ export default function BoothPin({
       anchor.scale.setScalar(scale * (camera.position.distanceTo(worldPos) / refDist))
     }
 
+    const dx = camera.position.x - worldPos.x
+    const dy = camera.position.y - worldPos.y
+    const dz = camera.position.z - worldPos.z
+
+    if (yawRef.current) {
+      // 핀 얼굴(+z)이 카메라 쪽을 보도록 y축 회전. (0,0,1)을 y축으로 θ만큼 돌리면 (sin θ, 0, cos θ)가
+      // 되므로 θ = atan2(dx, dz)면 얼굴이 정확히 (dx, dz) 방향을 본다.
+      // 전제: 이 핀의 부모 그룹들이 회전돼 있지 않다(ZoneBooths → 구역 씬 전부 회전 없음).
+      // 부모가 회전되면 그만큼 빼줘야 한다.
+      yawRef.current.rotation.y = Math.atan2(dx, dz)
+    }
+
     if (tiltRef.current) {
       // 카메라가 이 핀을 얼마나 위에서 내려다보는지(수평면 기준 올려본 각)
-      const dx = camera.position.x - worldPos.x
-      const dy = camera.position.y - worldPos.y
-      const dz = camera.position.z - worldPos.z
       const pitch = Math.atan2(dy, Math.hypot(dx, dz))
       tiltRef.current.rotation.x = -pitch * tiltRatio
     }
@@ -267,7 +287,7 @@ export default function BoothPin({
 
       {/* 여기 position이 곧 "핀이 가리키는 점", 여기 scale이 곧 핀 크기 — 2번 항목 */}
       <group ref={anchorRef} position={[0, hoverHeight, 0]} scale={scale}>
-        <Billboard lockX lockZ>
+        <group ref={yawRef}>
           <group ref={tiltRef}>
             {/* 지오메트리의 꼭짓점이 y = -L 이므로 +L 올려서 그룹 원점 = 꼭짓점이 되게 한다 */}
             <mesh
@@ -306,7 +326,7 @@ export default function BoothPin({
               </mesh>
             )}
           </group>
-        </Billboard>
+        </group>
       </group>
     </group>
   )
