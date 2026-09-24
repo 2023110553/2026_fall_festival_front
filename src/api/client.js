@@ -9,9 +9,30 @@ export const apiClient = axios.create({
   timeout: 10000,
 })
 
+function prepareAnonymousRequest(config) {
+  config.skipUserAuth = true
+  delete config._authRetry
+  delete config._authSessionId
+  if (typeof config.headers?.delete === 'function') config.headers.delete('Authorization')
+  else if (config.headers) delete config.headers.Authorization
+  return config
+}
+
+function retryAnonymously(config) {
+  if (!config?.optionalUserAuth || config._anonymousRetry) return null
+  config._anonymousRetry = true
+  return apiClient(prepareAnonymousRequest(config))
+}
+
 // 로그인 토큰이 있으면 자동으로 헤더에 실어보내기
 apiClient.interceptors.request.use(async (config) => {
-  await syncAuthFromStorage()
+  try {
+    await syncAuthFromStorage()
+  } catch (error) {
+    // 선택 인증 공개 API는 손상되거나 접근 불가능한 저장소 때문에 조회까지 막지 않는다.
+    if (config.optionalUserAuth) return prepareAnonymousRequest(config)
+    throw error
+  }
   const auth = useAuthStore.getState()
   if (config._authRetry && (!auth.accessToken || auth.sessionId !== config._authSessionId)) {
     return Promise.reject(new axios.CanceledError('로그인 상태가 변경되었습니다.'))
@@ -30,7 +51,15 @@ apiClient.interceptors.request.use(async (config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) await syncAuthFromStorage()
+    if (error.response?.status === 401) {
+      try {
+        await syncAuthFromStorage()
+      } catch (storageError) {
+        const anonymousRetry = retryAnonymously(error.config)
+        if (anonymousRetry) return anonymousRetry
+        throw storageError
+      }
+    }
     const auth = useAuthStore.getState()
     const config = error.config
     if (error.response?.status === 401 && config && !config.skipUserAuth &&
@@ -39,12 +68,24 @@ apiClient.interceptors.response.use(
         config._authSessionId === auth.sessionId && config.headers?.Authorization) {
       if (config._authRetry) {
         if (config.headers.Authorization === `Bearer ${auth.accessToken}`) expireSession(auth.sessionId)
+        const anonymousRetry = retryAnonymously(config)
+        if (anonymousRetry) return anonymousRetry
         throw error
       }
       config._authRetry = true
       // 늦게 도착한 이전 토큰의 401은 이미 갱신된 토큰으로 재시도한다.
-      if (config.headers.Authorization === `Bearer ${auth.accessToken}`) await refreshSession(auth)
+      try {
+        if (config.headers.Authorization === `Bearer ${auth.accessToken}`) await refreshSession(auth)
+      } catch (refreshError) {
+        const anonymousRetry = retryAnonymously(config)
+        if (anonymousRetry) return anonymousRetry
+        throw refreshError
+      }
       return apiClient(config)
+    }
+    if (error.response?.status === 401) {
+      const anonymousRetry = retryAnonymously(config)
+      if (anonymousRetry) return anonymousRetry
     }
     if (import.meta.env.DEV) {
       console.error('[API Error]', error?.response?.status, error?.config?.url)

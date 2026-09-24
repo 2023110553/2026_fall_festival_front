@@ -83,64 +83,86 @@ const PreviewImage = styled.img`
   transition: opacity 0.2s ease;
 `
 
-// 이미지 하단 그라데이션 캡션 — 어떤 구역인지 + 등불 개수
-const Caption = styled.span`
+// 사진 위에 덮는 그라데이션 — 2026-09-23 디자인(개발화면_와프).
+// 피그마 정지점: 0% #666666(불투명도 0%) → 100% #1D1D1D(불투명도 90%).
+// 색이 바뀌는 그라데이션이 아니라 "투명 → 어두움"으로 덮는 그라데이션이라, 정지점 불투명도를
+// rgba의 a값으로 옮기면 블렌드 모드 없이 그대로 재현된다.
+//
+// 방향은 피그마 그라데이션 핸들 위치를 카드(343×192) 좌표로 환산해서 옮겼다.
+//   투명(0%) 핸들 (270, 110)  →  어두움(100%) 핸들 (171, 39)   = 오른쪽 아래에서 왼쪽 위로
+// CSS의 linear-gradient는 정지점 위치를 "박스를 가로지르는 그라데이션 선" 기준으로 재기 때문에,
+// 저 두 좌표를 그 선 위로 투영하면 305.4deg / 27.5% / 58.6%가 나온다.
+// 결과적으로 글씨가 놓이는 왼쪽 위는 불투명도 90%로 꽉 눌려 대비가 확보되고,
+// 오른쪽 아래로 갈수록 사진이 그대로 드러난다(모서리에서 완전 투명).
+const Scrim = styled.span`
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  background: linear-gradient(
+    305.4deg,
+    rgba(102, 102, 102, 0) 27.5%,
+    rgba(29, 29, 29, 0.9) 58.6%
+  );
+  pointer-events: none;
+`
+
+// 사진 위 문구 — 디자인 좌표(왼쪽 26px, 제목 위 96px, 본문 위 148px) 기준.
+// 제목과 본문 사이 간격 10px = 본문 top(148) - 제목 bottom(96+42).
+const Copy = styled.span`
+  position: absolute;
+  left: 26px;
+  /* 오른쪽도 26px 띄워서, 문구가 길어지는 언어에서도 카드 밖으로 나가지 않게 한다 */
+  right: 26px;
+  top: 96px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 28px 14px 12px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.72) 100%);
+  gap: 10px;
   text-align: left;
 `
 
-/* regular11 */
-const Eyebrow = styled.span`
-  color: rgba(253, 253, 253, 0.85);
-  font-size: 11px;
-  font-weight: 400;
-  line-height: normal;
-`
-
-/* semi16 */
-const ZoneName = styled.span`
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  color: #fdfdfd;
-  font-size: 16px;
+/* semi18 — 줄바꿈은 번역문(\n)이 담당하므로 pre-line */
+const Headline = styled.span`
+  color: #fff;
+  font-size: 18px;
   font-weight: 600;
-  line-height: normal;
+  /* 디자인 행간은 100%지만, Pretendard 기본 줄 상자 기준으로 두 줄 높이가 42px가 되게 맞춤 */
+  line-height: 1.17;
+  white-space: pre-line;
 `
 
-const LanternCount = styled.span`
-  color: #ffd27d;
-  font-size: 13px;
+// 문장에서 강조 단어(등불)만 포인트 컬러
+const Accent = styled.span`
+  /* aurora_orange */
+  color: #dc7054;
+`
+
+/* medium8 */
+const Body = styled.span`
+  color: #fff;
+  font-size: 8px;
   font-weight: 500;
+  line-height: 1.25;
+  white-space: pre-line;
 `
 
-// props(zoneId/lanternCount/isLoading/isError)는 HomePage가 GET /api/booths/를 구역별로 합산해서 내려준다.
+// 번역문 안에서 강조 단어를 찾아 앞/뒤로 자른다.
+// 언어마다 강조 단어 위치가 달라도 되고, 문장에 없으면 전체가 기본 색으로 나온다.
+function splitAccent(sentence, accent) {
+  const index = accent ? sentence.indexOf(accent) : -1
+  if (index < 0) return { before: sentence, accent: '', after: '' }
+  return { before: sentence.slice(0, index), accent, after: sentence.slice(index + accent.length) }
+}
+
+// props(zoneId/isLoading)는 HomePage가 GET /api/booths/를 구역별로 합산해서 내려준다.
 // zoneId가 없으면(전 구역 0개, 로딩 중, 조회 실패) 기본 구역(DEFAULT_PREVIEW_ZONE_ID) 이미지를 쓴다.
-export default function LanternPreview({
-  zoneId,
-  lanternCount,
-  isLoading = false,
-  isError = false,
-  children,
-}) {
+// 2026-09-23: 사진 위 문구를 디자인(개발화면_와프)대로 고정 문구로 교체하면서 구역명·등불 개수 표시는 뺐다.
+// 어느 구역 사진인지는 이미지와 버튼 aria-label(=이동할 구역)이 계속 알려준다.
+export default function LanternPreview({ zoneId, isLoading = false, children }) {
   const navigate = useNavigate()
-  const { language, t } = useTranslation()
+  const { t } = useTranslation()
 
   const displayZoneId = zoneId && ZONE_PREVIEW_IMAGES[zoneId] ? zoneId : DEFAULT_PREVIEW_ZONE_ID
   const zoneLabel = t(`map.zone.${displayZoneId}`)
-  const hasCount = !isLoading && !isError && Number.isFinite(lanternCount) && lanternCount > 0
-  const countLabel = hasCount
-    ? t('home.lanternCount', { count: lanternCount.toLocaleString(language === 'ko' ? 'ko-KR' : language) })
-    : null
+  const headline = splitAccent(t('home.previewHeadline'), t('home.previewHeadlineAccent'))
 
   return (
     <Wrapper>
@@ -162,13 +184,16 @@ export default function LanternPreview({
             loading="lazy"
             decoding="async"
           />
-          <Caption aria-hidden="true">
-            <Eyebrow>{isLoading ? t('home.previewLoading') : t('home.previewEyebrow')}</Eyebrow>
-            <ZoneName>
-              {zoneLabel}
-              {countLabel && <LanternCount>{countLabel}</LanternCount>}
-            </ZoneName>
-          </Caption>
+          <Scrim aria-hidden="true" />
+          {/* 버튼 이름은 aria-label(=이동할 구역)이 담당하므로, 장식 문구는 보조기기에서 숨긴다 */}
+          <Copy aria-hidden="true">
+            <Headline>
+              {headline.before}
+              {headline.accent && <Accent>{headline.accent}</Accent>}
+              {headline.after}
+            </Headline>
+            <Body>{t('home.previewBody')}</Body>
+          </Copy>
         </Preview>
         {children}
       </Card>

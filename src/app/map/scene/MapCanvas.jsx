@@ -7,7 +7,6 @@ import * as THREE from 'three'
 import Zone1Scene from './zones/Zone1Scene'
 import Zone2Scene from './zones/Zone2Scene'
 import Zone3Scene from './zones/Zone3Scene'
-import Zone4Scene from './zones/Zone4Scene'
 import Zone5Scene from './zones/Zone5Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 import { TimeOfDayContext } from './environment/TimeOfDayContext'
@@ -103,6 +102,11 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 // 이후 재원 요청으로 구역별로 하나씩 튜닝했고, 각 항목 위에 날짜와 근거를 적어뒀다.
 // 2026-09-21 기준 다섯 구역 모두 튜닝이 끝났다(옛 공통값을 쓰는 구역 없음).
 //
+// 2026-09-23: zone4(학림관) 제거 — 축제 구역에서 빠져서 씬(Zone4Scene)·카메라 프리셋·모델
+// (public/models/hangnimgwan.glb)을 함께 내렸다. 위 09-16·09-19·09-20 기록에 남은 zone4 이야기는
+// 그때의 히스토리다. 원흥관은 zone5 id를 그대로 둬서 공유 링크(?zone=zone5)와 미리보기 이미지
+// 파일명이 안 깨지게 했다(constants/zones.js 참고).
+//
 // R3F의 <Canvas camera={...}> prop 은 마운트 시점에 한 번만 적용돼서, 구역을 바꿔도 카메라가
 // 따라가지 않는다. 그래서 zoneId가 바뀔 때마다 ZoneCamera가 카메라 위치와 OrbitControls 타깃을
 // 직접 옮긴다. (09-20 처음 분리할 때는 타깃을 OrbitControls의 target prop으로 넘겼는데,
@@ -140,15 +144,6 @@ const ZONE_CAMERAS = {
   //   타깃을 원점 기준으로 똑같이 2배 해서(거리 82 → 164, 타깃 높이도 3 → 6) 화면 구도는 그대로고,
   //   실제 크기인 부스만 상대적으로 작아진다. 확대 여유도 생겼다(최소 거리 70까지 2.3배).
   zone3: { position: [100.6, 129.4, 55.2], target: [7, 6, 1.2] },
-  // 학림관(2026-09-21 튜닝, 재원 요청 "완전 반대쪽에서"):
-  //   건물 정면(입구·유리 타워)과 앞 도로가 -z 쪽(정면 z=-5, 도로 z -20.5~-4.5)에 있는데, 옛 공통
-  //   카메라는 +z 쪽에서 봐서 창 없는 뒷면만 보였고, 도로 차선에 세운 부스 6개(z=-12.7)는 높이 15m
-  //   건물에 가려 핀 끝만 보였다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했다.
-  //   내려보는 각 48.8°는 다른 구역과 같다. 화면 좌우도 뒤집혀서 건물의 x+ 끝이 화면 왼쪽에 온다.
-  //   구역이 좌우로 긴 직사각형(bbox x -28~28 / z -20.5~8)이고 좌우 대칭이라 타깃 x=0.
-  //   거리 125/133/143을 640×1000·600×1000으로 비교했고, 125는 600 폭에서 양끝이 5px까지 붙어서
-  //   133으로 정했다(640 폭 좌우 여백 45px, 600 폭 25px).
-  zone4: { position: [0, 103.1, -89.1], target: [0, 3, -1.5] },
   // 원흥관(2026-09-20 첫 값 → 2026-09-21 재원 요청 "반대쪽에서"로 변경):
   //   본동의 원래 정면(창이 촘촘한 면)은 -z 쪽인데, 처음 잡은 시점(방위각 0°, 카메라가 +z 쪽)은 건물 후면과
   //   그 앞 광장을 보고 있었다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했고, 후면 광장에 있던
@@ -174,8 +169,9 @@ const DEFAULT_CAMERA = ZONE_CAMERAS.zone1
 // 열었지만 '기본 시점은 구역마다 맞춰둔 구도로 시작하고, 사용자가 돌려도 구역 밖으로는 못 나간다'는
 // 원칙은 그대로다.
 //
-// 아래 한계값들은 다섯 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
-// 공통 값이 그대로 들어맞는다. (처음 zone5는 옛 zone1 방향 벡터에서 거리만 줄였고, 이후 다섯 구역
+// 아래 한계값들은 남은 네 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
+// 공통 값이 그대로 들어맞는다. (처음 zone5는 옛 zone1 방향 벡터에서 거리만 줄였고, 이후 각 구역
+// 모두 내려보는 각은 두고 방위각만 돌렸다. 새 구역을 맞출 때도 이 48.8°를 지키면 된다.)
 // 모두 내려보는 각은 두고 방위각만 돌렸다. 새 구역을 맞출 때도 이 48.8°를 지키면 된다.)
 // 구역 크기 차이 때문에 따로 주고 싶어지면 ZONE_CAMERAS 각 항목에 넣고 preset에서 꺼내 쓰면 된다.
 // 줌 범위(2026-09-24): 70~360 → 20~400. 재원 요청 "확대를 더 열어 달라".
@@ -279,8 +275,6 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
               <Zone2Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : zoneId === 'zone3' ? (
               <Zone3Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
-            ) : zoneId === 'zone4' ? (
-              <Zone4Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : zoneId === 'zone5' ? (
               <Zone5Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : null}

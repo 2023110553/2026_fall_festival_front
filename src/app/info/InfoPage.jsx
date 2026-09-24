@@ -25,6 +25,7 @@ import {
   getNoticeList,
 } from '../../api/info'
 import { useTranslation } from '../../i18n/useTranslation'
+import { DEFAULT_FESTIVAL_DATE } from '../../constants/festivalDates'
 import * as S from './InfoPage.styles'
 
 const INFO_TABS = [
@@ -60,7 +61,7 @@ const normalizeLostItemDetail = (item) => ({
 export default function InfoPage() {
   const { t } = useTranslation()
   const infoTabs = INFO_TABS.map((item) => ({ ...item, label: t(item.labelKey) }))
-  const [lostDate, setLostDate] = useState('2026-09-23') // TEMP: 로컬 테스트용 (원래 9/29)
+  const [lostDate, setLostDate] = useState(DEFAULT_FESTIVAL_DATE)
   const [keyword, setKeyword] = useState('')
   const [noticeList, setNoticeList] = useState({
     ...INITIAL_LIST_STATE,

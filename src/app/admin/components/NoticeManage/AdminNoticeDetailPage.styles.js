@@ -65,12 +65,14 @@ export const TitleRow = styled.div`
 `
 
 export const Title = styled.h2`
+  min-width: 0;
   margin: 0;
   color: #000;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.35;
   word-break: keep-all;
+  overflow-wrap: anywhere;
 `
 
 export const TypeTag = styled.span`
@@ -106,6 +108,8 @@ export const Content = styled.p`
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: keep-all;
+  /* 띄어쓰기 없는 긴 문자열(URL, 이어 쓴 글)도 카드 안에서 줄바꿈 */
+  overflow-wrap: anywhere;
   font-family: var(--font-pretendard);
 `
 
