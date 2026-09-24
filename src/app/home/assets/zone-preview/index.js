@@ -4,14 +4,13 @@
 import zone1 from './zone1.webp'
 import zone2 from './zone2.webp'
 import zone3 from './zone3.webp'
-import zone4 from './zone4.webp'
 import zone5 from './zone5.webp'
 
+// 2026-09-23: 학림관(zone4) 제거 — zone4.webp도 함께 삭제했다. 원흥관은 zone5 파일명을 그대로 둔다.
 export const ZONE_PREVIEW_IMAGES = {
   zone1, // 혜화관
   zone2, // 팔정도
   zone3, // 만해광장
-  zone4, // 학림관
   zone5, // 원흥관
 }
 

@@ -33,8 +33,11 @@ import { BOOTH_CATEGORIES } from '../../../../constants/categories'
 //     그래서 lockX/lockZ로 좌우 회전만 카메라를 따라가게 하고, 위아래는 따로 계산한다.
 //     현재 지도 카메라([10,140,90] → target [10,3,-30])는 약 49° 내려보기인데, 핀을 꼿꼿이 세우면
 //     그 각도만큼 눌려 보인다(높이가 cos49° ≈ 0.66배로 찌그러짐). 그래서 카메라가 높이 있을수록 핀을
-//     카메라 쪽으로 눕혀준다 — tiltRatio(기본 0.5) × 카메라 올려본 각. 고정 각도로 하지 않은 이유는
+//     카메라 쪽으로 눕히는 tiltRatio를 넣어 뒀다(카메라 올려본 각 × tiltRatio). 고정 각도로 하지 않은 이유는
 //     OrbitControls로 낮은 각도까지 돌릴 수 있어서, 고정이면 옆에서 볼 때 핀이 뒤로 자빠져 보이기 때문.
+//     2026-09-23: 기본값을 0.5 → 0(꼿꼿이)으로 바꿨다 — 재원 피드백 "핀이 제대로 안 서 있고 눕혀져 있다".
+//     보정 자체를 없앤 게 아니라 기본값만 0이라, 다시 눕히고 싶으면 주소에 ?pinTilt=0.5(또는 0.25)를 붙여
+//     바로 비교해 보고 값을 정하면 된다(boothPinPreview.js). 원근 압축(cos49° ≈ 0.66배)은 감수하는 쪽.
 //
 //  4. 블룸/톤매핑과의 관계.
 //     핀은 <Select>로 감싸지 않는다 — SelectiveBloom은 선택된 오브젝트만 번지게 하므로 핀은 자동으로
@@ -178,7 +181,7 @@ function createCountTexture(count, color) {
 //   - hoverHeight: 지면에서 핀 꼭짓점까지 높이(m) — 부스 천막(약 3.3m)보다 높아야 안 겹친다
 //   - constantSize: 화면상 크기 고정(2번 항목). 끄면 일반 3D 오브젝트처럼 원근에 따라 작아진다
 //   - refDist: constantSize 기준 거리. 지도 기본 카메라~타깃 거리가 약 182라 180을 기본값으로 둠
-//   - tiltRatio: 카메라 올려본 각의 몇 배로 눕힐지(0 = 꼿꼿이, 1 = 카메라 정면). 3번 항목
+//   - tiltRatio: 카메라 올려본 각의 몇 배로 눕힐지(기본 0 = 꼿꼿이, 1 = 카메라 정면). 3번 항목
 //   - emissiveIntensity: 밤에 핀이 어두워지지 않게 하는 자체발광 세기. 4번 항목
 //   - alwaysOnTop: 건물/나무에 안 가려지게(depthTest off). 핀끼리 앞뒤가 깨지는 부작용 — 5번 항목
 //   - showAnchor: 바닥에 가짜 그림자 + 카테고리 링을 깔지 여부(기본 false — 아래 7번 항목)
@@ -201,7 +204,7 @@ export default function BoothPin({
   hoverHeight = 5.5,
   constantSize = true,
   refDist = 180,
-  tiltRatio = 0.5,
+  tiltRatio = 0,
   emissiveIntensity = 0.5,
   alwaysOnTop = false,
   showAnchor = false,
