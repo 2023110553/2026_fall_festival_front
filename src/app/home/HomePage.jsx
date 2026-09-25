@@ -15,7 +15,7 @@ import * as S from './HomePage.styles'
 
 
 
-const FESTIVAL_PERIOD = '2026. 09.29. - 10.01'
+const FESTIVAL_PERIOD = '2026. 09. 29. - 10. 01.'
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const KST_OFFSET_IN_MS = 9 * 60 * 60 * 1000
 const FESTIVAL_START_DAY = Date.UTC(2026, 8, 29) / DAY_IN_MS
@@ -25,7 +25,7 @@ function getFestivalDay(now = Date.now(), endedLabel = '종료') {
   const daysSinceStart = today - FESTIVAL_START_DAY
 
   if (daysSinceStart < 0) {
-    return `D - ${Math.abs(daysSinceStart)}`
+    return `D-${Math.abs(daysSinceStart)}`
   }
 
   if (daysSinceStart >= 3) {
