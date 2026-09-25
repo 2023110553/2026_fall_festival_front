@@ -38,6 +38,7 @@ jobs:
           docker run --rm \
             --user "$(id -u):$(id -g)" \
             -e npm_config_cache=/tmp/.npm \
+            -e VITE_APP_VERSION="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
             -v "$FRONT_DIR:/app" \
             -w /app \
             node:22-alpine \
@@ -65,7 +66,7 @@ jobs:
             # 1) index.html을 뺀 에셋을 먼저 복사한다.
             #    여기서는 아무것도 지우지 않아서, 교체 직전까지 이전 빌드가 그대로 열린다.
             #    (중간에 실패해도 이전 index.html과 이전 에셋이 짝이 맞는 상태로 남는다)
-            rsync -a --exclude=index.html "$src/" "$dest/"
+            rsync -a --exclude=index.html --exclude=version.json "$src/" "$dest/"
 
             # 2) index.html을 마지막에 교체한다.
             #    rsync는 임시 파일로 받은 뒤 rename하므로 반쯤 쓰인 index.html이 서빙되지 않는다.
@@ -74,7 +75,11 @@ jobs:
             rsync -a --ignore-times "$src/index.html" "$dest/index.html"
 
             # 3) 새 index.html이 자리 잡은 뒤, 이전 빌드에만 있던 파일을 정리한다.
-            rsync -a --delete --exclude=index.html "$src/" "$dest/"
+            rsync -a --delete --exclude=index.html --exclude=version.json "$src/" "$dest/"
+
+            # 4) 새 index.html이 준비된 뒤에만 새 버전을 공개한다.
+            #    구버전 앱이 배포 중간 상태를 보고 너무 일찍 새로고침하지 않게 한다.
+            rsync -a --ignore-times "$src/version.json" "$dest/version.json"
 
             echo "승격 완료: dist/$app"
           done
@@ -82,5 +87,7 @@ jobs:
           # 승격 결과 재검증 — 파일 존재 + 빌드 산출물과 내용 일치
           for app in user admin; do
             test -f "$FRONT_DIR/dist/$app/index.html"
+            test -f "$FRONT_DIR/dist/$app/version.json"
             cmp -s "$FRONT_DIR/dist-next/$app/index.html" "$FRONT_DIR/dist/$app/index.html"
+            cmp -s "$FRONT_DIR/dist-next/$app/version.json" "$FRONT_DIR/dist/$app/version.json"
           done
