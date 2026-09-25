@@ -11,7 +11,7 @@ export const SearchWrap = styled.label`
   align-items: center;
   width: 100%;
   height: 40px;
-  border: 1px solid #272727;
+  border: 1px solid #737373;
   border-radius: 8px;
 `
 
@@ -29,12 +29,12 @@ export const Search = styled.input`
   border: 0;
   outline: none;
   background: transparent;
-  color: #272727;
+  color: #737373;
   font: inherit;
   font-size: 16px;
 
   &::placeholder {
-    color: #272727;
+    color: #737373;
     opacity: 1;
   }
 `
