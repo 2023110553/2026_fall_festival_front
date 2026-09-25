@@ -16,8 +16,14 @@ export const GlobalStyle = createGlobalStyle`
     height: 100%;
   }
 
+  html {
+    background-color: #ffcdc1;
+  }
+
   body {
     margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
     background: var(
       --background2,
       linear-gradient(180deg, #ffcdc1 0%, #fff9f8 36.54%, #f7f7f7 65.38%)

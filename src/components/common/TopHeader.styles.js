@@ -182,10 +182,10 @@ export const LoginButton = styled.button`
   height: 24px;
   flex: 0 0 54px;
   padding: 0;
-  border: 1px solid #d8d8d8;
-  border-radius: 12px;
+  border: 0;
+  border-radius: 99px;
   background: #fdfdfd;
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
   color: #100b0b;
   font-size: 10px;
   font-weight: 400;
@@ -197,7 +197,7 @@ export const LoginButton = styled.button`
   }
 
   &:focus-visible {
-    outline: 1px solid #9f9c99;
+    outline: 2px solid #dc7054;
     outline-offset: 2px;
   }
 `

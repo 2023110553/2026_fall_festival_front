@@ -121,7 +121,7 @@ export const More = styled.button`
 
 export const MoreArrow = styled.img`
   width: 18px;
-  height: 11px;
+  height: 10px;
   transform: ${({ $expanded }) => ($expanded ? 'rotate(180deg)' : 'none')};
 `
 
