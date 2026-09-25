@@ -10,6 +10,7 @@
     "build:user": "vite build --outDir dist-next/user",
     "build:admin": "vite build --mode admin --outDir dist-next/admin",
     "lint": "eslint .",
+    "test": "node --test tests/*.test.js",
     "preview": "vite preview --outDir dist-next/user",
     "preview:admin": "vite preview --outDir dist-next/admin"
   },
@@ -35,6 +36,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "jsdom": "^29.1.1",
     "vite": "^6.0.5"
   }
 }

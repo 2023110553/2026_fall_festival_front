@@ -6,8 +6,9 @@ import NoticeMarquee from './components/NoticeMarquee'
 import LanternPreview from './components/LanternPreview'
 import BoothRanking from './components/BoothRanking'
 import NowPlayingCards from './components/NowPlayingCards'
-import { apiClient } from '../../api/client'
+import { getBoothRanking, getRollingNotices } from '../../api/home'
 import { getNowPerformances } from '../../api/performance'
+import useHomeData from '../../hooks/useHomeData'
 import { useTranslation } from '../../i18n/useTranslation'
 import { getBooths } from '../../api/map'
 import { mapZoneIdByBoothId, pickTopLanternZone } from './utils/getTopLanternZone'
@@ -35,27 +36,6 @@ function getFestivalDay(now = Date.now(), endedLabel = '종료') {
   return `DAY ${daysSinceStart + 1}`
 }
 
-// 홈 상단 롤링 공지
-async function getRollingNotices({ signal } = {}) {
-  const { data: response } = await apiClient.get('/api/notices/rolling/', { signal })
-
-  if (
-    response?.success !== true ||
-    !Array.isArray(response.data?.notices) ||
-    response.data.notices.some((notice) =>
-      !Number.isInteger(notice?.notice_id) || notice.notice_id <= 0 ||
-      !['URGENT', 'NORMAL'].includes(notice.type) ||
-      typeof notice.title !== 'string' ||
-      typeof notice.created_at !== 'string' ||
-      !Number.isFinite(Date.parse(notice.created_at))
-    )
-  ) {
-    throw new Error('공지사항 응답 형식이 올바르지 않습니다.')
-  }
-
-  return response.data
-}
-
 // 홈이 부스 목록(GET /api/booths/, 현재 날짜·시간대 운영 부스)에서 뽑아 쓰는 두 가지.
 //   - topZoneId: 등불이 가장 많은 구역 → 지도 미리보기 카드에 쓸 사진
 //   - zoneIdByBoothId: 부스 id → 구역 id → 부스 랭킹의 "지도에서 보기" 링크(/map?zone=..&booth=..)
@@ -79,30 +59,6 @@ async function getBoothZoneSummary({ signal } = {}) {
   }
 }
 
-// 홈 부스별 등불 랭킹
-async function getBoothRanking({ signal } = {}) {
-  const { data: response } = await apiClient.get('/api/booths/ranking/', {
-    params: { limit: 3 },
-    signal,
-  })
-
-  if (
-    response?.success !== true ||
-    !Array.isArray(response.data?.ranking) ||
-    !Number.isInteger(response.data.total_lantern_count) || response.data.total_lantern_count < 0 ||
-    response.data.ranking.some((booth) =>
-      !Number.isInteger(booth?.rank) || booth.rank <= 0 ||
-      !Number.isInteger(booth.booth_id) || booth.booth_id <= 0 ||
-      typeof booth.name !== 'string' ||
-      !Number.isInteger(booth.lantern_count) || booth.lantern_count < 0
-    )
-  ) {
-    throw new Error('부스 랭킹 응답 형식이 올바르지 않습니다.')
-  }
-
-  return response.data
-}
-
 // 홈 "지금 공연 중" 카드 — 서버가 라이브/1시간 이내 예정 공연을 이미 계산해서 내려준다
 async function getNowPlaying({ signal } = {}) {
   const { data: response } = await getNowPerformances({ signal })
@@ -116,31 +72,6 @@ async function getNowPlaying({ signal } = {}) {
   }
 
   return response.data
-}
-
-function useHomeData(request) {
-  const [state, setState] = useState({ data: null, isLoading: true, isError: false })
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    request({ signal: controller.signal })
-      .then((data) => {
-        if (!controller.signal.aborted) {
-          setState({ data, isLoading: false, isError: false })
-        }
-      })
-      .catch((error) => {
-        if (!controller.signal.aborted) {
-          console.error(`[HomePage] ${request.name} failed`, error)
-          setState({ data: null, isLoading: false, isError: true })
-        }
-      })
-
-    return () => controller.abort()
-  }, [request])
-
-  return state
 }
 
 export default function HomePage() {

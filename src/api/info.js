@@ -7,10 +7,11 @@ export const getNoticeList = (
   apiClient.get('/api/notices/', {
     params: { type: type || undefined, page, size },
     signal,
+    skipUserAuth: true,
   })
 
 export const getNoticeDetail = (noticeId, { signal } = {}) =>
-  apiClient.get(`/api/notices/${noticeId}/`, { signal })
+  apiClient.get(`/api/notices/${noticeId}/`, { signal, skipUserAuth: true })
 
 export const getLostItemList = (
   { foundDate, keyword, page = 0, size = 20 } = {},
@@ -24,7 +25,8 @@ export const getLostItemList = (
       size,
     },
     signal,
+    skipUserAuth: true,
   })
 
 export const getLostItemDetail = (lostItemId, { signal } = {}) =>
-  apiClient.get(`/api/lost-items/${lostItemId}/`, { signal })
+  apiClient.get(`/api/lost-items/${lostItemId}/`, { signal, skipUserAuth: true })
