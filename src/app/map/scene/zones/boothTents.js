@@ -33,12 +33,15 @@ function toRadians(degrees) {
 
 // 부스 1개 → 천막 배열. 좌표가 없는 천막(과 부스)은 빠지므로 빈 배열이 나올 수 있다.
 //   - unitNo:   그 날 그 부스의 몇 번째 천막인지(1부터). React key와 디버깅용
-//   - position: BoothMarker/BoothPin에 그대로 넘기는 [x, y, z] (map_x=씬 x, map_elevation=씬 y, map_y=씬 z)
+//   - position: BoothMarker/BoothLantern에 그대로 넘기는 [x, y, z] (map_x=씬 x, map_elevation=씬 y, map_y=씬 z)
 //   - rotationY: Y축 회전(라디안)
 //   - size:     천막 규격. 천막별 값이 우선이고, 없으면 부스 단위 값으로 떨어진다.
 //               둘 다 없으면 BoothMarker 안의 normalizeBoothSize가 "BIG"으로 본다.
 //               ※ 만화얼처럼 날짜에 따라 크기가 다른 부스가 있어서(9/29·9/30 SMALL, 10/1 BIG)
 //                 부스 단위 booth_size보다 천막별 값이 진실이다.
+//   - spec:     천막이 아닌 구조물용 { structure, width, depth } (2026-09-26 추가).
+//               placements에 structure가 없으면 undefined가 되고, 받는 쪽(constants/boothSizes.js)이
+//               "TENT"로 보기 때문에 기존 부스는 동작이 그대로다. 값 정리·범위 제한도 그쪽에서 한다.
 export function getBoothTents(booth) {
   const placements = Array.isArray(booth?.placements) ? booth.placements : []
   // 천막 정보가 없으면 부스 자신을 천막 1동으로 취급한다(위 계약 3번).
@@ -49,5 +52,10 @@ export function getBoothTents(booth) {
     position: [tent.map_x, tent.map_elevation, tent.map_y],
     rotationY: toRadians(tent.rotation),
     size: tent.booth_size ?? booth?.booth_size,
+    spec: {
+      structure: tent.structure,
+      width: tent.width,
+      depth: tent.depth,
+    },
   }))
 }
