@@ -195,6 +195,11 @@ const DEFAULT_CAMERA = ZONE_CAMERAS.zone1
 //  MAX는 220 → 300 → 360으로, 혜화관 250·원흥관 316 기본 시점이 생길 때마다 올렸다.)
 const MIN_DISTANCE = 20      // 가장 가까이 당겼을 때 (부스 한 동과 조명끈이 보이는 거리)
 const MAX_DISTANCE = 400     // 가장 멀리 뺐을 때 (구역 전체 + 여백)
+// 2026-09-25: 조작이 바뀌면서(한 손가락 = 이동) 이 값이 주 조작의 한계가 됐다. 예전에는 이동이
+// 두 손가락 보조 제스처라 벽에 닿을 일이 거의 없었다. 일단 30으로 써 보고 답답하면 올린다.
+// 구역 중심에서 지도 끝까지 필요한 거리는 혜화관 49 / 팔정도 46 / 만해광장 49 / 원흥관 68이라
+// (아래 ZONE_CAMERAS의 bbox 주석 기준, 만해광장·원흥관은 MAP_SCALE 2배 반영) 공통 70이면 네 구역이
+// 다 덮인다. 구역별로 정확히 맞추려면 ZONE_CAMERAS 각 항목에 panLimit을 넣고 ZoneCamera가 꺼내 쓰면 된다.
 const PAN_LIMIT = 30         // 구역 중심에서 좌우/앞뒤로 이만큼까지만 끌 수 있다
 // 위아래 회전 한계(2026-09-23). polar 0 = 바로 위에서 내려다보기, π/2 = 지평선 높이.
 // 아래쪽: 지평선 바로 앞(0.03rad ≈ 1.7°)에서 멈춘다 — 그 아래로 내려가면 카메라가 지면을 뚫고 들어가
@@ -383,11 +388,25 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
             maxDistance={MAX_DISTANCE}
             minPolarAngle={MIN_POLAR_ANGLE}
             maxPolarAngle={MAX_POLAR_ANGLE}
-            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
+            // 2026-09-25: 손을 떼면 바로 멈춘다(재원 요청 "조금 빙글거린다").
+            // three 원본 OrbitControls는 enableDamping 기본값이 false인데 drei 래퍼가 true로 덮어쓴다
+            // (drei/core/OrbitControls.js). 그래서 여기서 명시하지 않으면 관성이 켜진 채로 동작한다.
+            // 여운을 없애는 대신 조금만 줄이고 싶으면 enableDamping을 지우고 dampingFactor를 올리면 된다
+            // (기본 0.05, 값이 클수록 빨리 멈춘다). 이 값은 festival-map-viewer의 자유 회전과 맞춰야 한다.
+            enableDamping={false}
+            // 2026-09-25: 조작을 일반 지도 앱 기준으로 바꿨다(재원 요청) — 한 손가락 이동, 두 손가락 회전.
+            // 예전에는 한 손가락 회전 / 두 손가락 이동이었는데, 구글맵·카카오맵을 쓰던 사용자가
+            // 지도를 밀려고 손가락을 대면 화면이 돌아가 버려서 방향 감각을 잃는다.
+            // 마우스도 같은 규칙으로 맞춘다(좌클릭 이동 = 주 조작, 우클릭 회전) — 한 화면에서 손가락과
+            // 마우스가 반대로 동작하면 팀원이 PC로 테스트할 때 헷갈린다. 우클릭 메뉴는 OrbitControls가 막아준다.
+            //
+            // DOLLY_ROTATE = 두 손가락 오므리기/벌리기로 확대, 두 손가락을 함께 끌면 회전.
+            // (three 구현상 두 손가락 '비틀기'로는 회전하지 않는다 — 함께 끌어야 한다)
+            touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
             mouseButtons={{
-              LEFT: THREE.MOUSE.ROTATE,
+              LEFT: THREE.MOUSE.PAN,
               MIDDLE: THREE.MOUSE.DOLLY,
-              RIGHT: THREE.MOUSE.PAN,
+              RIGHT: THREE.MOUSE.ROTATE,
             }}
           />
           <ZoneCamera zoneId={zoneId} focusBooth={focusBooth} controlsRef={controlsRef} />
