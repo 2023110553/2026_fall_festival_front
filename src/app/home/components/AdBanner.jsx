@@ -90,7 +90,6 @@ const ROLLING_INTERVAL = 5000
 
 let lastIndex = 0
 
-// 홈 부스 랭킹 모달과 동일한 바텀시트라서 이거 pr 이후에 공통으로 분리할 예정
 const SHEET_STYLE = {
   position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
   width: '100%', maxWidth: 375, maxHeight: 'calc(100dvh - 40px)',
