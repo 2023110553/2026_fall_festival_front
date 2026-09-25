@@ -6,6 +6,12 @@ export const GlobalStyle = createGlobalStyle`
     --font-pretendard: 'Pretendard Variable', 'Pretendard', -apple-system,
       BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR',
       sans-serif;
+    --festival-background: linear-gradient(
+      180deg,
+      #ffcdc1 0%,
+      #fff9f8 36.54%,
+      #f7f7f7 65.38%
+    );
   }
 
   * {
@@ -13,22 +19,19 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   html, body, #root {
-    height: 100%;
+    min-height: 100%;
   }
 
   html {
-    background-color: #ffcdc1;
+    background: var(--background2, var(--festival-background));
+    background-repeat: no-repeat;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
     min-height: 100dvh;
-    background: var(
-      --background2,
-      linear-gradient(180deg, #ffcdc1 0%, #fff9f8 36.54%, #f7f7f7 65.38%)
-    );
-    background-attachment: fixed;
+    background: var(--background2, var(--festival-background));
     background-repeat: no-repeat;
     color: ${({ theme }) => theme.color.text};
     font-family: var(--font-pretendard);
