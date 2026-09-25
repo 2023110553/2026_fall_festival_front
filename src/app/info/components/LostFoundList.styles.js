@@ -36,9 +36,6 @@ export const Search = styled.input`
     color: #737373;
   }
 
-  &:focus {
-    border-color: #dc7054;
-  }
 `
 
 export const FilterRow = styled.div`

@@ -1,6 +1,6 @@
 import EmptyState from '../../../components/common/EmptyState'
 import { useTranslation } from '../../../i18n/useTranslation'
-import searchIcon from '../../../assets/map/search.svg'
+import searchIcon from '../../../assets/info/lost-found-search.svg'
 import { FESTIVAL_DATE_OPTIONS } from '../../../constants/festivalDates'
 import * as S from './LostFoundList.styles'
 

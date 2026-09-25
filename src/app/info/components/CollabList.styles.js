@@ -100,9 +100,10 @@ export const Body = styled.span`
   }
 `
 
-export const Chevron = styled.span`
-  color: #9f9c99;
-  font-size: 24px;
+export const Chevron = styled.img`
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
 `
 
 export const More = styled.button`
