@@ -30,4 +30,5 @@ export default [
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  { files: ['tests/**/*.js'], languageOptions: { globals: globals.node } },
 ]

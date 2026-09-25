@@ -26,6 +26,9 @@ function retryAnonymously(config) {
 
 // 로그인 토큰이 있으면 자동으로 헤더에 실어보내기
 apiClient.interceptors.request.use(async (config) => {
+  // 비개인화 공개 조회·로그인 요청은 인증 저장소 자체에 접근하지 않는다.
+  // 헤더만 생략하면 syncAuthFromStorage 오류로 HTTP 전송 전에 실패할 수 있다.
+  if (config.skipUserAuth) return prepareAnonymousRequest(config)
   try {
     await syncAuthFromStorage()
   } catch (error) {
@@ -51,6 +54,9 @@ apiClient.interceptors.request.use(async (config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const config = error.config
+    // 익명 요청의 401은 토큰 갱신이나 저장소 동기화로 복구할 수 없다.
+    if (config?.skipUserAuth) throw error
     if (error.response?.status === 401) {
       try {
         await syncAuthFromStorage()
@@ -61,7 +67,6 @@ apiClient.interceptors.response.use(
       }
     }
     const auth = useAuthStore.getState()
-    const config = error.config
     if (error.response?.status === 401 && config && !config.skipUserAuth &&
         config.url !== refreshPath && config.url !== '/api/accounts/login/' &&
         !config.url?.startsWith('/api/admin/') && auth.accessToken &&
