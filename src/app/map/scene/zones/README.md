@@ -7,14 +7,13 @@
 - `zone1` — 경영관·혜화관 거리 → `public/models/zone1.glb` (`Zone1Scene.jsx`, API 부스 좌표 사용)
 - `zone2` — 팔정도 → `public/models/zone2.glb` (`Zone2Scene.jsx`, API 부스 좌표 사용)
 - `zone3` — 만해광장 + 후문쪽 거리 → `public/models/zone3.glb` (`Zone3Scene.jsx`, API 부스 좌표 사용; 씬에서 glb를 2배로 키워 씀)
-- `zone4` — 학림관 → `public/models/hangnimgwan.glb` (`Zone4Scene.jsx`, API 부스 좌표 사용)
-- `zone5` — 원흥관 (2026-09-20 추가, 별개 독립 구역) → `public/models/zone5.glb` (`Zone5Scene.jsx`; 씬에서 glb를 2배로 키워 씀)
+- `zone5` — 원흥관 (2026-09-20 추가, 별개 독립 구역; 2026-09-23 학림관(zone4)이 빠졌지만 id는 그대로 둠) → `public/models/zone5.glb` (`Zone5Scene.jsx`; 씬에서 glb를 2배로 키워 씀)
 
 최종 export된 `.glb` 파일 자체는 `public/models/`에 두고, 이 폴더에는 구역별 로딩 컴포넌트(예: `Zone1Scene.jsx`)와 부스 앵커 좌표 JSON 연동 코드를 둔다.
 
 ## 부스 API → 3D 배치
 
-- zone1~4는 `useMapZoneBooths`에서 받은 API 데이터를 `ZoneBooths`와 `BoothMarker`로 렌더링한다.
+- 각 구역 씬은 `useMapZoneBooths`에서 받은 API 데이터를 `ZoneBooths`와 `BoothMarker`로 렌더링한다.
 - `map_x`, `map_y`, `map_elevation`, `rotation`, `lantern_count`는 API 응답을 그대로 사용한다.
 - zone5를 포함한 모든 구역의 부스 좌표는 장소 목록 API 응답을 사용한다.
 - zone3·zone5는 씬의 `MAP_SCALE`이 2이므로 부스 좌표에도 같은 배율이 반영되어야 한다.
@@ -27,6 +26,25 @@
 - `BoothMarker`는 위치·회전·클릭·바닥 글로우·라벨 앵커(두 천막 공통)만 맡고, 천막 모양은 크기별 컴포넌트(`CanopyTent` — BoothMarker.jsx 안, `PagodaTent.jsx`)가 맡는다.
 - 좌표(`map_x`/`map_y`)는 두 천막 모두 천막 **중심**이다. rotation 0이면 큰 천막은 6m 변이 x축과 나란하다.
 - 바닥 글로우(등불 단계)는 천막 크기와 상관없이 같은 표를 쓴다 — 작은 천막이라고 글로우까지 작아지면 "등불이 적은 부스"처럼 보이기 때문.
+
+## 부스 마커 — 등불(BoothLantern)과 색 분류 (2026-09-24)
+
+- 부스 위에 떠 있는 마커가 3D 물방울 핀(`BoothPin.jsx`)에서 **종이 등불**(`BoothLantern.jsx`)로 바뀌었다(기디 요청, 결정 기록: 프로젝트 문서 `campus-map/booth-lantern-marker-plan.md`).
+  예전 핀은 주소에 `?marker=pin`을 붙이면 비교해 볼 수 있다. 크기·높이 같은 값도 주소로 바꿔 볼 수 있다(`boothPinPreview.js` 머리말).
+- 파일 역할
+  - `src/constants/boothMarkerColors.js` — 색 그룹·팔레트·분류 함수(`getBoothMarkerStyle`, `getBoothLanternCount`). React·three에 의존하지 않는 순수 함수라 카드 색 점·범례에도 그대로 쓸 수 있다.
+  - `src/constants/boothAffiliations.js` — 야간 부스 booth_id → 소속(단과대·동아리) 표, 주간 푸드트럭 booth_id 목록.
+  - `BoothLantern.jsx` — 받은 색·숫자로 그리기만 한다. 모양·재질·텍스처는 `lanternGeometry.js`, 떠다님·크기 고정·방향·흔들림은 `useFloatingMarker.js`.
+- 색 분류(기디 기준) — 검사 순서가 우선순위다.
+  1. `category === 'ECO'` → 동빛 에코코(초록, 단독 색)
+  2. 시설(`place_type` ≠ `'BOOTH'`) → 그 외(모래색). 시설은 등불을 받을 수 없어서 **숫자 없는 빈 등불**
+  3. 주간 → 푸드트럭 / 주간 부스
+  4. 야간 → 소속표의 단과대 11개 각각 다른 색, 동아리는 한 색(흰색)
+  5. 나머지 → 그 외
+- 시간대는 `MapProvider`의 `listTimeOfDay`(부스 목록 API 요청과 같은 값)를 `ZoneBooths`가 읽는다. Provider 밖에서는 `ZoneBooths`에 `timeSlot` prop으로 넘긴다.
+- **새 부스를 등록하면** 야간 부스는 `boothAffiliations.js`에 booth_id를 추가해야 단과대 색이 나온다(빠지면 '그 외' 색 + 개발 모드 콘솔 경고). 푸드트럭은 `FOOD_TRUCK_BOOTH_IDS`에 추가.
+- 색 값을 바꿀 때는 같은 구역에 같이 뜨는 그룹끼리 멀어지게 유지할 것(`boothMarkerColors.js` 머리말). 초록은 동빛 에코코 전용.
+- 밤에는 몸통이 안에서 켜진 것처럼 빛나고 뒤로 후광(가산 합성 스프라이트)이 퍼진다. 낮에는 후광을 끈다. 지도의 `SelectiveBloom`은 쓰지 않는다 — 천막 전구에 맞춰 세게 잡혀 있어서 큰 몸통은 하얗게 날아가고 숫자까지 번지기 때문.
 
 ## glb 최적화 파이프라인 (2026-09-16, 이슈 #33)
 

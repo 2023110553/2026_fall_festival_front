@@ -22,6 +22,6 @@ export const MapArea = styled.div`
 
 export const DateArea = styled.div`
     max-width: 375px;
-    margin: 24px auto 0;
-    padding: 0 16px 25px;
+    margin: 0 auto;
+    padding: 16px 16px 0;
 `

@@ -1,17 +1,22 @@
-import { useState } from "react";
-import * as S from "./CollabList.styles";
+import { useState } from 'react'
+import { useTranslation } from '../../../i18n/useTranslation'
+import toggleArrowIcon from '../../../assets/info/collab-toggle-arrow.svg'
+import arrowRightIcon from '../../../assets/info/ep_arrow-right.svg'
+import * as S from './CollabList.styles'
 
-export default function CollabList({ collabs = [], onSelect }) {
-  const [expanded, setExpanded] = useState(false);
-  const visibleCollabs = expanded ? collabs : collabs.slice(0, 3);
+function CollabSection({ title, items, initialVisibleCount, onSelect }) {
+  const { t } = useTranslation()
+  const [expanded, setExpanded] = useState(false)
+  const visibleItems = expanded ? items : items.slice(0, initialVisibleCount)
+
   return (
-    <S.Stack>
+    <S.Section>
       <S.Heading>
-        <h2>함께하는 단체</h2>
-        <p>축제를 함께 만드는 협업 단체를 소개합니다.</p>
+        <h2>{title}</h2>
+        <span>{t('collab.count', { count: items.length })}</span>
       </S.Heading>
       <S.List>
-        {visibleCollabs.map((item) => (
+        {visibleItems.map((item) => (
           <S.Card key={item.id} type="button" onClick={() => onSelect(item.id)}>
             <S.Thumbnail>
               {item.imageUrl && <img src={item.imageUrl} alt="" />}
@@ -20,20 +25,52 @@ export default function CollabList({ collabs = [], onSelect }) {
               <strong>{item.name}</strong>
               <span>{item.description}</span>
             </S.Body>
-            <S.Chevron>›</S.Chevron>
+            <S.Chevron src={arrowRightIcon} alt="" aria-hidden="true" />
           </S.Card>
         ))}
       </S.List>
-      {collabs.length > 3 && (
+      {items.length > initialVisibleCount && (
         <S.More
           type="button"
           $expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
         >
-          <span>{expanded ? "접어서 보기" : "펼쳐 보기"}</span>
-          <S.MoreArrow $expanded={expanded} aria-hidden="true" />
+          <span>{t(expanded ? 'collab.collapse' : 'collab.expand')}</span>
+          <S.MoreArrow
+            src={toggleArrowIcon}
+            $expanded={expanded}
+            alt=""
+            aria-hidden="true"
+          />
         </S.More>
       )}
+    </S.Section>
+  )
+}
+
+export default function CollabList({
+  collabs = [],
+  booths = [],
+  onSelect,
+  onSelectBooth,
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <S.Stack>
+      <CollabSection
+        title={t('collab.organizations')}
+        items={collabs}
+        initialVisibleCount={3}
+        onSelect={onSelect}
+      />
+      <CollabSection
+        title={t('collab.booths')}
+        items={booths}
+        initialVisibleCount={2}
+        onSelect={onSelectBooth}
+      />
     </S.Stack>
-  );
+  )
 }

@@ -6,19 +6,28 @@ export const Stack = styled.div`
   gap: 24px;
 `
 
+export const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`
+
 export const Heading = styled.header`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: #100b0b;
+
   h2 {
     margin: 0;
-    color: #100b0b;
     font-size: 16px;
     font-weight: 500;
     line-height: 1;
   }
 
-  p {
-    margin: 12px 0 0;
-    color: #737373;
-    font-size: 12px;
+  span {
+    font-size: 14px;
+    font-weight: 500;
     line-height: 1;
   }
 `
@@ -91,30 +100,28 @@ export const Body = styled.span`
   }
 `
 
-export const Chevron = styled.span`
-  color: #9f9c99;
-  font-size: 24px;
+export const Chevron = styled.img`
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
 `
 
 export const More = styled.button`
   align-self: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: ${({ $expanded }) => ($expanded ? 'column-reverse' : 'column')};
   align-items: center;
   gap: 4px;
   padding: 0;
   border: 0;
   background: transparent;
   color: #100b0b;
-  font-size: 14px;
+  font-size: 12px;
 `
 
-export const MoreArrow = styled.span`
-  width: 12px;
-  height: 12px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: ${({ $expanded }) =>
-    $expanded ? 'rotate(225deg)' : 'rotate(45deg)'};
+export const MoreArrow = styled.img`
+  width: 18px;
+  height: 10px;
+  transform: ${({ $expanded }) => ($expanded ? 'rotate(180deg)' : 'none')};
 `
 

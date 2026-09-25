@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Modal from '../../../components/common/Modal'
@@ -12,6 +12,8 @@ import scien from '../assets/scien.png'
 import sogaeting from '../assets/sogaeting.svg'
 import ba from '../assets/ba.png'
 import ace from '../assets/ace.png'
+import leaders from '../assets/108.png'
+import stu from '../assets/stuco.png'
 
 // 상단 광고 배너 (기능명세서 바탕으로) 일정 시간(5초)마다 자동 롤링, 클릭 시 안내>협업 페이지로 이동
 
@@ -66,11 +68,29 @@ const BANNERS = [
     boothId: 18,
     to: null,
   },
+  {
+    id: 7,
+    title: '108 리더스',
+    image: leaders,
+    href: null,
+    boothId: null,
+    to: '/info/collab/108-leaders',
+  },
+  {
+    id: 8,
+    title: '축제기획단',
+    image: stu,
+    href: null,
+    boothId: null,
+    to: '/info/collab/festival-planning-team',
+  },
 ]
 
 const ROLLING_INTERVAL = 5000
 
-// 홈 부스 랭킹 모달과 동일한 바텀시트라서 이거 pr 이후에 공통으로 분리할 예정
+let lastIndex = 0
+
+// 홈에서 배너 클릭 시 부스 바텀시트 띄우는 것으로 드래그 없이 하단 고정
 const SHEET_STYLE = {
   position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
   width: '100%', maxWidth: 375, maxHeight: 'calc(100dvh - 40px)',
@@ -79,16 +99,30 @@ const SHEET_STYLE = {
   padding: '20px 20px calc(20px + env(safe-area-inset-bottom))',
 }
 
+const Track = styled.div`
+  position: relative;
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  scroll-behavior: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
 // 배너 안에 놓이는 건 인디케이터 하나뿐이라, 시안 padding이 곧 인디케이터 위치가 된다.
 // 350 + 14(인디케이터) + 11 = 375 / 61 + 12 + 7 = 80
-const Wrapper = styled.button`
-  width: calc(100% + 32px);
+const Slide = styled.button`
+  flex: 0 0 100%;
   height: 80px;
+  scroll-snap-align: start;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  align-self: stretch;
-  margin: 0 -16px;
   padding: 61px 11px 7px 350px;
   border: 0;
   border-radius: 0;
@@ -99,26 +133,62 @@ const Wrapper = styled.button`
 `
 
 const Indicator = styled.span`
+  position: absolute;
+  right: 11px;
+  bottom: 7px;
   color: #fff;
   font-size: 9px;
   line-height: 1;
   white-space: nowrap;
+  pointer-events: none;
 `
 
 export default function AdBanner() {
   const navigate = useNavigate()
-  const [index, setIndex] = useState(0)
+  const location = useLocation()
+  const [index, setIndex] = useState(lastIndex % BANNERS.length)
   const [openBoothId, setOpenBoothId] = useState(null)
   const [sheetTab, setSheetTab] = useState('info')
   const triggerRef = useRef(null)
+  const trackRef = useRef(null)
+  const isUserScrolling = useRef(false)
 
   const closeSheet = useCallback(() => {
     setOpenBoothId(null)
     triggerRef.current?.focus()
   }, [])
 
+  // 현재 index로 스크롤 위치를 맞춘다 (자동 롤링 / 첫 진입 복원)
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    lastIndex = index
+    const track = trackRef.current
+    if (!track || isUserScrolling.current) return
+
+    track.scrollTo({
+      left: track.clientWidth * index,
+      behavior: isFirstRender.current ? 'auto' : 'smooth',
+    })
+    isFirstRender.current = false
+  }, [index])
+
+  // 사용자가 직접 넘긴 경우 index를 스크롤 위치에 맞춘다
+  const handleScroll = () => {
+    const track = trackRef.current
+    if (!track) return
+    isUserScrolling.current = true
+    const next = Math.round(track.scrollLeft / track.clientWidth)
+    setIndex((current) => (next === current ? current : next))
+    window.clearTimeout(trackRef.current._t)
+    trackRef.current._t = window.setTimeout(() => {
+      isUserScrolling.current = false
+    }, 200)
+  }
+
   useEffect(() => {
     const timer = setInterval(() => {
+      if (isUserScrolling.current) return
       setIndex((current) => (current + 1) % BANNERS.length)
     }, ROLLING_INTERVAL)
 
@@ -129,9 +199,7 @@ export default function AdBanner() {
     return null
   }
 
-  const banner = BANNERS[index]
-
-  const handleClick = (event) => {
+  const handleClick = (banner) => (event) => {
     if (banner.href) {
       window.open(banner.href, '_blank', 'noopener,noreferrer')
       return
@@ -143,23 +211,29 @@ export default function AdBanner() {
       return
     }
     if (banner.to) {
-      navigate(banner.to)
+      navigate(banner.to, {
+        state: { from: `${location.pathname}${location.search}` },
+      })
     }
   }
 
   return (
     <>
-      <Wrapper
-        type="button"
-        $image={banner.image}
-        aria-label={banner.title}
-        aria-haspopup={banner.boothId ? 'dialog' : undefined}
-        onClick={handleClick}
-      >
+      <Track ref={trackRef} onScroll={handleScroll}>
+        {BANNERS.map((banner) => (
+          <Slide
+            key={banner.id}
+            type="button"
+            $image={banner.image}
+            aria-label={banner.title}
+            aria-haspopup={banner.boothId ? 'dialog' : undefined}
+            onClick={handleClick(banner)}
+          />
+        ))}
         <Indicator aria-hidden="true">
           {index + 1}/{BANNERS.length}
         </Indicator>
-      </Wrapper>
+      </Track>
 
       {openBoothId != null && (
         <Modal open onClose={closeSheet} style={SHEET_STYLE}>

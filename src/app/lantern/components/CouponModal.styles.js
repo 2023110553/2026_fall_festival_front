@@ -49,7 +49,7 @@ export const Button = styled.button`
 `
 
 export const PrimaryButton = styled(Button)`
-  background-color: #737373;
+  background-color: #272727;
   color: #fff;
 
   &:disabled {

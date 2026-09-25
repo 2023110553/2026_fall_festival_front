@@ -4,6 +4,8 @@ export const Page = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* 위 탭(343px / 375px 컨테이너)과 같은 16px 좌우 여백 */
+  padding: 0 16px;
 `
 
 export const Header = styled.div`

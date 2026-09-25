@@ -1,6 +1,6 @@
 import { getBooths } from '../../../api/map'
 import { useAuthStore } from '../../../store/useAuthStore'
-import { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MAP_ZONES } from '../../../constants/zones'
 import { useTranslation } from '../../../i18n/useTranslation'
@@ -9,6 +9,22 @@ import { useTranslation } from '../../../i18n/useTranslation'
 // 홈 "현재 인기" 지도 미리보기가 /map?zone=zone2 식으로 특정 구역으로 바로 진입할 때 쓴다.
 const resolveZoneId = (candidate) =>
   MAP_ZONES.some((zone) => zone.id === candidate) ? candidate : MAP_ZONES[0].id
+
+// URL의 ?booth=<부스 id>. 홈 부스 랭킹에서 /map?zone=zone2&booth=57 식으로 특정 부스 상세로 바로 들어올 때 쓴다.
+// 부스 id는 백엔드에서 1부터 올라가는 정수라 그 형태가 아니면(빈 값, 문자열, 0 이하) 무시하고 목록 화면으로 연다.
+const resolveBoothId = (candidate) => {
+  const boothId = Number(candidate)
+  return Number.isInteger(boothId) && boothId > 0 ? boothId : null
+}
+
+// 부스 id → 그 부스가 속한 구역 id. 목록이 아직 안 왔거나 목록에 없는 부스면 null.
+// allBooths는 구역 필터를 거치기 **전**의 전체 목록(currentList.data.booths)이어야 한다 —
+// 구역 필터를 거친 booths로 찾으면 "지금 보고 있는 구역 밖 부스"를 영영 못 찾는다(그게 이 함수를 만든 이유다).
+function findZoneIdByBoothId(allBooths, boothId) {
+  if (boothId == null || !Array.isArray(allBooths)) return null
+  const booth = allBooths.find((item) => item.booth_id === boothId)
+  return MAP_ZONES.find((zone) => zone.label === booth?.zone)?.id ?? null
+}
 
 // 지도 섹션(검색/구역/주야/날짜/바텀시트/등불보기 탭)에서만 쓰는 로컬 상태를 묶어두는 Context.
 // map-section-scope-and-roles.md 합의사항: "여전히 전역 상태까지는 불필요 —
@@ -39,12 +55,52 @@ export function MapProvider({ children }) {
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
   const [searchTerm, setSearchTerm] = useState('')
 
-  // 디자인 미리보기용 초기값
-  const [selectedBoothId, setSelectedBoothId] = useState(null)
+  // 2026-09-23: ?booth=로 들어오면 그 부스 상세를 처음부터 연다(홈 부스 랭킹 → 지도).
+  // 값이 없으면 예전처럼 null(부스 목록 화면)로 시작한다.
+  const [selectedBoothId, setSelectedBoothIdState] = useState(() => resolveBoothId(searchParams.get('booth')))
   const [isSheetOpen, setIsSheetOpen] = useState(true)
   //바텀시트 디자인 후 주석 풀어야합니다!!!!!!
-  // const [selectedBoothId, setSelectedBoothId] = useState(null)
   // const [isSheetOpen, setIsSheetOpen] = useState(false)
+
+  // 아래 setSelectedBoothId가 "고른 부스가 어느 구역인지"를 찾을 때 쓰는 전체 목록(구역 필터 전).
+  // 실제 값은 목록 응답이 계산된 뒤(아래 allBooths 자리)에 넣는다 — 렌더 중에 넣으므로
+  // 사용자가 부스를 누르는 시점에는 항상 최신이다.
+  //
+  // 왜 state가 아니라 ref인가: 이 목록을 useCallback 의존성에 넣으면 목록이 갱신될 때마다
+  // setSelectedBoothId의 참조가 바뀌고, 그 함수를 받는 컨텍스트 value와 자식 memo가 전부 깨진다.
+  const allBoothsRef = useRef(null)
+
+  // 부스를 고르거나 닫으면 URL(?booth=)도 같이 갱신 — zone과 같은 규칙이라 새로고침·공유·뒤로가기 동작이 일관된다.
+  // replace라 부스를 눌러볼 때마다 뒤로가기 히스토리가 쌓이지는 않는다(zone과 동일).
+  //
+  // 2026-09-24: 고른 부스가 지금 보고 있는 구역 밖이면 구역(zoneId)도 같이 옮긴다.
+  // 전체 검색(GET /api/booths/search/)은 날짜·시간대·구역을 가리지 않고 결과를 주는데 지도는 한 구역만
+  // 그리기 때문에, 이 보정이 없으면 "혜화관을 보는 채로 팔정도 부스 상세만 열리는" 상태가 된다.
+  // 그 부스는 3D 씬에도 안 그려져 있고(ZoneBooths가 구역 필터를 거친 booths를 받는다),
+  // 카메라도 목적지를 못 찾는다.
+  //
+  // 부스를 고르는 경로가 셋(3D 핀 클릭 / 바텀시트 목록·검색 / 홈 랭킹의 ?booth=)인데 전부 이 함수를
+  // 지나가므로, 여기 한 곳에 두면 세 경로가 같은 규칙을 따른다. 검색 패널이나 바텀시트에 넣으면
+  // 나머지 경로에 같은 코드를 또 써야 한다.
+  const setSelectedBoothId = useCallback((nextBoothId) => {
+    const resolved = resolveBoothId(nextBoothId)
+    setSelectedBoothIdState(resolved)
+
+    const pickedZoneId = findZoneIdByBoothId(allBoothsRef.current, resolved)
+
+    // zone과 booth를 한 번의 setSearchParams 안에서 같이 쓴다.
+    // setZoneId를 따로 부르면 setSearchParams가 두 번 돌아 앞의 변경을 덮어쓸 수 있다.
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (resolved == null) next.delete('booth')
+      else next.set('booth', String(resolved))
+      if (pickedZoneId) next.set('zone', pickedZoneId)
+      return next
+    }, { replace: true })
+
+    // URL은 위에서 이미 갱신했으므로 setZoneId(또 setSearchParams를 부른다)가 아니라 상태 setter를 직접 부른다.
+    if (pickedZoneId) setZoneIdState(pickedZoneId)
+  }, [setSearchParams])
   const [sheetTab, setSheetTab] = useState('info') // 'info' | 'lantern'
   // 2026-09-13(3차): 부스 밝기 단계 임시 미리보기 상태 — 0~MAX_LANTERN_TIER(constants/lanternTiers.js).
   // 원래 설계(final-plan-team-share.md 2-3절)는 부스마다 실제 등불 개수(lantern_count)를
@@ -79,6 +135,30 @@ export function MapProvider({ children }) {
   const booths = useMemo(() => (currentList?.data?.booths ?? []).filter(
     (booth) => booth.zone === zoneLabel
   ), [currentList, zoneLabel])
+
+  // 구역 필터를 거치기 전의 전체 목록. 위 setSelectedBoothId와 아래 첫 진입 보정이 함께 쓴다.
+  const allBooths = currentList?.data?.booths
+  allBoothsRef.current = allBooths
+
+  // ?booth=로 들어왔는데 ?zone=이 빠졌거나 다른 구역을 가리키면, 부스 목록이 도착한 뒤 그 부스의 구역으로 맞춘다.
+  // 홈에서 넘어올 때는 이미 구역을 알고 링크를 만들기 때문에(zone 동봉) 보통은 할 일이 없고,
+  // 외부에서 /map?booth=57만 공유받은 경우를 위한 안전망이다.
+  //
+  // setSelectedBoothId가 같은 보정을 하는데도 이 이펙트가 따로 필요한 이유:
+  // 첫 진입의 ?booth=는 useState 초기값으로 들어와서 setSelectedBoothId를 거치지 않고,
+  // 그 시점에는 목록 응답도 아직 도착 전이라 구역을 알 방법이 없다. 목록이 오는 걸 기다려야 한다.
+  //
+  // 딱 한 번만 맞춘다 — 그 뒤에 사용자가 구역 토글로 다른 구역을 둘러보는 걸 여기서 되돌리면 안 되기 때문.
+  // (목록에 없는 부스면 보정 대상이 없으므로 그대로 두고, 상세 정보는 BoothDetailPanel이 id로 따로 받아온다.)
+  const pendingZoneFixRef = useRef(selectedBoothId)
+
+  useEffect(() => {
+    const pendingBoothId = pendingZoneFixRef.current
+    if (pendingBoothId == null || !Array.isArray(allBooths)) return
+    pendingZoneFixRef.current = null
+    const boothZoneId = findZoneIdByBoothId(allBooths, pendingBoothId)
+    if (boothZoneId && boothZoneId !== zoneId) setZoneId(boothZoneId)
+  }, [allBooths, zoneId, setZoneId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -135,6 +215,7 @@ export function MapProvider({ children }) {
       selectedDate,
       searchTerm,
       selectedBoothId,
+      setSelectedBoothId,
       isSheetOpen,
       sheetTab,
       boothBrightnessPreview,
