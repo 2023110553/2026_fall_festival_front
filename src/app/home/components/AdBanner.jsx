@@ -90,7 +90,7 @@ const ROLLING_INTERVAL = 5000
 
 let lastIndex = 0
 
-// 홈 부스 랭킹 모달과 동일한 바텀시트라서 이거 pr 이후에 공통으로 분리할 예정
+// 홈에서 배너 클릭 시 부스 바텀시트 띄우는 것으로 드래그 없이 하단 고정
 const SHEET_STYLE = {
   position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
   width: '100%', maxWidth: 375, maxHeight: 'calc(100dvh - 40px)',
