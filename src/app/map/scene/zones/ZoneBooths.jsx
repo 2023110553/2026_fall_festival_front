@@ -1,7 +1,14 @@
 import BoothMarker from './BoothMarker'
 import BoothPin from './BoothPin'
-import { BOOTH_PIN_PREVIEW, BOOTH_PIN_PROPS } from './boothPinPreview'
+import BoothLantern from './BoothLantern'
+import { BOOTH_LANTERN_PROPS, BOOTH_PIN_PREVIEW, BOOTH_PIN_PROPS } from './boothPinPreview'
 import { getBoothTents } from './boothTents'
+import { useOptionalMapContext } from '../../context/MapProvider'
+import {
+  getBoothLanternCount,
+  getBoothMarkerStyle,
+  normalizeTimeSlot,
+} from '../../../../constants/boothMarkerColors'
 
 // 구역 부스 목록(API 응답의 booths[]) → BoothMarker 배치.
 //
@@ -42,6 +49,15 @@ import { getBoothTents } from './boothTents'
 // 바닥 글로우(등불 단계)는 천막마다 켠다 — 한 부스가 쓰는 자리 전체가 밝아지는 게 실제에 가깝다.
 // 대표 천막만 켜고 싶으면 아래 glow 조건을 showLabel과 같은 방식으로 바꾸면 된다.
 //
+// 2026-09-24(2차): 마커를 3D 물방울 핀(BoothPin) → 등불(BoothLantern)로 교체 — 기디 요청, 재원 승인
+// (campus-map/booth-lantern-marker-plan.md). 색도 카테고리 색 → 기디 분류 기준(주간 부스/푸드트럭 · 야간 단과대별/동아리 ·
+// 동빛 에코코 · 그 외)으로 바뀌었다. 분류는 constants/boothMarkerColors.js가 하고, 여기는 두 가지만 넘긴다:
+//   - 시간대: 지금 그리는 목록이 주간인지 야간인지. MapProvider의 listTimeOfDay('day' | 'night')가 부스 목록 API 요청과
+//     같은 값이라 그걸 읽는다. MapCanvas의 timeOfDay(조명용, 'sunset'도 있음)와 섞지 않은 이유 — 조명 연출과 데이터
+//     시간대는 따로 바뀔 수 있다. Provider 밖(검증 페이지·지도 뷰어)에서는 timeSlot prop으로 넘기면 된다.
+//   - 숫자: 부스는 등불 개수(0 포함), 시설은 null(숫자 없는 빈 등불 — 시설은 등불을 받을 수 없다).
+// 예전 핀은 ?marker=pin 으로 비교해 볼 수 있다(boothPinPreview.js). 기디가 등불을 확정하면 핀과 그 스위치를 정리한다.
+//
 // booth 스키마(GET /api/booths/ 명세):
 //   - booth_id: BoothMarker key + onBoothClick(boothId)에 넘기는 값
 //   - map_x / map_y / map_elevation / rotation: Three.js 씬 좌표(m) — map_x=씬 x, map_y=씬 z,
@@ -54,9 +70,12 @@ import { getBoothTents } from './boothTents'
 //   - booths: 부스 배열(없으면 아무것도 안 그림)
 //   - brightnessLevel: (선택) 밝기 단계 override — null이면 BoothMarker가 lantern_count로 자동 계산
 //     (BoothMarker.jsx 19번 항목). MapProvider.boothBrightnessPreview가 MapCanvas → 씬 → 여기로 내려온다.
+//   - timeSlot: (선택) 'DAY' | 'NIGHT' — 없으면 MapProvider의 listTimeOfDay를 쓴다(위 2026-09-24(2차) 항목)
 //   - onBoothClick(boothId): 부스 클릭 콜백(MapShell이 바텀시트 열기로 연결)
-export default function ZoneBooths({ booths = [], brightnessLevel = null, onBoothClick }) {
-  const { showPin, showLabel } = BOOTH_PIN_PREVIEW
+export default function ZoneBooths({ booths = [], brightnessLevel = null, timeSlot: timeSlotProp, onBoothClick }) {
+  const { markerKind, showLabel } = BOOTH_PIN_PREVIEW
+  const mapContext = useOptionalMapContext()
+  const timeSlot = normalizeTimeSlot(timeSlotProp ?? mapContext?.listTimeOfDay)
 
   return booths.map((booth, index) => {
     // 좌표가 없는 부스(정보 미수령)는 천막이 0동으로 나온다 — 3D 씬에서는 건너뛴다.
@@ -66,7 +85,7 @@ export default function ZoneBooths({ booths = [], brightnessLevel = null, onBoot
       return null
     }
 
-    // 핀과 라벨이 붙는 대표 천막. placements는 백엔드에서 날짜·시간대·천막번호 순으로 정렬돼 오고,
+    // 마커(등불)와 라벨이 붙는 대표 천막. placements는 백엔드에서 날짜·시간대·천막번호 순으로 정렬돼 오고,
     // 없으면 부스 자신이 첫 항목이라 어느 쪽이든 "대표 좌표"와 같은 자리다.
     const [representative] = tents
     const handleClick = () => onBoothClick?.(booth.booth_id)
@@ -87,12 +106,21 @@ export default function ZoneBooths({ booths = [], brightnessLevel = null, onBoot
             onClick={handleClick}
           />
         ))}
-        {showPin ? (
+        {markerKind === 'lantern' ? (
+          <BoothLantern
+            position={representative.position}
+            colors={getBoothMarkerStyle(booth, timeSlot)}
+            count={getBoothLanternCount(booth)}
+            // 부스마다 다른 위상을 줘야 등불들이 한 몸처럼 같이 출렁이지 않고 따로 논다
+            bobPhase={index * 0.7}
+            onClick={handleClick}
+            {...BOOTH_LANTERN_PROPS}
+          />
+        ) : markerKind === 'pin' ? (
           <BoothPin
             position={representative.position}
             category={booth.category}
             count={Number(booth.lantern_count) || 0}
-            // 부스마다 다른 위상을 줘야 핀들이 한 몸처럼 같이 출렁이지 않고 따로 논다
             bobPhase={index * 0.7}
             onClick={handleClick}
             {...BOOTH_PIN_PROPS}
