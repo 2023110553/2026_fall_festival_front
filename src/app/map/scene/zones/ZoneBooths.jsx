@@ -98,6 +98,7 @@ export default function ZoneBooths({ booths = [], brightnessLevel = null, timeSl
             position={tent.position}
             rotationY={tent.rotationY}
             size={tent.size}
+            spec={tent.spec}
             label={booth.name}
             showLabel={showLabel && tent === representative}
             category={booth.category}

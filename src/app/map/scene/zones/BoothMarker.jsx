@@ -6,7 +6,16 @@ import PinLabel from '../../components/PinLabel/PinLabel'
 import { useTimeOfDay } from '../environment/TimeOfDayContext'
 import PagodaTent from './PagodaTent'
 import { MAX_LANTERN_TIER, getLanternTier } from '../../../../constants/lanternTiers'
-import { BOOTH_SIZE, BOOTH_SIZE_SPECS, getBoothTopHeight, normalizeBoothSize } from '../../../../constants/boothSizes'
+import FoodTruck from './FoodTruck'
+import MarketArea from './MarketArea'
+import {
+  BOOTH_SIZE,
+  BOOTH_SIZE_SPECS,
+  BOOTH_STRUCTURE,
+  getBoothFootprint,
+  getBoothSizeSpec,
+  normalizeBoothSize,
+} from '../../../../constants/boothSizes'
 
 // 재사용 가능한 부스(천막) 오브젝트 — 실제 부스 3D 템플릿(.glb)이 아직 없어서
 // 좌표 소환 테스트 겸 시각적 데모용으로 만든 캐노피(가젤보) 천막 메시.
@@ -711,6 +720,7 @@ export default function BoothMarker({
   category,
   lanternCount = 0,
   size,
+  spec,
   color,
   accentColor,
   brightnessLevel = null,
@@ -719,6 +729,18 @@ export default function BoothMarker({
   // 천막 규격(21번 항목) — API의 booth_size를 "BIG" | "SMALL"로 정리한다. 값이 없거나 모르는 값이면 "BIG"(기존 천막).
   const boothSize = normalizeBoothSize(size)
   const isSmallTent = boothSize === BOOTH_SIZE.SMALL
+  // 22번 항목(2026-09-26) — 천막이 아닌 구조물(푸드트럭·플리마켓). placements의 structure/width/depth가
+  // spec으로 올라온다(boothTents.js). 없으면 resolved.structure가 "TENT"라 아래 분기가 기존 천막으로 떨어진다.
+  const resolved = getBoothSizeSpec(size, spec)
+  const isTent = resolved.structure === BOOTH_STRUCTURE.TENT
+  // 바닥 글로우 배율 — 21 × 12짜리 플리마켓에 천막용 글로우(반경 4.5)를 그대로 쓰면 구역 한가운데
+  // 작은 원 하나만 찍혀서 어색하다. 그래서 발자국의 짧은 변을 큰 천막(6m) 기준으로 재서 키운다.
+  // 천막과 푸드트럭은 짧은 변이 6m 미만이라 1로 clamp돼 기존 화면이 그대로다.
+  const footprint = getBoothFootprint(size, spec)
+  const glowScale = Math.max(
+    1,
+    Math.min(footprint.width, footprint.depth) / BOOTH_SIZE_SPECS[BOOTH_SIZE.BIG].width
+  )
 
   // 밝기 단계 결정(19번 항목): brightnessLevel이 명시되면(개발용 override) 그 값을, 아니면 이 부스의
   // 등불 개수로 getLanternTier()가 정한 단계를 쓴다. lanternCount도 Number()로 감싸는 이유는 API 응답이
@@ -748,11 +770,18 @@ export default function BoothMarker({
           단계별 실제 값은 전부 BRIGHTNESS_TIERS 표에 있다 — 여기서 수식으로 계산하지 않음.
           21번 항목: 천막 크기(booth_size)와 무관하게 같은 표를 쓴다 — 작은 천막이라고 글로우까지 작으면
           "등불이 적은 부스"처럼 읽혀서, 등불 인기도 표현은 천막 크기와 상관없이 똑같이 보여준다. */}
-      <GroundGlow opacity={glowOpacity} radius={glowRadius} intensity={glowIntensity} />
+      <GroundGlow opacity={glowOpacity} radius={glowRadius * glowScale} intensity={glowIntensity} />
 
-      {/* 천막 본체 — booth_size별로 다른 천막을 그린다(21번 항목). 큰 천막(기본)은 기존 캐노피 그대로이고,
+      {/* 구조물 본체 — 기본은 booth_size별 천막이고(21번 항목), placements가 structure를 주면
+          푸드트럭·플리마켓을 대신 그린다(22번 항목). 큰 천막은 기존 캐노피 그대로이고,
           작은 천막은 조명 장식 없이 천막만 있다(재원 선택) — 등불 단계는 위 바닥 글로우로만 보인다. */}
-      {isSmallTent ? (
+      {!isTent ? (
+        resolved.structure === BOOTH_STRUCTURE.TRUCK ? (
+          <FoodTruck accentColor={accentColor} lightScale={lightScale} />
+        ) : (
+          <MarketArea width={resolved.width} depth={resolved.depth} lightScale={lightScale} />
+        )
+      ) : isSmallTent ? (
         <PagodaTent color={color} />
       ) : (
         <CanopyTent color={color} accentColor={accentColor} lightScale={lightScale} />
@@ -769,7 +798,7 @@ export default function BoothMarker({
       {label && showLabel ? (
         <group
           name={`booth-label-${label}`}
-          position={[0, getBoothTopHeight(boothSize) + 0.5, 0]}
+          position={[0, resolved.topHeight + 0.5, 0]}
         >
           <Html center distanceFactor={30} zIndexRange={[10, 0]}>
             <PinLabel onClick={onClick} label={label} category={category} lanternCount={lanternCount} />
