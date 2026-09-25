@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../../../i18n/useTranslation'
 import toggleArrowIcon from '../../../assets/info/collab-toggle-arrow.svg'
+import arrowRightIcon from '../../../assets/info/ep_arrow-right.svg'
 import * as S from './CollabList.styles'
 
 function CollabSection({ title, items, initialVisibleCount, onSelect }) {
@@ -24,7 +25,7 @@ function CollabSection({ title, items, initialVisibleCount, onSelect }) {
               <strong>{item.name}</strong>
               <span>{item.description}</span>
             </S.Body>
-            <S.Chevron>›</S.Chevron>
+            <S.Chevron src={arrowRightIcon} alt="" aria-hidden="true" />
           </S.Card>
         ))}
       </S.List>

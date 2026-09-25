@@ -176,6 +176,8 @@ export const ProfileIcon = styled.img`
 `
 
 export const LoginButton = styled.button`
+  appearance: none;
+  -webkit-appearance: none;
   width: 54px;
   height: 24px;
   flex: 0 0 54px;
@@ -184,6 +186,7 @@ export const LoginButton = styled.button`
   border-radius: 12px;
   background: #fdfdfd;
   box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
+  color: #100b0b;
   font-size: 10px;
   font-weight: 400;
   line-height: 22px;

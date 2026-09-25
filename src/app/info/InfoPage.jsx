@@ -90,11 +90,11 @@ export default function InfoPage() {
     (item) => item.id === collabBoothSlug,
   )
   const returnFromCollabDetail = () => {
-    if (location.state?.from) {
+    if (location.state?.from?.startsWith('/info')) {
       navigate(-1)
       return
     }
-    navigate('/info')
+    navigate('/info', { replace: true })
   }
 
   useEffect(() => {

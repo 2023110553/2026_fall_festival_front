@@ -21,7 +21,7 @@ export const Track = styled.p`
   left: 16.8px;
   z-index: 2;
   margin: 0;
-  font-size: 14px;
+  font-size: ${({ $compact }) => ($compact ? '12px' : '14px')};
   font-weight: 500;
   line-height: normal;
 `

@@ -7,37 +7,35 @@ export const Stack = styled.div`
 `
 
 export const SearchWrap = styled.label`
-  position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+  border: 1px solid #272727;
+  border-radius: 8px;
 `
 
 export const SearchIcon = styled.img`
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  width: 20px;
-  height: 20px;
-  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  margin: 0 6px;
+  flex: 0 0 24px;
 `
 
 export const Search = styled.input`
   width: 100%;
-  height: 38px;
-  padding: 0 10px 0 38px;
-  border: 0.6px solid #737373;
-  border-radius: 8px;
+  min-width: 0;
+  padding: 8px 4px;
+  border: 0;
   outline: none;
   background: transparent;
-  color: #100b0b;
-  font-size: 14px;
-  font-weight: 400;
+  color: #272727;
+  font: inherit;
+  font-size: 16px;
 
   &::placeholder {
-    color: #737373;
-  }
-
-  &:focus {
-    border-color: #dc7054;
+    color: #272727;
+    opacity: 1;
   }
 `
 
