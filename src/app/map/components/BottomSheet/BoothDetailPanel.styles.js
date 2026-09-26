@@ -52,16 +52,19 @@ export const Header = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `
 
 export const Identity = styled.div`
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 `
 
 export const Title = styled.span`
-color: var(--aurora_black, #100B0B);
+color: #1E1E1E;
 
 /* semi20 */
 font-family: Pretendard;
@@ -72,7 +75,7 @@ line-height: normal;
 `
 
 export const Subtitle = styled.p`
-color: var(--text-or-darkgrey, #737373);
+color: #1E1E1E;
 
 /* medium14 */
 font-family: Pretendard;
@@ -82,7 +85,6 @@ font-weight: 500;
 line-height: normal;
 
 margin: 0px;
-margin-top: 4px;
 `
 
 export const Lantern = styled.div`

@@ -128,7 +128,7 @@ export default function BottomSheet() {
           onPointerCancel={handleDragEnd}
           onLostPointerCapture={handleDragEnd}
         >
-          <S.HandleBar $isNight={listTimeOfDay === 'night'} />
+          <S.HandleBar />
         </S.DragHandle>
       )}
       <S.Content ref={contentRef}>
