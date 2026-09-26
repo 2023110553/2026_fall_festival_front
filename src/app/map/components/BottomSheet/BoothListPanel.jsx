@@ -27,7 +27,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
         </S.SearchButton>
       </S.Top>
       <S.Time>
-        {listTimeOfDay === 'day' ? '11:00-16:30' : '17:30-22:00'}
+        {listTimeOfDay === 'day' ? '11:00 - 16:30' : '17:30 - 22:00'}
       </S.Time>
     </S.TimeWrapper>
 

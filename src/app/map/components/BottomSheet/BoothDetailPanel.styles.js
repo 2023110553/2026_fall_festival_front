@@ -22,7 +22,7 @@ export const Toolbar = styled.div`
 export const Back = styled.button`
   border: 0;
   background: transparent;
-  color: #737373;
+  color: ${({ $isNight }) => $isNight ? '#272727' : '#9F9C99'};
   width: 32px;
   height: 32px;
   font-size: 22px;

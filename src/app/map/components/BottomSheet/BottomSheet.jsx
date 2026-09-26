@@ -5,7 +5,7 @@ import BoothDetailPanel from './BoothDetailPanel'
 import * as S from './BottomSheet.styles'
 
 export default function BottomSheet() {
-  const { isSheetOpen, selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate, setSearchTerm } = useMapContext()
+  const { isSheetOpen, selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate, setSearchTerm, listTimeOfDay } = useMapContext()
   const [isSearching, setIsSearching] = useState(false)
   const previousSnap = useRef('middle')
   const [sheetHeight, setSheetHeight] = useState(null)
@@ -18,10 +18,16 @@ export default function BottomSheet() {
   useEffect(() => {
     if (selectedBoothId != null) {
       setSheetHeight(null)
-      setSnapPosition('high')
+      setSnapPosition('low')
     }
     if (contentRef.current) contentRef.current.scrollTop = 0
   }, [selectedBoothId])
+
+  useEffect(() => {
+    if (!isSearching) return
+    setSheetHeight(null)
+    setSnapPosition('high')
+  }, [isSearching])
 
   useEffect(() => {
     if (!isSheetOpen || isSearching) return
@@ -45,6 +51,7 @@ export default function BottomSheet() {
   }, [isSheetOpen, isSearching])
 
   const handleDragStart = (event) => {
+    if (isSearching) return
     if (!event.isPrimary || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     const sheet = sheetRef.current
@@ -112,7 +119,7 @@ export default function BottomSheet() {
   return (
     <S.Sheet
       ref={sheetRef}
-      $snapPosition={snapPosition}
+      $snapPosition={isSearching ? 'high' : snapPosition}
       $isDragging={isDragging}
       style={{ height: sheetHeight == null ? undefined : `${sheetHeight}px` }}
     >
@@ -123,7 +130,7 @@ export default function BottomSheet() {
         onPointerCancel={handleDragEnd}
         onLostPointerCapture={handleDragEnd}
       >
-        <S.HandleBar />
+        <S.HandleBar $isNight={listTimeOfDay === 'night'} />
       </S.DragHandle>
       <S.Content ref={contentRef}>
         {selectedBoothId == null ? (
@@ -150,6 +157,7 @@ export default function BottomSheet() {
           sheetTab={sheetTab}
           setSheetTab={setSheetTab}
           selectedDate={selectedDate}
+          isNight={listTimeOfDay === 'night'}
         />
         )}
       </S.Content>

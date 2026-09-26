@@ -11,7 +11,7 @@ export default function BoothCardList({ booths: providedBooths, onSelectBooth, f
   const { searchTerm } = useMapContext()
   const filtered = useBoothSearch(providedBooths, filterBySearchTerm ? searchTerm : '')
 
-  if (filtered.length === 0) return <p>{t('map.noBooths')}</p>
+  if (filtered.length === 0) return <S.StatusMessage>{t('map.noBooths')}</S.StatusMessage>
 
   return (
     // <ul>

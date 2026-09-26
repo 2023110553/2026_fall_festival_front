@@ -3,11 +3,9 @@ import styled from 'styled-components'
 export const Sheet = styled.div`
     position: fixed;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
 
-    width: 100%;
-    max-width: 375px;
+    width: 100vw;
     --sheet-top-gap: 40px;
     --middle-height: 62dvh;
     --collapsed-height: min(calc(100dvh - var(--sheet-top-gap)), max(26dvh, calc(${({ theme }) => theme.nav.height} + 142px + env(safe-area-inset-bottom))));
@@ -50,7 +48,7 @@ export const HandleBar = styled.div`
     width: 48px;
     height: 4px;
     border-radius: 999px;
-    background: #9F9C99;
+    background: ${({ $isNight }) => $isNight ? '#272727' : '#9F9C99'};
 `
 
 export const Content = styled.div`
