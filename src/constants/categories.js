@@ -20,3 +20,21 @@ export const BOOTH_FILTER_CHIPS = [
   { value: 'ALCOHOL', labelKey: 'map.category.ALCOHOL' },
   { value: 'ECO', labelKey: 'map.category.ECO' },
 ]
+
+// 상세·카드에서 '간단 표시'로 그릴 곳인지 — 위치(와 가는 길)만 보여주고
+// 소개문구·운영시간·메뉴·등불은 감춘다. 등불을 받을 수 없는 시설이 대상이다.
+//
+// 2026-09-26 수정: 원래 조건이
+//   place_type === 'FACILITY' || ['TOILET', 'ALCOHOL'].includes(category)
+// 였는데, ALCOHOL은 야간 주점 부스에 붙는 **필터 칩 카테고리**(위 BOOTH_FILTER_CHIPS)이지
+// 시설이 아니다. 시설과 같이 묶여 있던 탓에 야간 주점 25곳이 전부 위치만 보이고
+// 소개문구(24곳)·운영시간·메뉴(94줄)가 감춰졌다. 등불 개수와 등불 탭도 같이 가려져서
+// 그 부스들은 등불 등록 자체가 막혀 있었다 — 등불 색 분류표(boothAffiliations.js의
+// NIGHT_BOOTH_AFFILIATION)가 바로 그 부스들을 단과대·동아리로 나눠 두고 있으니,
+// 야간 주점이 등불 대상인 건 분명하다.
+//
+// 같은 식이 BoothDetailPanel과 BoothCardList 두 곳에 복사돼 있던 것도 한쪽만 고치고
+// 지나칠 위험이 있어 여기로 모았다. 판정 기준이 바뀌면 이 함수만 고치면 된다.
+export function isSimplePlace(booth) {
+  return booth?.place_type === 'FACILITY' || booth?.category === 'TOILET'
+}
