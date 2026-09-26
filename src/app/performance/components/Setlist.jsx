@@ -24,7 +24,7 @@ export default function Setlist({
       {sortedSongs.map((song) => (
         <Song key={song.song_id}>
           {song.artist
-            ? `${song.title} - ${song.artist}`
+            ? `${song.artist} - ${song.title}`
             : song.title}
         </Song>
       ))}
