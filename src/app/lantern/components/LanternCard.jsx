@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import * as S from './LanternCard.styles'
 import { formatLanternDateTime } from '../utils/formatLanternDateTime'
 import { useTranslation } from '../../../i18n/useTranslation'
+import editIcon from '../../../assets/lantern/edit.svg'
+import deleteIcon from '../../../assets/lantern/delete.svg'
 
 export default function LanternCard({
     lantern,
@@ -75,6 +77,7 @@ export default function LanternCard({
                         onEdit(lantern.id)
                     }}
                     >
+                    <img src={editIcon} alt="" />
                     {t('lantern.edit')}
                     </S.DropdownItem>
                 )}
@@ -87,6 +90,7 @@ export default function LanternCard({
                         onDelete(lantern.id)
                     }}
                     >
+                    <img src={deleteIcon} alt="" />
                     {t('lantern.delete')}
                     </S.DropdownItem>
                 )}
