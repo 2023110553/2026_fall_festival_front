@@ -8,7 +8,7 @@ export const Sheet = styled.div`
     width: 100%;
     --sheet-top-gap: 40px;
     --middle-height: 62dvh;
-    --collapsed-height: min(calc(100dvh - var(--sheet-top-gap)), max(26dvh, calc(${({ theme }) => theme.nav.height} + 142px + env(safe-area-inset-bottom))));
+    --collapsed-height: min(calc(100dvh - var(--sheet-top-gap)), calc(${({ theme }) => theme.nav.height} + 48px + env(safe-area-inset-bottom)));
     height: ${({ $snapPosition }) => $snapPosition === 'high' ? 'calc(100dvh - var(--sheet-top-gap))' : $snapPosition === 'low' ? 'var(--collapsed-height)' : 'var(--middle-height)'};
     min-height: var(--collapsed-height);
     max-height: calc(100dvh - var(--sheet-top-gap));
@@ -45,10 +45,13 @@ export const DragHandle = styled.div`
 `
 
 export const HandleBar = styled.div`
-    width: 48px;
-    height: 4px;
-    border-radius: 999px;
-    background: ${({ $isNight }) => $isNight ? '#272727' : '#9F9C99'};
+    width: 51.785px;
+    height: 4.795px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    border-radius: 19.179px;
+    border: 0.959px solid #858585;
+    background: #858585;
 `
 
 export const Content = styled.div`
@@ -56,5 +59,10 @@ export const Content = styled.div`
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior-y: contain;
-    padding: 0 20px calc(${({ theme }) => theme.nav.height} + 39px + env(safe-area-inset-bottom));
+    padding: 0 20px;
+    &::after {
+        content: '';
+        display: block;
+        height: calc(${({ theme }) => theme.nav.height} + 39px + env(safe-area-inset-bottom));
+    }
 `

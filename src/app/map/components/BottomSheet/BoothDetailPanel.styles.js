@@ -52,16 +52,19 @@ export const Header = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `
 
 export const Identity = styled.div`
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 `
 
 export const Title = styled.span`
-color: var(--aurora_black, #100B0B);
+color: #1E1E1E;
 
 /* semi20 */
 font-family: Pretendard;
@@ -72,7 +75,7 @@ line-height: normal;
 `
 
 export const Subtitle = styled.p`
-color: var(--text-or-darkgrey, #737373);
+color: #1E1E1E;
 
 /* medium14 */
 font-family: Pretendard;
@@ -82,7 +85,6 @@ font-weight: 500;
 line-height: normal;
 
 margin: 0px;
-margin-top: 4px;
 `
 
 export const Lantern = styled.div`
@@ -151,6 +153,13 @@ font-size: 14px;
 font-style: normal;
 font-weight: 400;
 line-height: normal;
+
+/* 소개문구·이벤트 내용은 부스가 직접 쓴 여러 줄 글이라 줄바꿈을 살려야 한다.
+   2026-09-26까지는 이 설정이 없어서 줄바꿈 문자가 공백으로 눌렸고, 북한학전공(3줄)·FC 엘레펜테처럼
+   줄을 나눠 적은 부스의 글이 한 덩어리로 보였다. 푸드트럭 메뉴 목록도 같은 이유로 여기 걸린다.
+   pre-line은 줄바꿈만 살리고 연속 공백·들여쓰기는 그대로 접어주므로, 앞뒤 공백이 섞인
+   폼 응답을 그대로 넣어도 레이아웃이 깨지지 않는다(pre나 pre-wrap은 그게 안 된다). */
+white-space: pre-line;
 
 padding: 12px 0px;
 `

@@ -5,109 +5,165 @@ import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import helpingHand from '../../../../assets/map/Helping Hand.svg'
 import { useTranslation } from '../../../../i18n/useTranslation'
+import { isSimplePlace } from '../../../../constants/categories'
 
-const RESTROOM_BADGES = {
+const RESTROOM_TYPE_BADGES = {
   BOTH: ['W', 'M'],
   FEMALE: ['W'],
   MALE: ['M'],
 }
 
-// 하단 부스/장소 카드 리스트 — 썸네일/이름/소속/등불개수. 카테고리 필터·주야간 전환에 따라 갱신된다.
-export default function BoothCardList({ booths: providedBooths, onSelectBooth, filterBySearchTerm = true }) {
+// 하단 부스/장소 카드 리스트
+export default function BoothCardList({
+  booths: providedBooths,
+  onSelectBooth,
+  filterBySearchTerm = true,
+}) {
   const { t } = useTranslation()
   const { searchTerm, listTimeOfDay } = useMapContext()
-  const filtered = useBoothSearch(providedBooths, filterBySearchTerm ? searchTerm : '')
+
+  const filtered = useBoothSearch(
+    providedBooths,
+    filterBySearchTerm ? searchTerm : '',
+  )
 
   if (filtered.length === 0) {
-    return <S.StatusMessage $isNight={listTimeOfDay === 'night'}>{t('map.noBooths')}</S.StatusMessage>
+    return (
+      <S.StatusMessage $isNight={listTimeOfDay === 'night'}>
+        {t('map.noBooths')}
+      </S.StatusMessage>
+    )
   }
 
   return (
-    // <ul>
-    //   {filtered.map((booth) => (
-    //     <li key={booth.id} onClick={() => onSelectBooth(booth.id)}>
-    //       {booth.name} · 등불 {booth.lanternCount ?? 0}
-    //     </li>
-    //   ))}
-    // </ul>
-  <S.BoothCardList>
-    {filtered.map((booth) => {
-      const isRestroom = booth.category === 'TOILET'
-      const simple = booth.place_type === 'FACILITY' || ['TOILET', 'ALCOHOL'].includes(booth.category)
-      const restroomBadges = RESTROOM_BADGES[String(booth.restroom_type ?? '').toUpperCase()] ?? []
-      // 목록 API에는 directions가 없으므로 목 화면에서는 상세 응답으로 보완한다.
-      const directions = booth.directions
-      const selectBooth = () => onSelectBooth(booth.booth_id)
-      const selectBoothWithKeyboard = (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          selectBooth()
-        }
-      }
+    <S.BoothCardList>
+      {filtered.map((booth) => {
+        const isRestroom = booth.category === 'TOILET'
+        const simple = isSimplePlace(booth)
 
-      if (isRestroom) {
+        const restroomBadges =
+          RESTROOM_TYPE_BADGES[
+            String(booth.restroom_type ?? '').toUpperCase()
+          ] ?? []
+
+        const directions = booth.directions
+
+        const selectBooth = () => {
+          onSelectBooth(booth.booth_id)
+        }
+
+        const selectBoothWithKeyboard = (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            selectBooth()
+          }
+        }
+
+        if (isRestroom) {
+          return (
+            <S.RestroomCard
+              key={booth.booth_id}
+              role="button"
+              tabIndex={0}
+              onClick={selectBooth}
+              onKeyDown={selectBoothWithKeyboard}
+            >
+              {booth.thumbnail_url ? (
+                <S.Thumbnail
+                  src={booth.thumbnail_url}
+                  alt=""
+                />
+              ) : (
+                <S.RestroomThumbnail aria-hidden="true">
+                  WC
+                </S.RestroomThumbnail>
+              )}
+
+              <S.RestroomName>{booth.name}</S.RestroomName>
+
+              {restroomBadges.length > 0 && (
+                <S.RestroomBadges aria-label={t('map.restroomType')}>
+                  {restroomBadges.map((badge) => {
+                    const badgeLabel =
+                      badge === 'W'
+                        ? t('map.restroomWomen')
+                        : t('map.restroomMen')
+
+                    return (
+                      <S.RestroomBadge
+                        key={badge}
+                        $gender={badge}
+                        aria-label={badgeLabel}
+                        title={badgeLabel}
+                      >
+                        {badge}
+                      </S.RestroomBadge>
+                    )
+                  })}
+                </S.RestroomBadges>
+              )}
+            </S.RestroomCard>
+          )
+        }
+
+        const hasMyLantern =
+          booth.has_my_lantern ?? booth.hasMyLantern
+
         return (
-          <S.RestroomCard
+          <S.Card
             key={booth.booth_id}
             role="button"
             tabIndex={0}
             onClick={selectBooth}
             onKeyDown={selectBoothWithKeyboard}
           >
-            {booth.thumbnail_url ? (
-              <S.Thumbnail src={booth.thumbnail_url} alt="" />
-            ) : (
-              <S.RestroomThumbnail aria-hidden="true">WC</S.RestroomThumbnail>
+            <S.Thumbnail
+              src={booth.thumbnail_url}
+              alt={booth.name}
+            />
+
+            <S.Info>
+              <S.Title>{booth.name}</S.Title>
+
+              <S.Department>
+                {simple ? booth.location_detail : booth.subtitle}
+              </S.Department>
+
+              {simple ? (
+                directions && (
+                  <S.Directions>{directions}</S.Directions>
+                )
+              ) : (
+                <S.Location>{booth.location_detail}</S.Location>
+              )}
+            </S.Info>
+
+            {!simple && (
+              <S.LanternWrapper>
+                {booth.category === 'COLLAB' && (
+                  <S.CollabBadge>
+                    <img src={helpingHand} alt="" />
+                    {t('map.collab')}
+                  </S.CollabBadge>
+                )}
+
+                <S.LanternImg
+                  src={hasMyLantern ? lanternOn : lanternOff}
+                  alt={
+                    hasMyLantern
+                      ? t('map.lanternRegistered')
+                      : t('map.lanternNotRegistered')
+                  }
+                />
+
+                <S.LanternCount $hasMyLantern={hasMyLantern}>
+                  {booth.lantern_count}
+                </S.LanternCount>
+              </S.LanternWrapper>
             )}
-            <S.RestroomName>{booth.name}</S.RestroomName>
-            <S.RestroomBadges aria-label={t('map.restroomType')}>
-              {restroomBadges.map((badge) => (
-                <S.RestroomBadge
-                  key={badge}
-                  $gender={badge}
-                  aria-label={badge === 'W' ? t('map.restroomWomen') : t('map.restroomMen')}
-                  title={badge === 'W' ? t('map.restroomWomen') : t('map.restroomMen')}
-                >
-                  {badge}
-                </S.RestroomBadge>
-              ))}
-            </S.RestroomBadges>
-          </S.RestroomCard>
+          </S.Card>
         )
-      }
-
-      return (
-      <S.Card key={booth.booth_id} role="button" tabIndex={0}
-        onClick={selectBooth}
-        onKeyDown={selectBoothWithKeyboard}
-      >
-        <S.Thumbnail src={booth.thumbnail_url} alt={booth.name} />
-
-        <S.Info>
-          <S.Title>{booth.name}</S.Title>
-          <S.Department>{simple ? booth.location_detail : booth.subtitle}</S.Department>
-          {simple ? (
-            directions && <S.Directions>{directions}</S.Directions>
-          ) : <S.Location>{booth.location_detail}</S.Location>}
-        </S.Info>
-        
-        {!simple && <S.LanternWrapper>
-          {booth.category === 'COLLAB' && (
-            <S.CollabBadge>
-              <img src={helpingHand} alt="" />
-              {t('map.collab')}
-            </S.CollabBadge>
-          )}
-          <S.LanternImg
-            src={(booth.has_my_lantern ?? booth.hasMyLantern) ? lanternOn : lanternOff}
-            alt={(booth.has_my_lantern ?? booth.hasMyLantern) ? t('map.lanternRegistered') : t('map.lanternNotRegistered')}
-          />
-          <S.LanternCount $hasMyLantern={(booth.has_my_lantern ?? booth.hasMyLantern)}>{booth.lantern_count}</S.LanternCount>
-        </S.LanternWrapper>}
-      </S.Card>
-      )
-    })}
-  </S.BoothCardList>
-  
+      })}
+    </S.BoothCardList>
   )
 }

@@ -396,7 +396,7 @@ const mapTranslations = {
     'map.comingSoon': '지도 준비 중', 'map.boothLanterns': '{{name}} 부스, 등불 {{count}}개',
     'map.lanterns': '부스, 등불 {{count}}개', 'map.boothLanternList': '부스 등불 목록',
     'map.lanternPrompt': '등불을 달아 부스를 밝혀주세요!',
-    'map.lanternWarning': '욕설, 비방과 같은 내용을 게시할 시 처벌을 받을 수 있어요.',
+    'map.lanternWarning': '욕설, 비방과 같은 내용을 게시할 시 처벌을 받을 수 있습니다.',
     'map.onlyMine': '내가 쓴 등불만 보기', 'map.requestFailed': '요청을 완료하지 못했어요.',
     'map.notOwner': '본인이 작성한 등불만 수정·삭제할 수 있어요.', 'map.lanternNotFound': '존재하지 않는 등불이에요.',
     'map.alreadyDeleted': '이미 삭제된 등불이에요.', 'map.processError': '처리하지 못했어요. 다시 시도해주세요.',
