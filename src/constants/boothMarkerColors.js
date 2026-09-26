@@ -1,4 +1,5 @@
 import { AFFILIATION, FOOD_TRUCK_BOOTH_IDS, NIGHT_BOOTH_AFFILIATION } from './boothAffiliations'
+import { BOOTH_STRUCTURE, normalizeBoothStructure } from './boothSizes'
 
 // 등불 마커 색 분류 — 2026-09-24 추가(기디 요청, 재원 승인. 결정 기록: campus-map/booth-lantern-marker-plan.md).
 //
@@ -77,6 +78,23 @@ export function getBoothAffiliation(booth) {
 
 const foodTruckBoothIds = new Set(FOOD_TRUCK_BOOTH_IDS)
 
+// 푸드트럭인지. 두 가지 근거를 순서대로 본다(2026-09-26).
+//   1) placements에 structure === "TRUCK"이 있으면 푸드트럭.
+//      지도가 트럭 모형을 그릴 때 쓰는 것과 **같은 값**이라 모양과 색이 따로 놀 수 없고,
+//      booth_id를 표에 옮겨 적을 필요가 없어서 DB를 다시 넣어 pk가 바뀌어도 안 깨진다.
+//   2) FOOD_TRUCK_BOOTH_IDS에 있으면 푸드트럭 — placements를 못 받는 경로용 보조 수단
+//      (좌표 미수령 부스·목데이터 등, boothAffiliations.js 설명 참고).
+// 값 정리(대소문자·공백·모르는 값)는 normalizeBoothStructure가 한다 — boothTents.js와 같은 함수다.
+function isFoodTruck(booth) {
+  if (foodTruckBoothIds.has(booth?.booth_id)) return true
+  return (
+    Array.isArray(booth?.placements) &&
+    booth.placements.some(
+      (placement) => normalizeBoothStructure(placement?.structure) === BOOTH_STRUCTURE.TRUCK
+    )
+  )
+}
+
 // place_type이 없는 옛 데이터(목데이터 등)는 부스로 친다 — 그래야 필드 하나 빠졌다고 전부 '그 외'가 되지 않는다.
 function isBoothPlace(booth) {
   return (booth?.place_type ?? 'BOOTH') === 'BOOTH'
@@ -97,7 +115,7 @@ function warnMissingAffiliation(booth) {
 // 검사 순서가 곧 우선순위다:
 //   1) 동빛 에코코 — 시설로 등록돼도 에코코 색이 나와야 해서 시설 검사보다 먼저 본다
 //   2) 시설(place_type ≠ 'BOOTH') — 포토부스·화장실 등. 등불을 받을 수 없는 곳이라 '그 외'
-//   3) 주간 — 푸드트럭 / 나머지
+//   3) 주간 — 푸드트럭(isFoodTruck) / 나머지
 //   4) 야간 — 소속표(단과대 · 동아리)
 //   5) 어디에도 안 걸리면(시간대를 모르거나 소속표에 없는 야간 부스) '그 외'
 export function getBoothMarkerGroup(booth, timeSlot) {
@@ -106,12 +124,15 @@ export function getBoothMarkerGroup(booth, timeSlot) {
 
   const slot = normalizeTimeSlot(timeSlot)
   if (slot === TIME_SLOT.DAY) {
-    return foodTruckBoothIds.has(booth?.booth_id) ? 'DAY_FOOD_TRUCK' : 'DAY_BOOTH'
+    return isFoodTruck(booth) ? 'DAY_FOOD_TRUCK' : 'DAY_BOOTH'
   }
   if (slot === TIME_SLOT.NIGHT) {
     const affiliation = getBoothAffiliation(booth)
     if (affiliation && AFFILIATION[affiliation]) return `NIGHT_${affiliation}`
-    warnMissingAffiliation(booth)
+    // 푸드트럭은 단과대도 동아리도 아니라 소속표에 없는 게 정상이다. 여기서 경고를 띄우면
+    // "boothAffiliations.js에 추가하라"는 잘못된 안내가 되므로 건너뛴다.
+    // (푸드트럭은 야간에도 운영한다. 야간 전용 색을 줄지는 기디 확정 대기 — 지금은 '그 외'.)
+    if (!isFoodTruck(booth)) warnMissingAffiliation(booth)
   }
   return 'OTHER'
 }
