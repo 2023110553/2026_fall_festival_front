@@ -95,27 +95,6 @@ const Action = styled.button`
   cursor: pointer;
 `
 
-const LANTERN_PREVIEW_ITEMS = [
-  {
-    id: -1,
-    nickname: '축제친구',
-    message: '아니 여기 부스 직원 너무 잘생겼구요 음식 진짜 맛있어요 ㅠㅠ',
-    createdAt: '2026-09-29T20:44:00+09:00',
-    updatedAt: null,
-    isMine: true,
-    status: 'active',
-  },
-  {
-    id: -2,
-    nickname: null,
-    message: '친구들과 함께 즐거운 추억 만들고 가요!',
-    createdAt: '2026-09-29T20:45:00+09:00',
-    updatedAt: null,
-    isMine: false,
-    status: 'active',
-  },
-]
-
 // 부스·날짜·로그인 상태가 바뀌면 목록과 필터를 초기화한다.
 // selectedDate는 BoothDetailPanel이 props로 넘겨준다. MapProvider 안이면 컨텍스트 값을, 둘 다 없으면 오늘 축제일을 쓴다.
 export default function LanternViewTab({ boothId, selectedDate }) {
@@ -279,13 +258,6 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
     return () => controller.abort()
   }, [boothId, date, mine, page, attempt, t])
 
-  const showPreviewItems = import.meta.env.DEV
-    && status !== 'loading'
-    && items.length === 0
-  const displayedItems = showPreviewItems
-    ? LANTERN_PREVIEW_ITEMS.filter((item) => !mine || item.isMine)
-    : items
-
   return (
     <div aria-busy={status === 'loading'}>
       {reporting && <ReportModal key={reporting.id} isOpen portal mapAppearance
@@ -302,24 +274,24 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
         onConfirm={() => mutate('delete', deleting.id)} />}
 
       <List>
-        {displayedItems.map((item) => (
+        {items.map((item) => (
           <li key={item.id}>
             {['deleted_by_user', 'deleted_by_admin'].includes(item.status) ? (
               <p>{item.status === 'deleted_by_admin' ? t('map.deletedByAdmin') : t('map.deletedByUser')}</p>
             ) : <LanternCard lantern={item} isMine={item.isMine === true} mapAppearance
-              onReport={(isLoggedIn || showPreviewItems) && item.isMine === false ? () => setReporting(item) : undefined}
-              onEdit={(isLoggedIn || showPreviewItems) && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setEditing(item) } : undefined}
-              onDelete={(isLoggedIn || showPreviewItems) && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setDeleting(item) } : undefined}
+              onReport={isLoggedIn && item.isMine === false ? () => setReporting(item) : undefined}
+              onEdit={isLoggedIn && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setEditing(item) } : undefined}
+              onDelete={isLoggedIn && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setDeleting(item) } : undefined}
             />}
           </li>
         ))}
       </List>
       {status === 'loading' && <p role="status">{t('map.loadingLanterns')}</p>}
-      {status === 'error' && !showPreviewItems && <div role="alert">
+      {status === 'error' && <div role="alert">
         <p>{error}</p>
         <Action type="button" onClick={() => { setStatus('loading'); setAttempt((value) => value + 1) }}>{t('map.retry')}</Action>
       </div>}
-      {status === 'success' && items.length === 0 && !showPreviewItems && <EmptyState>{mine ? t('map.noMineLanterns') : t('map.noLanterns')}</EmptyState>}
+      {status === 'success' && items.length === 0 && <EmptyState>{mine ? t('map.noMineLanterns') : t('map.noLanterns')}</EmptyState>}
       {status === 'success' && hasNext && <Action type="button" onClick={() => { setStatus('loading'); setPage((value) => value + 1) }}>{t('map.more')}</Action>}
     </div>
   )
