@@ -23,7 +23,7 @@ export default function NowPlaying({ performance, now }) {
         <S.Card>
             <S.Row>
                 {image_url
-                    ? <S.Thumb as="img" src={image_url} alt="" />
+                    ? <S.Thumb as="img" src={image_url} alt="" $hasImage />
                     : <S.Thumb />}
                 <S.TextGroup>
                     <S.Name>{team_name}</S.Name>

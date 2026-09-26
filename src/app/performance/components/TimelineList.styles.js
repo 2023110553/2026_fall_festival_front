@@ -78,7 +78,7 @@ export const Thumb = styled.div`
   flex: 0 0 44px;
   border-radius: ${({ theme }) => theme.radius.sm};
   object-fit: cover;
-  background: ${PLACEHOLDER};
+  background: ${({ $hasImage }) => ($hasImage ? 'transparent' : PLACEHOLDER)};
 `
 
 export const TextGroup = styled.div`
