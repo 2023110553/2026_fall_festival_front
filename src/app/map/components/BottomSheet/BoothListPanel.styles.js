@@ -13,11 +13,6 @@ export const Top = styled.div`
     align-items: center;
     width: 100%
 `
-export const Search =styled.img`
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-`
 export const SearchButton = styled.button`
     display: grid;
     place-items: center;
@@ -105,5 +100,5 @@ export const StatusMessage = styled.p`
     padding: 24px 0;
     text-align: center;
     font-size: 13px;
-    color: #9F9C99;
+    color: ${({ $isNight }) => $isNight ? '#272727' : '#9F9C99'};
 `

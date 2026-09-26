@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { searchBooths } from '../../../../api/map'
 import { useMapContext } from '../../context/MapProvider'
 import BoothCardList from '../BoothCardList/BoothCardList'
-import searchIcon from '../../../../assets/map/search.svg'
+import SearchIcon from './SearchIcon'
 import * as S from './BoothSearchPanel.styles'
 import { useTranslation } from '../../../../i18n/useTranslation'
 
@@ -76,7 +76,7 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
       <S.SearchRow onSubmit={(event) => { event.preventDefault(); search(keyword) }} role="search">
         <S.InputWrapper>
           <S.IconButton type="submit" aria-label={t('map.search')} title={t('map.search')}>
-            <img src={searchIcon} alt="" width="24" height="24" />
+            <SearchIcon isNight={timeSlot === 'night'} />
           </S.IconButton>
           <S.Input
             type="search"

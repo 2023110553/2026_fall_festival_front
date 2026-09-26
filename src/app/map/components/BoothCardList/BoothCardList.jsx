@@ -8,10 +8,12 @@ import { useTranslation } from '../../../../i18n/useTranslation'
 // 하단 부스/장소 카드 리스트 — 썸네일/이름/소속/등불개수. 카테고리 필터·주야간 전환에 따라 갱신된다.
 export default function BoothCardList({ booths: providedBooths, onSelectBooth, filterBySearchTerm = true }) {
   const { t } = useTranslation()
-  const { searchTerm } = useMapContext()
+  const { searchTerm, listTimeOfDay } = useMapContext()
   const filtered = useBoothSearch(providedBooths, filterBySearchTerm ? searchTerm : '')
 
-  if (filtered.length === 0) return <S.StatusMessage>{t('map.noBooths')}</S.StatusMessage>
+  if (filtered.length === 0) {
+    return <S.StatusMessage $isNight={listTimeOfDay === 'night'}>{t('map.noBooths')}</S.StatusMessage>
+  }
 
   return (
     // <ul>

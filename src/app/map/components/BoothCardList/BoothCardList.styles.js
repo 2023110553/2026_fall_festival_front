@@ -4,7 +4,7 @@ export const StatusMessage = styled.p`
     padding: 24px 0;
     text-align: center;
     font-size: 13px;
-    color: #9F9C99;
+    color: ${({ $isNight }) => $isNight ? '#272727' : '#9F9C99'};
 `
 
 export const BoothCardList = styled.div`
