@@ -33,6 +33,15 @@ export const HeroDate = styled.p`
   font-size: 10px;
   font-weight: 400;
   line-height: normal;
+
+  color: var(--text-or-darkgrey, #737373);
+
+/* regular10 */
+font-family: Pretendard;
+font-size: 10px;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
 `
 
 export const HeroRow = styled.div`
