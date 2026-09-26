@@ -5,6 +5,13 @@ import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import helpingHand from '../../../../assets/map/Helping Hand.svg'
 import { useTranslation } from '../../../../i18n/useTranslation'
+
+const RESTROOM_BADGES = {
+  BOTH: ['W', 'M'],
+  FEMALE: ['W'],
+  MALE: ['M'],
+}
+
 // 하단 부스/장소 카드 리스트 — 썸네일/이름/소속/등불개수. 카테고리 필터·주야간 전환에 따라 갱신된다.
 export default function BoothCardList({ booths: providedBooths, onSelectBooth, filterBySearchTerm = true }) {
   const { t } = useTranslation()
@@ -25,18 +32,54 @@ export default function BoothCardList({ booths: providedBooths, onSelectBooth, f
     // </ul>
   <S.BoothCardList>
     {filtered.map((booth) => {
+      const isRestroom = booth.category === 'TOILET'
       const simple = booth.place_type === 'FACILITY' || ['TOILET', 'ALCOHOL'].includes(booth.category)
+      const restroomBadges = RESTROOM_BADGES[String(booth.restroom_type ?? '').toUpperCase()] ?? []
       // 목록 API에는 directions가 없으므로 목 화면에서는 상세 응답으로 보완한다.
       const directions = booth.directions
+      const selectBooth = () => onSelectBooth(booth.booth_id)
+      const selectBoothWithKeyboard = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          selectBooth()
+        }
+      }
+
+      if (isRestroom) {
+        return (
+          <S.RestroomCard
+            key={booth.booth_id}
+            role="button"
+            tabIndex={0}
+            onClick={selectBooth}
+            onKeyDown={selectBoothWithKeyboard}
+          >
+            {booth.thumbnail_url ? (
+              <S.Thumbnail src={booth.thumbnail_url} alt="" />
+            ) : (
+              <S.RestroomThumbnail aria-hidden="true">WC</S.RestroomThumbnail>
+            )}
+            <S.RestroomName>{booth.name}</S.RestroomName>
+            <S.RestroomBadges aria-label={t('map.restroomType')}>
+              {restroomBadges.map((badge) => (
+                <S.RestroomBadge
+                  key={badge}
+                  $gender={badge}
+                  aria-label={badge === 'W' ? t('map.restroomWomen') : t('map.restroomMen')}
+                  title={badge === 'W' ? t('map.restroomWomen') : t('map.restroomMen')}
+                >
+                  {badge}
+                </S.RestroomBadge>
+              ))}
+            </S.RestroomBadges>
+          </S.RestroomCard>
+        )
+      }
+
       return (
       <S.Card key={booth.booth_id} role="button" tabIndex={0}
-        onClick={() => onSelectBooth(booth.booth_id)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            onSelectBooth(booth.booth_id)
-          }
-        }}
+        onClick={selectBooth}
+        onKeyDown={selectBoothWithKeyboard}
       >
         <S.Thumbnail src={booth.thumbnail_url} alt={booth.name} />
 

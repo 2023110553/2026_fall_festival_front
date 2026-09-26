@@ -25,12 +25,59 @@ export const Card = styled.div`
     gap: 10px;
 
 `
+export const RestroomCard = styled(Card)`
+    min-height: 90px;
+`
 export const Thumbnail = styled.img`
     width: 66px;
     height: 66px;
     flex-shrink: 0;
     object-fit: cover;
     border-radius: 8px;
+`
+export const RestroomThumbnail = styled.div`
+    width: 66px;
+    height: 66px;
+    flex: 0 0 66px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: rgba(159, 156, 153, 0.16);
+    color: #737373;
+    font-family: var(--font-pretendard);
+    font-size: 16px;
+    font-weight: 600;
+`
+export const RestroomName = styled.span`
+    min-width: 0;
+    flex: 1;
+    overflow-wrap: anywhere;
+    color: #100B0B;
+    font-family: var(--font-pretendard);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+`
+export const RestroomBadges = styled.span`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
+`
+export const RestroomBadge = styled.span`
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: ${({ $gender }) => $gender === 'W' ? '#C5261D' : '#2D63C8'};
+    color: #FFF;
+    text-align: center;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
 `
 export const Info = styled.div`
     flex: 1;
