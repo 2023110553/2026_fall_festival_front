@@ -77,6 +77,7 @@ export const Thumb = styled.div`
   height: 44px;
   flex: 0 0 44px;
   border-radius: ${({ theme }) => theme.radius.sm};
+  object-fit: cover;
   background: ${PLACEHOLDER};
 `
 
@@ -84,7 +85,7 @@ export const TextGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 6px;
 `
 
 export const Name = styled.span`
@@ -94,7 +95,7 @@ export const Name = styled.span`
 `
 
 export const Category = styled.span`
-  color: ${SUB_TEXT};
+  color: ${TEXT};
   font-size: 12px;
   font-weight: 400;
 `
