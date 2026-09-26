@@ -83,32 +83,35 @@ export const DropdownMenu = styled.div`
     top: 32px;
     right: 12px;
     background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
-    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     z-index: 20;
-    min-width: 90px;
+    width: 80px;
     overflow: hidden;
 `
 
 export const DropdownItem = styled.button`
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 3px;
     width: 100%;
-    padding: 9px 12px;
+    padding: 12px 8px;
     border: none;
     background: none;
-    font-size: 12px;
-    font-weight: 500;
-    color:'#333333';
     cursor: pointer;
-    text-align: left;
+    white-space: nowrap;
+
+    color: var(--text_black, #272727);
+    text-align: center;
+    font-family: Pretendard;
+    font-size: 10px;
+    font-weight: 400;
 
     &:not(:last-child) {
-        border-bottom: 1px solid #f5f5f5;
+        border-bottom: 1px solid #f0f0f0;
     }
 
     &:hover {
