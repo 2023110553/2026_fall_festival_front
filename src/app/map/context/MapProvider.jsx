@@ -1,7 +1,7 @@
 import { getBooths } from '../../../api/map'
 import { useAuthStore } from '../../../store/useAuthStore'
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { MAP_ZONES } from '../../../constants/zones'
 import { useTranslation } from '../../../i18n/useTranslation'
 
@@ -39,25 +39,50 @@ const MapContext = createContext(null)
 export function MapProvider({ children }) {
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [zoneId, setZoneIdState] = useState(() => resolveZoneId(searchParams.get('zone')))
-  // 구역을 바꾸면 URL(?zone=)도 같이 갱신 — 새로고침·공유 시 같은 구역이 열리고,
-  // 홈 미리보기 → 지도 진입 경로와 PlaceSelector 선택이 같은 규칙을 쓴다. replace라 뒤로가기 히스토리는 안 쌓임.
-  const setZoneId = useCallback((nextZoneId) => {
-    const resolved = resolveZoneId(nextZoneId)
-    setZoneIdState(resolved)
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // 2026-09-26: 지도 화면의 "지금 무엇을 보고 있는가"를 전부 URL에서 읽는다(#NNN).
+  //
+  // 예전에는 zone/booth를 useState로 들고 URL에는 replace로 복사만 했다. 그러면 두 가지가 안 된다 —
+  //   (1) 히스토리가 안 쌓여서 뒤로가기가 지도 안에서 한 단계 올라오지 못하고 홈으로 나가버린다.
+  //   (2) 사용자가 뒤로가기를 눌러 URL이 바뀌어도 useState 값은 그대로라 화면이 따라가지 않는다.
+  // URL을 진실의 원천으로 두면 둘 다 브라우저가 알아서 해준다 — popstate로 searchParams가 바뀌면
+  // 아래 파생값이 다시 계산되고 화면이 따라간다.
+  //
+  // URL이 표현하는 세 가지 상태:
+  //   /map?zone=zone2              부스 목록
+  //   /map?zone=zone2&q=멋사        검색 화면(검색어 포함)
+  //   /map?zone=zone2&booth=57     부스 상세 (검색에서 들어왔으면 &q=도 같이 남는다)
+  //
+  // 무엇을 push하고 무엇을 replace하는지가 뒤로가기 동작을 결정한다:
+  //   push    — 검색 진입, 부스 선택. 사용자가 "한 단계 들어갔다"고 느끼는 전환
+  //   replace — 구역 토글, 검색어 타이핑. 히스토리에 쌓이면 뒤로가기를 여러 번 눌러야 해서 답답하다
+  const zoneId = resolveZoneId(searchParams.get('zone'))
+  const selectedBoothId = resolveBoothId(searchParams.get('booth'))
+  // q가 아예 없으면 목록 화면, 빈 문자열이라도 있으면 검색 화면(검색어를 아직 안 친 상태).
+  const searchQuery = searchParams.has('q') ? searchParams.get('q') ?? '' : null
+
+  // URL을 한 번에 갱신하는 공용 함수. mutate로 파라미터를 바꾸고, push/replace만 골라 쓴다.
+  const updateParams = useCallback((mutate, { replace }) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
-      next.set('zone', resolved)
+      mutate(next)
       return next
-    }, { replace: true })
+    }, { replace })
   }, [setSearchParams])
+
+  // 구역 토글 — replace. 구역을 둘러보는 건 "들어가는" 동작이 아니라서 히스토리에 쌓으면
+  // 뒤로가기가 구역 토글 되감기가 돼버린다.
+  const setZoneId = useCallback((nextZoneId) => {
+    const resolved = resolveZoneId(nextZoneId)
+    updateParams((params) => params.set('zone', resolved), { replace: true })
+  }, [updateParams])
+
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
   const [searchTerm, setSearchTerm] = useState('')
 
-  // 2026-09-23: ?booth=로 들어오면 그 부스 상세를 처음부터 연다(홈 부스 랭킹 → 지도).
-  // 값이 없으면 예전처럼 null(부스 목록 화면)로 시작한다.
-  const [selectedBoothId, setSelectedBoothIdState] = useState(() => resolveBoothId(searchParams.get('booth')))
   const [isSheetOpen, setIsSheetOpen] = useState(true)
   //바텀시트 디자인 후 주석 풀어야합니다!!!!!!
   // const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -84,23 +109,54 @@ export function MapProvider({ children }) {
   // 나머지 경로에 같은 코드를 또 써야 한다.
   const setSelectedBoothId = useCallback((nextBoothId) => {
     const resolved = resolveBoothId(nextBoothId)
-    setSelectedBoothIdState(resolved)
-
     const pickedZoneId = findZoneIdByBoothId(allBoothsRef.current, resolved)
 
-    // zone과 booth를 한 번의 setSearchParams 안에서 같이 쓴다.
-    // setZoneId를 따로 부르면 setSearchParams가 두 번 돌아 앞의 변경을 덮어쓸 수 있다.
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (resolved == null) next.delete('booth')
-      else next.set('booth', String(resolved))
-      if (pickedZoneId) next.set('zone', pickedZoneId)
-      return next
-    }, { replace: true })
+    // 구역이 바뀌어야 한다면 "지금 있는 칸"의 zone부터 replace로 고친다.
+    // 이 한 줄이 없으면 뒤로가기했을 때 이전 칸에 남아 있던 옛 구역으로 지도가 되돌아간다 —
+    // 전체 검색으로 다른 구역 부스를 고른 뒤 뒤로가면 검색 화면이 엉뚱한 구역을 비추게 된다.
+    // 기획 요구는 "뒤로가기해도 그 부스가 있던 구역을 유지"다.
+    if (pickedZoneId && pickedZoneId !== zoneId) {
+      updateParams((params) => params.set('zone', pickedZoneId), { replace: true })
+    }
 
-    // URL은 위에서 이미 갱신했으므로 setZoneId(또 setSearchParams를 부른다)가 아니라 상태 setter를 직접 부른다.
-    if (pickedZoneId) setZoneIdState(pickedZoneId)
-  }, [setSearchParams])
+    // 부스 선택은 push — 상세에서 뒤로가기를 누르면 방금 있던 화면(목록 또는 검색 결과)으로 돌아온다.
+    // q는 일부러 지우지 않는다. 검색 결과에서 부스를 골랐다면 뒤로가기했을 때 그 검색어가 남아 있어야 한다.
+    // 부스를 닫는 건 여기가 아니라 goBack()이 한다 — 히스토리를 거슬러 올라가야 "들어온 자리"로 정확히 돌아간다.
+    updateParams((params) => {
+      if (resolved == null) params.delete('booth')
+      else params.set('booth', String(resolved))
+      if (pickedZoneId) params.set('zone', pickedZoneId)
+    }, { replace: false })
+  }, [updateParams, zoneId])
+
+  // 검색 화면 진입 — push. 뒤로가기 한 번이면 목록으로 돌아온다.
+  const openSearch = useCallback(() => {
+    updateParams((params) => {
+      params.set('q', '')
+      params.delete('booth')
+    }, { replace: false })
+  }, [updateParams])
+
+  // 검색어 갱신 — replace. 한 글자마다 히스토리가 쌓이면 뒤로가기를 글자 수만큼 눌러야 한다.
+  const updateSearchQuery = useCallback((text) => {
+    updateParams((params) => params.set('q', text), { replace: true })
+  }, [updateParams])
+
+  // 상세의 ← 버튼, 검색의 「취소」 버튼이 쓴다. 브라우저 뒤로가기와 같은 동작이어야
+  // "어디로 돌아갈지"가 버튼과 제스처에서 달라지지 않는다.
+  //
+  // 히스토리가 비어 있을 때(예: /map?booth=57 링크를 새 탭에서 연 경우)는 돌아갈 칸이 없으므로
+  // 목록 화면으로 대신 보낸다. 아래 히스토리 시딩이 보통 이 상황을 미리 막아준다.
+  const goBack = useCallback(() => {
+    if (window.history.state?.idx > 0) {
+      navigate(-1)
+      return
+    }
+    const params = new URLSearchParams(searchParams)
+    params.delete('booth')
+    params.delete('q')
+    navigate(`${location.pathname}?${params}`, { replace: true })
+  }, [navigate, location.pathname, searchParams])
   const [sheetTab, setSheetTab] = useState('info') // 'info' | 'lantern'
   // 2026-09-13(3차): 부스 밝기 단계 임시 미리보기 상태 — 0~MAX_LANTERN_TIER(constants/lanternTiers.js).
   // 원래 설계(final-plan-team-share.md 2-3절)는 부스마다 실제 등불 개수(lantern_count)를
@@ -139,6 +195,29 @@ export function MapProvider({ children }) {
   // 구역 필터를 거치기 전의 전체 목록. 위 setSelectedBoothId와 아래 첫 진입 보정이 함께 쓴다.
   const allBooths = currentList?.data?.booths
   allBoothsRef.current = allBooths
+
+  // 밖에서 ?booth=를 달고 지도에 들어온 경우(홈 인기부스 클릭, 공유 링크) 히스토리에 "목록" 칸을
+  // 한 칸 끼워 넣는다 — 현재 칸을 목록으로 replace한 뒤 상세를 push한다.
+  //
+  // 왜 필요한가: 홈에서 /map?zone=zone2&booth=57로 바로 들어오면 히스토리가 [홈, 상세]라서
+  // 상세에서 뒤로가기를 누르면 홈으로 나가버린다. 기획 요구는 "지도의 부스 목록으로 올라오기"다.
+  // 한 칸을 미리 만들어두면 [홈, 목록, 상세]가 되어 뒤로가기 한 번이 목록, 두 번이 홈이 된다.
+  //
+  // 딱 한 번만 — 지도 안에서 이동하는 동안 MapProvider는 계속 떠 있으므로 페이지 로드당 1회 실행된다.
+  const didSeedHistoryRef = useRef(false)
+  useEffect(() => {
+    if (didSeedHistoryRef.current) return
+    didSeedHistoryRef.current = true
+    if (selectedBoothId == null) return
+
+    const listParams = new URLSearchParams(searchParams)
+    listParams.delete('booth')
+    const detailUrl = `${location.pathname}?${searchParams}`
+    navigate(`${location.pathname}?${listParams}`, { replace: true })
+    navigate(detailUrl)
+    // 마운트 시 한 번만 도는 이펙트라 의존성을 비워 둔다(위 ref가 재실행도 막는다).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ?booth=로 들어왔는데 ?zone=이 빠졌거나 다른 구역을 가리키면, 부스 목록이 도착한 뒤 그 부스의 구역으로 맞춘다.
   // 홈에서 넘어올 때는 이미 구역을 알고 링크를 만들기 때문에(zone 동봉) 보통은 할 일이 없고,
@@ -200,6 +279,10 @@ export function MapProvider({ children }) {
       setSearchTerm,
       selectedBoothId,
       setSelectedBoothId,
+      searchQuery,
+      openSearch,
+      updateSearchQuery,
+      goBack,
       isSheetOpen,
       setIsSheetOpen,
       sheetTab,
@@ -216,6 +299,10 @@ export function MapProvider({ children }) {
       searchTerm,
       selectedBoothId,
       setSelectedBoothId,
+      searchQuery,
+      openSearch,
+      updateSearchQuery,
+      goBack,
       isSheetOpen,
       sheetTab,
       boothBrightnessPreview,
