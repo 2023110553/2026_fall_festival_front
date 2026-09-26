@@ -214,11 +214,20 @@ export default function FoodTruck({ accentColor = '#E8734A', lightScale = 1 }) {
         <boxGeometry args={[CAB_LENGTH, CAB_TOP - CHASSIS_Y - 0.1, WIDTH - 0.18]} />
         <meshStandardMaterial color={BODY} metalness={0.25} roughness={0.45} />
       </mesh>
-      {/* 앞유리 — 캡오버라 거의 수직, 살짝만 눕는다 */}
-      <mesh position={[LENGTH / 2 - 0.06, CAB_TOP - 0.42, 0]} rotation={[0, Math.PI / 2, -0.12]}>
+      {/* 앞유리 — 캡오버라 수직. 캡 앞면이 x = LENGTH/2라서 유리는 그보다 아주 조금 바깥에 둔다.
+          안쪽(LENGTH/2 - 0.06)에 두면 캡 박스에 통째로 묻혀서 앞에서 봤을 때 유리가 아예 안 보인다
+          — 서빙 창 패널에서 한 번 겪은 것과 같은 실수라, 이번에 헤드리스 렌더로 확인하고 같이 고쳤다. */}
+      <mesh position={[LENGTH / 2 + 0.012, CAB_TOP - 0.42, 0]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[WIDTH - 0.34, 0.82]} />
         <meshStandardMaterial color={GLASS} metalness={0.55} roughness={0.2} side={2} />
       </mesh>
+      {/* 유리 테두리 — 유리가 차체에 그려진 스티커처럼 보이지 않게 위아래로 몰딩을 두른다 */}
+      {[CAB_TOP - 0.42 + 0.43, CAB_TOP - 0.42 - 0.43].map((y) => (
+        <mesh key={`wsbar${y}`} position={[LENGTH / 2 + 0.008, y, 0]}>
+          <boxGeometry args={[0.03, 0.06, WIDTH - 0.3]} />
+          <meshStandardMaterial color={TRIM} metalness={0.4} roughness={0.5} />
+        </mesh>
+      ))}
       {/* 옆 유리 + 문 이음선 + 손잡이 */}
       {[1, -1].map((s) => (
         <group key={`cab${s}`}>
@@ -274,7 +283,10 @@ export default function FoodTruck({ accentColor = '#E8734A', lightScale = 1 }) {
       {[FRONT_AXLE_X, REAR_AXLE_X].map((x) =>
         [1, -1].map((s) => (
           <group key={`w${x}${s}`}>
-            <group position={[x, WHEEL_R, s * (HALF_W - 0.06)]} rotation={[0, 0, Math.PI / 2]}>
+            {/* 바퀴 축은 차 폭 방향(z)이어야 한다. cylinderGeometry는 축이 +y라서 x축으로 90도
+                돌려야 y→z가 된다. z축으로 돌리면(y→x) 바퀴가 앞뒤를 보고 눕는다 — PR 리뷰 지적.
+                안쪽 휠·허브의 position도 이 그룹 기준이라, 로컬 +y가 곧 바깥쪽(±z)이 된다. */}
+            <group position={[x, WHEEL_R, s * (HALF_W - 0.06)]} rotation={[Math.PI / 2, 0, 0]}>
               <mesh>
                 <cylinderGeometry args={[WHEEL_R, WHEEL_R, 0.22, 16]} />
                 <meshStandardMaterial color={TIRE} roughness={0.95} />

@@ -18,6 +18,8 @@
 // 축제 후 BoothPlacement 테이블로 옮겨도(관련 논의는 위 문서 8장) related_name을 "placements"로 두면
 // 응답 모양이 같아서 이 파일은 그대로 둘 수 있다.
 
+import { HAS_STRUCTURE_PREVIEW, STRUCTURE_PREVIEW } from './structurePreview'
+
 // 좌표 세 축이 모두 있어야 씬에 놓을 수 있다. 백엔드 컬럼이 nullable이라 정보 미수령 부스는
 // null로 내려오는데, 그대로 두면 전부 원점(0,0,0)에 겹쳐 그려진다(카드 목록 등 2D 리스트는 그대로 노출).
 function hasCoordinates(source) {
@@ -42,17 +44,22 @@ function toRadians(degrees) {
 //   - spec:     천막이 아닌 구조물용 { structure, width, depth } (2026-09-26 추가).
 //               placements에 structure가 없으면 undefined가 되고, 받는 쪽(constants/boothSizes.js)이
 //               "TENT"로 보기 때문에 기존 부스는 동작이 그대로다. 값 정리·범위 제한도 그쪽에서 한다.
+//               ?truck= / ?market= 쿼리가 있으면 그 booth_id는 쿼리 값으로 덮어쓴다(structurePreview.js).
+//               데이터가 DB에 들어가기 전에 푸드트럭·차양막을 눈으로 확인하려고 둔 개발용 스위치다.
 export function getBoothTents(booth) {
   const placements = Array.isArray(booth?.placements) ? booth.placements : []
   // 천막 정보가 없으면 부스 자신을 천막 1동으로 취급한다(위 계약 3번).
   const sources = placements.length > 0 ? placements : [booth]
+  // 쿼리가 없으면 STRUCTURE_PREVIEW가 빈 객체라 항상 undefined다 → 평소 동작에는 영향이 없다.
+  const preview = HAS_STRUCTURE_PREVIEW ? STRUCTURE_PREVIEW[booth?.booth_id] : undefined
 
   return sources.filter(hasCoordinates).map((tent, index) => ({
     unitNo: tent.unit_no ?? index + 1,
     position: [tent.map_x, tent.map_elevation, tent.map_y],
     rotationY: toRadians(tent.rotation),
     size: tent.booth_size ?? booth?.booth_size,
-    spec: {
+    // 미리보기 항목은 구조물을 통째로 지정하는 값이라(structure + 크기) 섞지 않고 그대로 대체한다.
+    spec: preview ?? {
       structure: tent.structure,
       width: tent.width,
       depth: tent.depth,
