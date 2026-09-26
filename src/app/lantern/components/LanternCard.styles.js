@@ -3,34 +3,40 @@ import styled from 'styled-components'
 export const CardContainer = styled.div`
     position: relative;
     width: 100%;
-    padding: 12px 18px 8px 20px;
-    border-radius: 9px;
-    background-color: #ffffff;
+    padding: ${({ $mapAppearance }) => $mapAppearance ? '12px 16px' : '12px 18px 8px 20px'};
+    border-radius: ${({ $mapAppearance }) => $mapAppearance ? '9.14px' : '9px'};
+    background: ${({ $mapAppearance }) => $mapAppearance ? 'var(--aurora_white, #FDFDFD)' : '#FFFFFF'};
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.10);
 
 
-    display: flex;
+    display: ${({ $mapAppearance }) => $mapAppearance ? 'grid' : 'flex'};
+    grid-template-columns: ${({ $mapAppearance }) => $mapAppearance ? 'minmax(0, 1fr) 16px' : 'none'};
+    column-gap: ${({ $mapAppearance }) => $mapAppearance ? '10px' : '0'};
     flex-direction: column;
     box-sizing: border-box;
     text-align: left;
 `
 
 export const Header = styled.div`
-    display: flex;
+    display: ${({ $mapAppearance }) => $mapAppearance ? 'contents' : 'flex'};
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 6px;
+    margin-bottom: ${({ $mapAppearance }) => $mapAppearance ? '0' : '6px'};
 `
 
 export const TitleGroup = styled.div`
     display: flex;
     flex-direction: column;
     gap: 2px;
-    margin-bottom: 6px;
+    grid-column: ${({ $mapAppearance }) => $mapAppearance ? '1' : 'auto'};
+    grid-row: ${({ $mapAppearance }) => $mapAppearance ? '1' : 'auto'};
+    min-width: 0;
+    margin-bottom: ${({ $mapAppearance }) => $mapAppearance ? '0' : '6px'};
 `
 
 export const Nickname = styled.span`
-color: var(--aurora_black, #100B0B);
+color: ${({ $mapAppearance, $hasCustomNickname }) =>
+  $mapAppearance && $hasCustomNickname ? '#DC7054' : 'var(--aurora_black, #100B0B)'};
 
 font-family: Pretendard;
 font-size: 12px;
@@ -48,7 +54,15 @@ export const MoreButton = styled.button`
     border: none;
     background: none;
     cursor: pointer;
-    padding: 0 2px;
+    width: ${({ $mapAppearance }) => $mapAppearance ? '16px' : 'auto'};
+    height: ${({ $mapAppearance }) => $mapAppearance ? '16px' : 'auto'};
+    min-width: ${({ $mapAppearance }) => $mapAppearance ? '16px' : '0'};
+    min-height: ${({ $mapAppearance }) => $mapAppearance ? '16px' : '0'};
+    flex-shrink: 0;
+    grid-column: ${({ $mapAppearance }) => $mapAppearance ? '2' : 'auto'};
+    grid-row: ${({ $mapAppearance }) => $mapAppearance ? '1 / span 3' : 'auto'};
+    align-self: start;
+    padding: ${({ $mapAppearance }) => $mapAppearance ? '0' : '0 2px'};
     font-size: 16px;
     color: #888888;
     line-height: 1;
@@ -56,20 +70,35 @@ export const MoreButton = styled.button`
     align-items: center;
     justify-content: center;
 
+    svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+    }
+
     &:hover {
         color: #333333;
     }
 `
 
 export const Content = styled.p`
+overflow: ${({ $mapAppearance }) => $mapAppearance ? 'hidden' : 'visible'};
+grid-column: ${({ $mapAppearance }) => $mapAppearance ? '1' : 'auto'};
+grid-row: ${({ $mapAppearance }) => $mapAppearance ? '2' : 'auto'};
 color: var(--aurora_black, #100B0B);
+text-overflow: ${({ $mapAppearance }) => $mapAppearance ? 'ellipsis' : 'clip'};
 font-family: Pretendard;
 font-size: 14px;
-font-weight: 500;
-margin: 0;
+font-style: normal;
+font-weight: ${({ $mapAppearance }) => $mapAppearance ? '600' : '500'};
+line-height: normal;
+margin: ${({ $mapAppearance }) => $mapAppearance ? '4px 0 0' : '0'};
 `
 
 export const Time = styled.span`
+grid-column: ${({ $mapAppearance }) => $mapAppearance ? '1' : 'auto'};
+grid-row: ${({ $mapAppearance }) => $mapAppearance ? '3' : 'auto'};
 color: var(--aurora_gray, #9F9C99);
 font-family: Pretendard;
 font-size: 10px;

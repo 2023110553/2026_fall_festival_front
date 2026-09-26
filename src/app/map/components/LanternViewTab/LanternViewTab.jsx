@@ -53,6 +53,7 @@ const MineFilter = styled.button`
   justify-content: flex-end;
   gap: 6px;
   width: fit-content;
+  height: 21px;
   margin-top: 16px;
   margin-left: auto;
   padding: 0;
@@ -77,9 +78,9 @@ const MineFilter = styled.button`
   }
 `
 const CheckboxIconSlot = styled.span`
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
   display: grid;
   place-items: center;
 `
@@ -133,14 +134,16 @@ function BoothLanternList({ boothId, date, isLoggedIn }) {
       >
         {t('map.onlyMine')}
         <CheckboxIconSlot>
-          <CheckboxIcon xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="var(--text_black, #272727)" strokeWidth="1" aria-hidden="true">
-            <path d="M12.75 0.5H4C2.067 0.5 0.5 2.067 0.5 4V12.75C0.5 14.683 2.067 16.25 4 16.25H12.75C14.683 16.25 16.25 14.683 16.25 12.75V4C16.25 2.067 14.683 0.5 12.75 0.5Z" strokeLinecap="round" strokeLinejoin="round" />
-            {onlyMine && (
-              <svg x="5.25" y="6.125" width="7" height="5" viewBox="0 0 7 5" fill="none">
-                <path d="M0.5 2.5L2.46875 4L5.75 0.5" stroke="var(--text_black, #272727)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </CheckboxIcon>
+          {onlyMine ? (
+            <CheckboxIcon xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" fill="none" aria-hidden="true">
+              <path d="M14.875 2.625H6.125C4.192 2.625 2.625 4.192 2.625 6.125V14.875C2.625 16.808 4.192 18.375 6.125 18.375H14.875C16.808 18.375 18.375 16.808 18.375 14.875V6.125C18.375 4.192 16.808 2.625 14.875 2.625Z" stroke="#7C7C7C" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7.875 10.5L9.84375 12.25L13.125 8.75" stroke="#7C7C7C" strokeLinecap="round" strokeLinejoin="round" />
+            </CheckboxIcon>
+          ) : (
+            <CheckboxIcon xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+              <path d="M12.75 0.5H4C2.067 0.5 0.5 2.067 0.5 4V12.75C0.5 14.683 2.067 16.25 4 16.25H12.75C14.683 16.25 16.25 14.683 16.25 12.75V4C16.25 2.067 14.683 0.5 12.75 0.5Z" stroke="#7C7C7C" strokeLinecap="round" strokeLinejoin="round" />
+            </CheckboxIcon>
+          )}
         </CheckboxIconSlot>
       </MineFilter>
       <LanternResults key={String(onlyMine)} boothId={boothId} date={date} mine={onlyMine} isLoggedIn={isLoggedIn} />
@@ -257,16 +260,16 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
 
   return (
     <div aria-busy={status === 'loading'}>
-      {reporting && <ReportModal key={reporting.id} isOpen
+      {reporting && <ReportModal key={reporting.id} isOpen portal mapAppearance
         onClose={() => setReporting(null)} onSubmit={submitReport} />}
-      <AlertModal isOpen={reportNotice != null} onClose={() => setReportNotice(null)}
+      <AlertModal portal isOpen={reportNotice != null} onClose={() => setReportNotice(null)}
         title={reportNotice === 'duplicate' ? t('map.reportDuplicateTitle') : t('map.reportSuccessTitle')}
         subTitle={reportNotice === 'duplicate' ? t('map.reportDuplicateDescription') : t('map.reportSuccessDescription')} />
 
-      {editing && <EditLanternModal isOpen lantern={editing}
+      {editing && <EditLanternModal isOpen portal lantern={editing}
         onClose={() => { if (!busy.current) setEditing(null) }}
         onSubmit={(id, changes) => mutate('edit', id, changes)} />}
-      {deleting && <ConfirmDeleteModal isOpen pending={pending} error={mutationError}
+      {deleting && <ConfirmDeleteModal isOpen portal pending={pending} error={mutationError}
         onClose={() => { if (!busy.current) setDeleting(null) }}
         onConfirm={() => mutate('delete', deleting.id)} />}
 
@@ -275,7 +278,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
           <li key={item.id}>
             {['deleted_by_user', 'deleted_by_admin'].includes(item.status) ? (
               <p>{item.status === 'deleted_by_admin' ? t('map.deletedByAdmin') : t('map.deletedByUser')}</p>
-            ) : <LanternCard lantern={item} isMine={item.isMine === true}
+            ) : <LanternCard lantern={item} isMine={item.isMine === true} mapAppearance
               onReport={isLoggedIn && item.isMine === false ? () => setReporting(item) : undefined}
               onEdit={isLoggedIn && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setEditing(item) } : undefined}
               onDelete={isLoggedIn && item.isMine === true && item.status === 'active' ? () => { setMutationError(''); setDeleting(item) } : undefined}

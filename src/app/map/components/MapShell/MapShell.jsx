@@ -6,6 +6,7 @@ import { useMapContext } from '../../context/MapProvider'
 import TopHeader from '../../../../components/common/TopHeader'
 import FestivalDateTabs from '../../../../components/common/FestivalDateTabs'
 import PlaceSelector from '../PlaceSelector/PlaceSelector'
+import LanternGuide from '../LanternGuide/LanternGuide'
 import * as S from './MapShell.styles'
 import { useTranslation } from '../../../../i18n/useTranslation'
 import { DEFAULT_FESTIVAL_DATE } from '../../../../constants/festivalDates'
@@ -55,6 +56,7 @@ export default function MapShell() {
         />
         <PinLabel />
         <PlaceSelector zoneId={zoneId} onSelectPlace={setZoneId} />
+        <LanternGuide />
       </S.MapArea>
       <BottomSheet />
     </S.Shell>

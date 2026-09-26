@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import * as S from './EditLanternModal.styles'
 import { formatLanternTime } from '../utils/formatLanternDateTime'
 import AlertModal from '../../../components/common/AlertModal'
 
-export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit }) {
+export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit, portal = false }) {
   const [nickname, setNickname] = useState('')
   const [message, setMessage] = useState('')
   const [messageError, setMessageError] = useState(false)
@@ -71,8 +72,7 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
     }
   }
 
-  return (
-    <>
+  const editor = (
       <S.Overlay onClick={requestClose}>
         <S.Container onClick={(e) => e.stopPropagation()}>
           {lantern?.boothName && <S.BoothLabel>{lantern.boothName}</S.BoothLabel>}
@@ -115,8 +115,13 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit })
           </S.Footer>
         </S.Container>
       </S.Overlay>
+  )
 
+  return (
+    <>
+      {portal ? createPortal(editor, document.body) : editor}
       <AlertModal
+        portal={portal}
         isOpen={isLeaveConfirmOpen}
         onClose={() => setIsLeaveConfirmOpen(false)}
         title="작성을 그만둘까요?"

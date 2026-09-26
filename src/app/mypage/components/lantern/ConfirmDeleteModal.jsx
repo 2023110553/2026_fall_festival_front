@@ -2,10 +2,10 @@ import Modal from "../../../../components/common/Modal";
 import { useTranslation } from '../../../../i18n/useTranslation'
 import * as S from './ConfirmDeleteModal.styles'
 
-export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, pending = false, error = '' }) {
+export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, pending = false, error = '', portal = false }) {
   const { t } = useTranslation()
   return (
-    <Modal isOpen={isOpen} onClose={pending ? () => {} : onClose} style={S.modalStyle}>
+    <Modal isOpen={isOpen} onClose={pending ? () => {} : onClose} style={S.modalStyle} portal={portal}>
       <S.Content>
         <S.Title>{t('delete.title')}</S.Title>
         <S.Description>{t('delete.description')}</S.Description>
