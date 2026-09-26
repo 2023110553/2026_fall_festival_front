@@ -14,6 +14,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
   if (isSearching) {
     return <BoothSearchPanel onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
   }
+
   return (
     <>
     <S.TimeWrapper>
@@ -49,7 +50,11 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
       ) : isError ? (
         <S.StatusMessage $isNight={listTimeOfDay === 'night'}>{listError}</S.StatusMessage>
       ) : (
-        <BoothCardList filterBySearchTerm={false} booths={booths} onSelectBooth={onSelectBooth} />
+        <BoothCardList
+          filterBySearchTerm={false}
+          booths={booths}
+          onSelectBooth={onSelectBooth}
+        />
       )}
     </>
   )
