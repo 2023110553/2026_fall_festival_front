@@ -33,7 +33,7 @@ export const DragHandle = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 32px;
+    height: 20px;
     flex-shrink: 0;
     touch-action: none;
     user-select: none;
