@@ -19,8 +19,11 @@ function readHistory() {
 
 export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
   const { t } = useTranslation()
-  const { listTimeOfDay } = useMapContext()
-  const [keyword, setKeyword] = useState('')
+  const { listTimeOfDay, searchQuery, updateSearchQuery } = useMapContext()
+  // 2026-09-26: 검색어를 URL(?q=)에도 싣는다. 검색 결과에서 부스를 고른 뒤 뒤로가기를 누르면
+  // 이 화면이 다시 마운트되는데, 로컬 state만 쓰면 검색어가 비어 있는 첫 화면으로 돌아간다.
+  // 초기값을 URL에서 읽으면 "멋사를 검색해 둔 상태"가 그대로 복원된다.
+  const [keyword, setKeyword] = useState(() => searchQuery ?? '')
   const [history, setHistory] = useState(readHistory)
   const [results, setResults] = useState([])
   const [status, setStatus] = useState('idle')
@@ -29,6 +32,16 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
   const composingRef = useRef(false)
   useEffect(() => () => {
     requestRef.current?.abort()
+  }, [])
+
+  // 뒤로가기로 이 화면에 돌아오면 URL의 검색어로 결과를 다시 불러온다.
+  // 마운트 시 한 번만 — 이후 입력은 handleKeywordChange가 처리한다.
+  const didRestoreRef = useRef(false)
+  useEffect(() => {
+    if (didRestoreRef.current) return
+    didRestoreRef.current = true
+    if (searchQuery) search(searchQuery)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateHistory = (next) => {
@@ -84,6 +97,8 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
 
   const handleKeywordChange = (value) => {
     setKeyword(value)
+    // replace다(MapProvider) — 한 글자마다 히스토리가 쌓이면 뒤로가기를 글자 수만큼 눌러야 한다.
+    updateSearchQuery(value)
     search(value)
   }
 
@@ -140,6 +155,7 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
               <S.HistoryItem key={term}>
                 <S.TermButton type="button" onClick={() => {
                   setKeyword(term)
+                  updateSearchQuery(term)
                   search(term, true)
                 }}>{term}</S.TermButton>
                 <S.IconButton type="button" aria-label={t('map.deleteSearch', { term })} title={t('map.deleteSearchTitle')} onClick={() => updateHistory(history.filter((item) => item !== term))}>
