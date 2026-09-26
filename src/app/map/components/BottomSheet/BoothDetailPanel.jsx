@@ -8,6 +8,7 @@ import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import { useTranslation } from '../../../../i18n/useTranslation'
 import { DEFAULT_FESTIVAL_DATE } from '../../../../constants/festivalDates'
+import { isSimplePlace } from '../../../../constants/categories'
 import * as S from './BoothDetailPanel.styles'
 
 // 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
@@ -55,10 +56,8 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
       })
     return () => { ignore = true }
   }, [boothId, isLoggedIn, boothRevision])
-  const simple =
-    booth &&
-    (booth.place_type === 'FACILITY' ||
-      ['TOILET', 'ALCOHOL'].includes(booth.category))
+  // 간단 표시(위치만) 여부 — 판정은 constants/categories.js가 한다(카드 목록과 같은 기준).
+  const simple = booth && isSimplePlace(booth)
   const money = (value) => value
     ? t('map.currency', { value: value.toLocaleString(language) })
     : t('map.free')
