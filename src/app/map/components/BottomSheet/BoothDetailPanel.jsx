@@ -7,6 +7,7 @@ import { getBoothDetail } from '../../../../api/map'
 import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import { useTranslation } from '../../../../i18n/useTranslation'
+import { DEFAULT_FESTIVAL_DATE } from '../../../../constants/festivalDates'
 import * as S from './BoothDetailPanel.styles'
 
 // 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
@@ -63,7 +64,7 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
     : t('map.free')
 
   const activeBoothId = booth && !simple ? booth.booth_id : null
-  const festivalDate = selectedDate ?? '2026-09-23' // TEMP: 로컬 테스트용 (원래 9/29)
+  const festivalDate = selectedDate ?? DEFAULT_FESTIVAL_DATE
 
   useEffect(() => {
     setActiveBooth(activeBoothId == null ? null : {

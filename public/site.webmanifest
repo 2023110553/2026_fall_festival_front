@@ -1,0 +1,23 @@
+{
+  "name": "2026 가을 대동제 | 풀스온",
+  "short_name": "풀스온",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#ffcdc1",
+  "background_color": "#ffcdc1",
+  "icons": [
+    {
+      "src": "/home-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/home-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -15,6 +15,10 @@ export default function BottomSheet() {
   const dragRef = useRef(null)
   const contentRef = useRef(null)
 
+  // 2026-09-24: 부스를 고르면 시트를 'high'가 아니라 'low'로 연다.
+  // 'high'는 화면 위 40px만 남기고 전부 덮어서, 같은 순간 카메라가 그 부스 정면으로 옮겨가도
+  // 사용자 눈에는 아무것도 안 보인다. 'low'면 지도가 위쪽 절반 넘게 남아 "이 부스구나"가 보이고,
+  // 상세를 끝까지 보려면 시트를 위로 끌어올리면 된다(지도 앱에서 핀을 누르면 카드가 살짝 올라오는 것과 같은 흐름).
   useEffect(() => {
     if (selectedBoothId != null) {
       setSheetHeight(null)

@@ -191,11 +191,11 @@ export const Textarea = styled.textarea`
 `
 
 export const ErrorText = styled.p`
-    font-size: 8px;
+    font-size: 10px;
     font-family: Pretendard;
     font-weight: 400;
     color: #E53935;
-    margin: 1px 0 4px 0;
+    margin: 1px 0 0 0;
 `
 
 export const NoticeWrapper = styled.div`
@@ -209,7 +209,7 @@ export const NoticeWrapper = styled.div`
 
 export const InfoIcon = styled.svg`
     flex-shrink: 0;
-    margin-top: 1px;
+    margin-top: 0px;
 `
 
 export const NoticeText = styled.p`

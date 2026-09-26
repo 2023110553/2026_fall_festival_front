@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   Navigate,
+  useLocation,
   useNavigate,
   useParams,
   useSearchParams,
@@ -24,6 +25,7 @@ import {
   getNoticeList,
 } from '../../api/info'
 import { useTranslation } from '../../i18n/useTranslation'
+import { DEFAULT_FESTIVAL_DATE } from '../../constants/festivalDates'
 import * as S from './InfoPage.styles'
 
 const INFO_TABS = [
@@ -46,9 +48,6 @@ const INITIAL_DETAIL_STATE = {
   notFound: false,
 }
 
-const getErrorMessage = (error, fallback) =>
-  error?.response?.data?.message || fallback
-
 const normalizeLostItemDetail = (item) => ({
   ...item,
   image_urls: (item?.images ?? item?.image_urls ?? [])
@@ -62,7 +61,7 @@ const normalizeLostItemDetail = (item) => ({
 export default function InfoPage() {
   const { t } = useTranslation()
   const infoTabs = INFO_TABS.map((item) => ({ ...item, label: t(item.labelKey) }))
-  const [lostDate, setLostDate] = useState('2026-09-23') // TEMP: 로컬 테스트용 (원래 9/29)
+  const [lostDate, setLostDate] = useState(DEFAULT_FESTIVAL_DATE)
   const [keyword, setKeyword] = useState('')
   const [noticeList, setNoticeList] = useState({
     ...INITIAL_LIST_STATE,
@@ -78,6 +77,7 @@ export default function InfoPage() {
   const [noticeDetail, setNoticeDetail] = useState(INITIAL_DETAIL_STATE)
   const [lostItemDetail, setLostItemDetail] = useState(INITIAL_DETAIL_STATE)
   const navigate = useNavigate()
+  const location = useLocation()
   const { collabSlug, collabBoothSlug, noticeId, lostItemId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedTab = searchParams.get('tab')
@@ -89,6 +89,13 @@ export default function InfoPage() {
   const selectedCollabBooth = COLLAB_BOOTH_MOCKS.find(
     (item) => item.id === collabBoothSlug,
   )
+  const returnFromCollabDetail = () => {
+    if (location.state?.from?.startsWith('/info')) {
+      navigate(-1)
+      return
+    }
+    navigate('/info', { replace: true })
+  }
 
   useEffect(() => {
     if (tab !== 'notice' || noticeId) return undefined
@@ -110,12 +117,12 @@ export default function InfoPage() {
           isLoadingMore: false,
         })
       })
-      .catch((error) => {
+      .catch(() => {
         if (controller.signal.aborted) return
         setNoticeList({
           items: [],
           isLoading: false,
-          error: getErrorMessage(error, '공지사항을 불러오지 못했습니다.'),
+          error: true,
           page: 0,
           hasNext: false,
           isLoadingMore: false,
@@ -177,12 +184,12 @@ export default function InfoPage() {
             error: '',
           })
         })
-        .catch((error) => {
+        .catch(() => {
           if (controller.signal.aborted) return
           setLostItemList({
             items: [],
             isLoading: false,
-            error: getErrorMessage(error, '분실물 목록을 불러오지 못했습니다.'),
+            error: true,
           })
         })
     }, 300)
@@ -216,7 +223,7 @@ export default function InfoPage() {
         setNoticeDetail({
           data: null,
           isLoading: false,
-          error: getErrorMessage(error, '공지사항을 불러오지 못했습니다.'),
+          error: true,
           notFound: error?.response?.status === 404,
         })
       })
@@ -247,7 +254,7 @@ export default function InfoPage() {
         setLostItemDetail({
           data: null,
           isLoading: false,
-          error: getErrorMessage(error, '분실물 정보를 불러오지 못했습니다.'),
+          error: true,
           notFound: error?.response?.status === 404,
         })
       })
@@ -280,7 +287,7 @@ export default function InfoPage() {
       return (
         <CollabDetail
           collab={selectedCollab}
-          onBack={() => navigate('/info')}
+          onBack={returnFromCollabDetail}
         />
       )
     }
@@ -290,7 +297,7 @@ export default function InfoPage() {
         <CollabDetail
           collab={selectedCollabBooth}
           headerTitle={t('collab.booths')}
-          onBack={() => navigate('/info')}
+          onBack={returnFromCollabDetail}
         />
       )
     }
@@ -299,7 +306,7 @@ export default function InfoPage() {
         return <S.StatusMessage>공지사항을 불러오는 중...</S.StatusMessage>
       }
       if (noticeDetail.error) {
-        return <S.StatusMessage role="alert">{noticeDetail.error}</S.StatusMessage>
+        return <S.StatusMessage role="alert">{t('notice.error')}</S.StatusMessage>
       }
       return (
         <NoticeDetail
@@ -313,7 +320,7 @@ export default function InfoPage() {
         return <S.StatusMessage>분실물 정보를 불러오는 중...</S.StatusMessage>
       }
       if (lostItemDetail.error) {
-        return <S.StatusMessage role="alert">{lostItemDetail.error}</S.StatusMessage>
+        return <S.StatusMessage role="alert">{t('lostFound.detailError')}</S.StatusMessage>
       }
       return (
         <LostFoundDetail
@@ -348,8 +355,16 @@ export default function InfoPage() {
                 <CollabList
                   collabs={COLLAB_MOCKS}
                   booths={COLLAB_BOOTH_MOCKS}
-                  onSelect={(id) => navigate(`/info/collab/${id}`)}
-                  onSelectBooth={(id) => navigate(`/info/collab-booths/${id}`)}
+                  onSelect={(id) =>
+                    navigate(`/info/collab/${id}`, {
+                      state: { from: `${location.pathname}${location.search}` },
+                    })
+                  }
+                  onSelectBooth={(id) =>
+                    navigate(`/info/collab-booths/${id}`, {
+                      state: { from: `${location.pathname}${location.search}` },
+                    })
+                  }
                 />
               )}
               {tab === 'notice' && (
@@ -358,7 +373,7 @@ export default function InfoPage() {
                     <S.StatusMessage>공지사항을 불러오는 중...</S.StatusMessage>
                   )}
                   {!noticeList.isLoading && noticeList.error && (
-                    <S.StatusMessage role="alert">{noticeList.error}</S.StatusMessage>
+                    <S.StatusMessage role="alert">{t('notice.error')}</S.StatusMessage>
                   )}
                   {!noticeList.isLoading && !noticeList.error && (
                     <>
@@ -388,7 +403,7 @@ export default function InfoPage() {
                   date={lostDate}
                   keyword={keyword}
                   isLoading={lostItemList.isLoading}
-                  error={lostItemList.error}
+                  error={lostItemList.error ? t('lostFound.listError') : ''}
                   onDateChange={setLostDate}
                   onKeywordChange={setKeyword}
                   onSelect={(id) => navigate(`/info/lost-items/${id}`)}

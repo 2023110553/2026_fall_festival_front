@@ -22,3 +22,22 @@ export function pickTopLanternZone(booths = []) {
   const top = totals.reduce((best, zone) => (zone.lanternCount > best.lanternCount ? zone : best), totals[0])
   return top && top.lanternCount > 0 ? top : null
 }
+
+// 2026-09-23: 부스 id → 구역 id.
+// 홈 부스 랭킹에서 "이 부스가 어느 구역인지"를 알아야 /map?zone=zone2&booth=57 처럼 구역까지 짚어서 보낼 수 있다.
+// 구역 없이 보내도 지도가 부스 목록을 받은 뒤 알아서 찾아가지만, 그동안 기본 구역(혜화관)이 잠깐 보였다가
+// 바뀌는 깜빡임이 생긴다. 구역을 같이 넘기면 처음부터 맞는 구역이 그려진다.
+//
+// 구역 매칭 기준은 sumLanternsByZone과 같다 — booth.zone(문자열) === MAP_ZONES[].label.
+// 어느 구역에도 안 잡히는 부스(라벨 불일치, 구역에서 빠진 건물 등)는 아예 빠지고,
+// 그런 부스는 호출부가 구역 없이 /map?booth=57로 보낸다(지도가 목록을 받은 뒤 스스로 구역을 찾아간다).
+export function mapZoneIdByBoothId(booths = []) {
+  const list = Array.isArray(booths) ? booths : []
+  const zoneIdByLabel = new Map(MAP_ZONES.map((zone) => [zone.label, zone.id]))
+
+  return list.reduce((zoneIdByBoothId, booth) => {
+    const zoneId = zoneIdByLabel.get(booth?.zone)
+    if (zoneId && Number.isInteger(booth?.booth_id)) zoneIdByBoothId[booth.booth_id] = zoneId
+    return zoneIdByBoothId
+  }, {})
+}

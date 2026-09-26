@@ -100,15 +100,16 @@ export const Body = styled.span`
   }
 `
 
-export const Chevron = styled.span`
-  color: #9f9c99;
-  font-size: 24px;
+export const Chevron = styled.img`
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
 `
 
 export const More = styled.button`
   align-self: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: ${({ $expanded }) => ($expanded ? 'column-reverse' : 'column')};
   align-items: center;
   gap: 4px;
   padding: 0;
@@ -118,12 +119,9 @@ export const More = styled.button`
   font-size: 12px;
 `
 
-export const MoreArrow = styled.span`
-  width: 12px;
-  height: 12px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: ${({ $expanded }) =>
-    $expanded ? 'rotate(225deg)' : 'rotate(45deg)'};
+export const MoreArrow = styled.img`
+  width: 18px;
+  height: 10px;
+  transform: ${({ $expanded }) => ($expanded ? 'rotate(180deg)' : 'none')};
 `
 

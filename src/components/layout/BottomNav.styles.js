@@ -24,6 +24,7 @@ export const Bar = styled.div`
   padding: 12px 24px 8px;
   border-radius: 99px;
   background: #fff;
+  box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.2);
 `
 
 export const ItemGroup = styled.div`

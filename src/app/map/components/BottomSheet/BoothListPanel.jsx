@@ -12,7 +12,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
     selectedCategory, setSelectedCategory } = useMapContext()
 
   if (isSearching) {
-    return <BoothSearchPanel timeSlot={listTimeOfDay} onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
+    return <BoothSearchPanel onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
   }
   return (
     <>

@@ -7,10 +7,10 @@ import * as THREE from 'three'
 import Zone1Scene from './zones/Zone1Scene'
 import Zone2Scene from './zones/Zone2Scene'
 import Zone3Scene from './zones/Zone3Scene'
-import Zone4Scene from './zones/Zone4Scene'
 import Zone5Scene from './zones/Zone5Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 import { TimeOfDayContext } from './environment/TimeOfDayContext'
+import { getBoothFocus } from './camera/getBoothFocus'
 
 // 재원 담당 — 구역별 3D 씬(터레인+건물+부스 앵커)을 감싸는 진입 컴포넌트.
 // 프론트1은 이 컴포넌트를 지도 메인 레이아웃 안에 그대로 끼워 넣기만 하면 된다.
@@ -23,6 +23,9 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 //     → 6단계 확장), 2026-09-19부터는 부스별 lantern_count로 BoothMarker가 단계를 스스로 계산하므로
 //     기본값이 0 → null(자동)로 바뀌었다. 숫자를 넣으면 네 구역 모든 부스가 그 단계로 강제되는 개발용
 //     스위치로만 남아 있다(BoothMarker.jsx 19번 항목).
+//   - focusBooth: (선택) 카메라를 정면으로 옮길 부스 한 개(GET /api/booths/ 항목) 또는 null.
+//     2026-09-24 추가 — 값이 들어오면 그 부스 앞으로 날아간다. 어디서 골랐는지는 알 필요가 없다.
+//     null로 돌아가도 카메라를 되돌리지는 않는다(ZoneCamera 주석 참고).
 //   - onBoothClick(boothId): 3D 씬에서 부스 앵커를 레이캐스팅으로 클릭했을 때 호출
 //
 // 핀 라벨(등불아이콘+개수+부스명)은 여기서 그리지 않는다 — B안 합의대로
@@ -103,6 +106,11 @@ import { TimeOfDayContext } from './environment/TimeOfDayContext'
 // 이후 재원 요청으로 구역별로 하나씩 튜닝했고, 각 항목 위에 날짜와 근거를 적어뒀다.
 // 2026-09-21 기준 다섯 구역 모두 튜닝이 끝났다(옛 공통값을 쓰는 구역 없음).
 //
+// 2026-09-23: zone4(학림관) 제거 — 축제 구역에서 빠져서 씬(Zone4Scene)·카메라 프리셋·모델
+// (public/models/hangnimgwan.glb)을 함께 내렸다. 위 09-16·09-19·09-20 기록에 남은 zone4 이야기는
+// 그때의 히스토리다. 원흥관은 zone5 id를 그대로 둬서 공유 링크(?zone=zone5)와 미리보기 이미지
+// 파일명이 안 깨지게 했다(constants/zones.js 참고).
+//
 // R3F의 <Canvas camera={...}> prop 은 마운트 시점에 한 번만 적용돼서, 구역을 바꿔도 카메라가
 // 따라가지 않는다. 그래서 zoneId가 바뀔 때마다 ZoneCamera가 카메라 위치와 OrbitControls 타깃을
 // 직접 옮긴다. (09-20 처음 분리할 때는 타깃을 OrbitControls의 target prop으로 넘겼는데,
@@ -140,15 +148,6 @@ const ZONE_CAMERAS = {
   //   타깃을 원점 기준으로 똑같이 2배 해서(거리 82 → 164, 타깃 높이도 3 → 6) 화면 구도는 그대로고,
   //   실제 크기인 부스만 상대적으로 작아진다. 확대 여유도 생겼다(최소 거리 70까지 2.3배).
   zone3: { position: [100.6, 129.4, 55.2], target: [7, 6, 1.2] },
-  // 학림관(2026-09-21 튜닝, 재원 요청 "완전 반대쪽에서"):
-  //   건물 정면(입구·유리 타워)과 앞 도로가 -z 쪽(정면 z=-5, 도로 z -20.5~-4.5)에 있는데, 옛 공통
-  //   카메라는 +z 쪽에서 봐서 창 없는 뒷면만 보였고, 도로 차선에 세운 부스 6개(z=-12.7)는 높이 15m
-  //   건물에 가려 핀 끝만 보였다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했다.
-  //   내려보는 각 48.8°는 다른 구역과 같다. 화면 좌우도 뒤집혀서 건물의 x+ 끝이 화면 왼쪽에 온다.
-  //   구역이 좌우로 긴 직사각형(bbox x -28~28 / z -20.5~8)이고 좌우 대칭이라 타깃 x=0.
-  //   거리 125/133/143을 640×1000·600×1000으로 비교했고, 125는 600 폭에서 양끝이 5px까지 붙어서
-  //   133으로 정했다(640 폭 좌우 여백 45px, 600 폭 25px).
-  zone4: { position: [0, 103.1, -89.1], target: [0, 3, -1.5] },
   // 원흥관(2026-09-20 첫 값 → 2026-09-21 재원 요청 "반대쪽에서"로 변경):
   //   본동의 원래 정면(창이 촘촘한 면)은 -z 쪽인데, 처음 잡은 시점(방위각 0°, 카메라가 +z 쪽)은 건물 후면과
   //   그 앞 광장을 보고 있었다. 방위각 180°로 돌려(카메라가 -z 쪽) 정면을 마주 보게 했고, 후면 광장에 있던
@@ -164,31 +163,78 @@ const ZONE_CAMERAS = {
 const DEFAULT_CAMERA = ZONE_CAMERAS.zone1
 
 // 2026-09-20(3차): 카메라 시점 고정 — 재원 결정 "확대는 되고, 회전은 잠그고, 좌우 이동은 어느 정도까지만".
+// 2026-09-23: 회전만 다시 열었다 — 기획·디자인 쪽에서 "지도 뷰어(festival-map-viewer)의 자유 회전처럼
+//             돌려 보고 싶다"고 요청. 줌(MIN/MAX_DISTANCE)·좌우 이동(PAN_LIMIT) 한계값은 그대로 두고,
+//             대신 땅 밑으로 내려가지 못하게, 또 핀이 안 보일 만큼 위로 올라가지 못하게
+//             MIN/MAX_POLAR_ANGLE을 추가했다. 자세한 건 아래 <OrbitControls> 주석.
 //
-// 그동안은 OrbitControls를 옵션 없이 써서 사용자가 건물 밑이나 뒤까지 마음대로 돌릴 수 있었다.
-// 구역마다 각도를 맞춰놨는데(ZONE_CAMERAS) 한 번 돌리면 그 구도가 의미가 없어져서 제한을 건다.
+// 09-20에 잠근 이유: OrbitControls를 옵션 없이 쓰면 사용자가 건물 밑이나 뒤까지 마음대로 돌릴 수 있는데,
+// 구역마다 각도를 맞춰놓은 구도(ZONE_CAMERAS)가 한 번 돌리면 의미가 없어져서였다. 09-23에 회전은 다시
+// 열었지만 '기본 시점은 구역마다 맞춰둔 구도로 시작하고, 사용자가 돌려도 구역 밖으로는 못 나간다'는
+// 원칙은 그대로다.
 //
-// 세 가지 한계값은 다섯 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
-// 공통 값이 그대로 들어맞는다. (처음 zone5는 옛 zone1 방향 벡터에서 거리만 줄였고, 이후 다섯 구역
+// 아래 한계값들은 남은 네 구역이 공통으로 쓴다. 구역별 카메라의 '내려보는 각'이 전부 48.8°로 같아서
+// 공통 값이 그대로 들어맞는다. (처음 zone5는 옛 zone1 방향 벡터에서 거리만 줄였고, 이후 각 구역
+// 모두 내려보는 각은 두고 방위각만 돌렸다. 새 구역을 맞출 때도 이 48.8°를 지키면 된다.)
 // 모두 내려보는 각은 두고 방위각만 돌렸다. 새 구역을 맞출 때도 이 48.8°를 지키면 된다.)
 // 구역 크기 차이 때문에 따로 주고 싶어지면 ZONE_CAMERAS 각 항목에 넣고 preset에서 꺼내 쓰면 된다.
-const MIN_DISTANCE = 70      // 가장 가까이 당겼을 때 (부스 지붕이 화면을 채우기 직전)
-// (만해광장은 지도를 2배로 키우기 전엔 기본 거리가 82라 확대 여유가 거의 없었는데, 2배 뒤로는 164다.)
-// MAX_DISTANCE 220 → 300 → 360 (2026-09-21): 혜화관 기본 시점이 거리 250이 되면서 300으로 올렸고,
-// 원흥관 지도를 2배로 키워 기본 거리가 316이 되면서 360으로 한 번 더 올렸다.
-// 기본 거리가 최대값보다 크면 OrbitControls가 첫 update()에서 최대값으로 끌어당겨
-// 카메라가 튕겨 들어온다. 또 기본값 = 최대값이면 사용자가 더 뒤로 뺄 여지가 없다.
-// 지금 가장 먼 기본 시점은 원흥관(316)이다. 새 구역 기본 거리가 이보다 커지면 이 값도 같이 올릴 것.
-const MAX_DISTANCE = 360     // 가장 멀리 뺐을 때 (구역 전체 + 여백)
+// 줌 범위(2026-09-24): 70~360 → 20~400. 재원 요청 "확대를 더 열어 달라".
+// 회전이 열리기 전에는 구역을 위에서 내려다보기만 해서 70이면 충분했는데, 돌려 볼 수 있게 되니
+// 부스를 가까이서 보고 싶어진다(랜턴·조명끈·바닥 글로우는 거리 70에선 몇 픽셀이라 보이지 않는다).
+//
+//   - 최소 20: 팔정도에서 부스 한 동을 타깃으로 두고 10/15/20/25/35를 렌더해서 골랐다.
+//     10은 카메라가 나무 안에 들어가 초록 면만 보이고, 15는 천막이 화면 구석에 걸친다.
+//     20부터 천막과 조명끈이 제대로 보이기 시작한다. 뷰어(festival-map-viewer)의 자유 회전은 5까지
+//     열려 있지만 그건 캡처용 내부 도구라 지오메트리를 뚫어도 상관없는 경우다.
+//     ※ 만해광장·원흥관은 지도가 2배(MAP_SCALE)라 같은 거리에서 건물이 두 배로 크다 — 부스는 실제
+//       크기 그대로여서 부스를 보는 데는 같지만, 그 두 구역에선 20까지 당기면 건물을 뚫을 수 있다.
+//   - 최대 400: 가장 먼 기본 시점(원흥관 316)보다 여유가 있는 값. 기본 거리가 최대값보다 크면
+//     OrbitControls가 첫 update()에서 끌어당겨 카메라가 튕겨 들어오므로 그 조건을 지켜야 한다.
+//     Canvas의 far가 2000이라 이 거리에서도 잘리지 않는다.
+// (옛 값 기록: MIN 70 = 회전이 잠겨 있던 시절 "부스 지붕이 화면을 채우기 직전"으로 잡은 값.
+//  MAX는 220 → 300 → 360으로, 혜화관 250·원흥관 316 기본 시점이 생길 때마다 올렸다.)
+const MIN_DISTANCE = 20      // 가장 가까이 당겼을 때 (부스 한 동과 조명끈이 보이는 거리)
+const MAX_DISTANCE = 400     // 가장 멀리 뺐을 때 (구역 전체 + 여백)
+// 2026-09-25: 조작이 바뀌면서(한 손가락 = 이동) 이 값이 주 조작의 한계가 됐다. 예전에는 이동이
+// 두 손가락 보조 제스처라 벽에 닿을 일이 거의 없었다. 일단 30으로 써 보고 답답하면 올린다.
+// 구역 중심에서 지도 끝까지 필요한 거리는 혜화관 49 / 팔정도 46 / 만해광장 49 / 원흥관 68이라
+// (아래 ZONE_CAMERAS의 bbox 주석 기준, 만해광장·원흥관은 MAP_SCALE 2배 반영) 공통 70이면 네 구역이
+// 다 덮인다. 구역별로 정확히 맞추려면 ZONE_CAMERAS 각 항목에 panLimit을 넣고 ZoneCamera가 꺼내 쓰면 된다.
 const PAN_LIMIT = 30         // 구역 중심에서 좌우/앞뒤로 이만큼까지만 끌 수 있다
+// 위아래 회전 한계(2026-09-23). polar 0 = 바로 위에서 내려다보기, π/2 = 지평선 높이.
+// 아래쪽: 지평선 바로 앞(0.03rad ≈ 1.7°)에서 멈춘다 — 그 아래로 내려가면 카메라가 지면을 뚫고 들어가
+//   지도가 뒤집혀 보이고, 배경색만 가득 차서 돌아오기 어려워진다. (지도 뷰어의 자유 회전과 같은 값)
+// 위쪽: 3D 핀은 세로로 선 물방울이라 위에서 볼수록 납작해진다. 혜화관에서 거리 110으로 각도를 바꿔 가며
+//   렌더해 보면 올려본 각 60°까지는 개수 숫자가 읽히고, 65°에서 타원, 70°부터 뭉개지고, 90°(바로 위)에선
+//   색 띠만 남는다. 그래서 올려본 각 65°(= polar 25°)에서 멈춘다 — 지도에서 핀이 가장 중요한 정보라
+//   '바로 위에서 내려다보기'보다 핀 가독성을 택했다.
+//   탑뷰까지 열어야 한다면 이 값을 0으로 두면 되는데, 그땐 BoothPin의 tiltRatio를 살려서 가파른 각도에서만
+//   핀이 카메라 쪽으로 눕도록 해야 읽을 수 있다.
+const MAX_POLAR_ANGLE = Math.PI / 2 - 0.03                   // 아래 한계 — 지평선 직전
+const MIN_POLAR_ANGLE = Math.PI / 2 - (65 * Math.PI) / 180   // 위 한계 — 올려본 각 65°
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
-function ZoneCamera({ zoneId, controlsRef }) {
+// 부스를 고르면 그 부스 정면으로 날아가는 시간(ms)과 가속 곡선(2026-09-24).
+// 순간이동시키면 사용자가 "어디로 간 거지?"가 된다 — 지도에서 위치 감각을 잃으면 돌아올 방법이 없다.
+// 0.7초는 이동한 게 보이면서도 답답하지 않은 정도다. easeInOutCubic으로 시작과 끝을 부드럽게 한다.
+const FOCUS_FLIGHT_MS = 700
+const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2)
+const lerp = (from, to, t) => from + (to - from) * t
+
+function ZoneCamera({ zoneId, focusBooth, controlsRef }) {
   const camera = useThree((state) => state.camera)
   const preset = ZONE_CAMERAS[zoneId] ?? DEFAULT_CAMERA
+
+  // 좌우 이동을 가두는 기준점(2026-09-24). 기본은 구역 중심이고, 부스를 고르면 그 부스로 옮긴다.
+  // 그러지 않으면 구역 중심에서 PAN_LIMIT(30m)보다 멀리 있는 부스는 카메라를 옮겨놔도
+  // 바로 다음 프레임에 아래 useFrame이 도로 끌어온다(혜화관은 bbox가 x -43~54라 실제로 그런 부스가 있다).
+  const panCenterRef = useRef(preset.target)
+
+  // 진행 중인 카메라 이동. null이면 이동 중이 아니다.
+  const flightRef = useRef(null)
 
   // 구역이 바뀌면 그 구역 기본 시점으로 되돌린다.
   // (zone1에서 확대해둔 채 zone5로 넘어가도 zone5 기본 화면에서 시작한다)
@@ -198,6 +244,8 @@ function ZoneCamera({ zoneId, controlsRef }) {
   // 바텀시트를 열고 닫을 때도 리렌더된다) 타깃이 구역 중심으로 되돌아가 사용자가 끌어둔
   // 좌우 이동이 툭툭 튕겨 돌아온다.
   useEffect(() => {
+    flightRef.current = null
+    panCenterRef.current = preset.target
     camera.position.set(...preset.position)
     const controls = controlsRef.current
     if (controls) {
@@ -208,7 +256,46 @@ function ZoneCamera({ zoneId, controlsRef }) {
     }
   }, [camera, controlsRef, preset])
 
-  // 좌우 이동이 구역 밖으로 나가지 않게 매 프레임 가둔다.
+  // 2026-09-24: 부스를 고르면 그 부스 정면으로 카메라를 옮긴다.
+  // 어디서 골랐는지는 상관없다 — 3D 핀 클릭, 바텀시트 목록·검색 선택, 홈 부스 랭킹(/map?booth=)이
+  // 전부 selectedBoothId를 바꾸고, MapShell이 그 부스를 찾아 focusBooth로 내려준다.
+  //
+  // 목표 위치 계산은 camera/getBoothFocus.js(순수 함수)가 하고, 여기서는 "그 자리까지 어떻게 갈지"만 맡는다.
+  //
+  // 상세 시트를 닫으면 focusBooth가 null이 되는데, 그때 카메라를 되돌리지는 않는다 —
+  // 부스를 보다가 시트만 닫는 건 "그 자리에서 계속 보겠다"는 뜻이라 원래 자리로 튕겨 가면 당황스럽다.
+  // (구역을 바꾸면 위 useEffect가 그 구역 기본 시점으로 되돌린다.)
+  useEffect(() => {
+    if (!focusBooth) return
+    const controls = controlsRef.current
+    if (!controls) return
+
+    const focus = getBoothFocus(focusBooth, camera.position.toArray())
+    if (!focus) return
+
+    // 팬 제한 기준을 먼저 옮겨야 한다 — 이동 중에 아래 useFrame이 옛 기준으로 되돌리지 않도록.
+    panCenterRef.current = focus.target
+    flightRef.current = {
+      startedAt: performance.now(),
+      fromPosition: camera.position.toArray(),
+      fromTarget: controls.target.toArray(),
+      toPosition: focus.position,
+      toTarget: focus.target,
+    }
+  }, [camera, controlsRef, focusBooth])
+
+  // 이동 중에 사용자가 화면을 건드리면 그 자리에서 멈춘다.
+  // 날아가는 도중 손으로 돌리려는데 카메라가 계속 제 갈 길을 가면 조작을 뺏긴 느낌이 든다.
+  useEffect(() => {
+    const controls = controlsRef.current
+    if (!controls) return undefined
+
+    const cancelFlight = () => { flightRef.current = null }
+    controls.addEventListener('start', cancelFlight)
+    return () => controls.removeEventListener('start', cancelFlight)
+  }, [controlsRef])
+
+  // 좌우 이동이 기준점(구역 중심, 부스를 골랐으면 그 부스)에서 너무 멀어지지 않게 매 프레임 가둔다.
   // OrbitControls는 회전(min/maxPolarAngle)과 줌(min/maxDistance)은 한계를 제공하지만
   // 패닝은 막아주지 않아서, 그냥 두면 지도 밖 허공까지 끌고 갈 수 있다.
   //
@@ -218,8 +305,28 @@ function ZoneCamera({ zoneId, controlsRef }) {
     const controls = controlsRef.current
     if (!controls) return
 
+    // 부스로 날아가는 중이면 이번 프레임의 위치를 먼저 채운다.
+    // OrbitControls는 카메라와 타깃을 직접 바꿔도 update()만 불러주면 내부 상태를 따라온다.
+    const flight = flightRef.current
+    if (flight) {
+      const progress = Math.min(1, (performance.now() - flight.startedAt) / FOCUS_FLIGHT_MS)
+      const eased = easeInOutCubic(progress)
+      camera.position.set(
+        lerp(flight.fromPosition[0], flight.toPosition[0], eased),
+        lerp(flight.fromPosition[1], flight.toPosition[1], eased),
+        lerp(flight.fromPosition[2], flight.toPosition[2], eased),
+      )
+      controls.target.set(
+        lerp(flight.fromTarget[0], flight.toTarget[0], eased),
+        lerp(flight.fromTarget[1], flight.toTarget[1], eased),
+        lerp(flight.fromTarget[2], flight.toTarget[2], eased),
+      )
+      controls.update()
+      if (progress >= 1) flightRef.current = null
+    }
+
     const target = controls.target
-    const [centerX, , centerZ] = preset.target
+    const [centerX, , centerZ] = panCenterRef.current
     const beforeX = target.x
     const beforeZ = target.z
 
@@ -235,7 +342,7 @@ function ZoneCamera({ zoneId, controlsRef }) {
   return null
 }
 
-export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, onBoothClick }) {
+export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, focusBooth = null, onBoothClick }) {
   const controlsRef = useRef(null)
 
   return (
@@ -253,36 +360,56 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
               <Zone2Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : zoneId === 'zone3' ? (
               <Zone3Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
-            ) : zoneId === 'zone4' ? (
-              <Zone4Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : zoneId === 'zone5' ? (
               <Zone5Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : null}
           </Suspense>
           {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}
           {/* 2026-09-13: 카메라 위치/타깃을 재원의 실제 상세 지형(WIP) 좌표 범위에 맞춰 재조정 */}
-          {/* 2026-09-20: 시점 고정 — 회전은 잠그고 확대/좌우 이동만 허용.
-              위치·타깃과 패닝 범위 제한은 ZoneCamera가 담당한다.
-              touches/mouseButtons를 바꾼 이유 — OrbitControls 기본값은 '한 손가락=회전'이라
-              회전을 끄면 한 손가락 조작이 아무것도 안 하게 된다. 지도처럼 한 손가락으로
-              끌 수 있어야 해서 PAN으로 바꿨다(데스크톱 좌클릭 드래그도 마찬가지). */}
+          {/* 2026-09-20: 시점 고정 — 회전은 잠그고 확대/좌우 이동만 허용(2026-09-23에 회전은 다시 열림).
+              위치·타깃과 패닝 범위 제한은 ZoneCamera가 담당한다. */}
+          {/* 2026-09-23: 지도 뷰어의 "자유 회전"과 같은 조작으로 바꿨다(기획·디자인 요청).
+              - 한 손가락 드래그 / 좌클릭 드래그 = 회전 (OrbitControls 기본 조작)
+              - 두 손가락 드래그 / 우클릭 드래그 = 좌우 이동, 핀치 / 휠 = 확대·축소
+              - 위아래 회전은 MIN/MAX_POLAR_ANGLE 사이 — 아래는 지평선 직전, 위는 올려본 각 65°까지
+              줌 범위와 좌우 이동 범위는 그대로 둔다 — 회전까지 열린 상태에서 그 둘까지 풀면 구역을 잃어버리고
+              돌아올 방법이 없다(앱엔 '시점 초기화' 버튼이 없고, 구역을 바꿨다 돌아와야 기본 시점으로 리셋된다).
+              뷰어의 자유 회전은 거리 5~1500에 이동 제한도 없는데, 그건 캡처용 내부 도구라 그렇게 둔 것이다.
+              ※ 회전을 열면 3D 핀이 어느 방향에서도 카메라를 보게 하는 수정(BoothPin.jsx, atan2)이 반드시
+                 함께 있어야 한다 — 없으면 돌릴 때마다 핀이 옆으로 눕거나 뒤돌아 보인다. */}
           <OrbitControls
             ref={controlsRef}
             makeDefault
-            enableRotate={false}
+            enableRotate
             enableZoom
             enablePan
             screenSpacePanning={false}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN }}
+            minPolarAngle={MIN_POLAR_ANGLE}
+            maxPolarAngle={MAX_POLAR_ANGLE}
+            // 2026-09-25: 손을 떼면 바로 멈춘다(재원 요청 "조금 빙글거린다").
+            // three 원본 OrbitControls는 enableDamping 기본값이 false인데 drei 래퍼가 true로 덮어쓴다
+            // (drei/core/OrbitControls.js). 그래서 여기서 명시하지 않으면 관성이 켜진 채로 동작한다.
+            // 여운을 없애는 대신 조금만 줄이고 싶으면 enableDamping을 지우고 dampingFactor를 올리면 된다
+            // (기본 0.05, 값이 클수록 빨리 멈춘다). 이 값은 festival-map-viewer의 자유 회전과 맞춰야 한다.
+            enableDamping={false}
+            // 2026-09-25: 조작을 일반 지도 앱 기준으로 바꿨다(재원 요청) — 한 손가락 이동, 두 손가락 회전.
+            // 예전에는 한 손가락 회전 / 두 손가락 이동이었는데, 구글맵·카카오맵을 쓰던 사용자가
+            // 지도를 밀려고 손가락을 대면 화면이 돌아가 버려서 방향 감각을 잃는다.
+            // 마우스도 같은 규칙으로 맞춘다(좌클릭 이동 = 주 조작, 우클릭 회전) — 한 화면에서 손가락과
+            // 마우스가 반대로 동작하면 팀원이 PC로 테스트할 때 헷갈린다. 우클릭 메뉴는 OrbitControls가 막아준다.
+            //
+            // DOLLY_ROTATE = 두 손가락 오므리기/벌리기로 확대, 두 손가락을 함께 끌면 회전.
+            // (three 구현상 두 손가락 '비틀기'로는 회전하지 않는다 — 함께 끌어야 한다)
+            touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
             mouseButtons={{
               LEFT: THREE.MOUSE.PAN,
               MIDDLE: THREE.MOUSE.DOLLY,
-              RIGHT: THREE.MOUSE.PAN,
+              RIGHT: THREE.MOUSE.ROTATE,
             }}
           />
-          <ZoneCamera zoneId={zoneId} controlsRef={controlsRef} />
+          <ZoneCamera zoneId={zoneId} focusBooth={focusBooth} controlsRef={controlsRef} />
           <EffectComposer>
             <SelectiveBloom
               mipmapBlur

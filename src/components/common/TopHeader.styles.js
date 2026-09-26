@@ -157,6 +157,16 @@ export const ProfileButton = styled.button`
   border: 0;
   border-radius: 50%;
   background: transparent;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid #9f9c99;
+    outline-offset: 2px;
+  }
 `
 
 export const ProfileIcon = styled.img`
@@ -166,16 +176,30 @@ export const ProfileIcon = styled.img`
 `
 
 export const LoginButton = styled.button`
+  appearance: none;
+  -webkit-appearance: none;
   width: 54px;
   height: 24px;
   flex: 0 0 54px;
   padding: 0;
-  border: 1px solid #d8d8d8;
-  border-radius: 12px;
+  border: 0;
+  border-radius: 99px;
   background: #fdfdfd;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
+  color: #100b0b;
   font-size: 10px;
   font-weight: 400;
   line-height: 22px;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #dc7054;
+    outline-offset: 2px;
+  }
 `
 
 export const Menu = styled.div`
