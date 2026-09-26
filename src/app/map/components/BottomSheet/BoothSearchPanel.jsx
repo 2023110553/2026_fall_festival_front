@@ -16,7 +16,7 @@ function readHistory() {
   }
 }
 
-export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
+export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) {
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
   const [history, setHistory] = useState(readHistory)
