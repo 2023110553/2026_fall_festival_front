@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { searchBooths } from '../../../../api/map'
+import { useMapContext } from '../../context/MapProvider'
 import BoothCardList from '../BoothCardList/BoothCardList'
 import SearchIcon from './SearchIcon'
 import * as S from './BoothSearchPanel.styles'
@@ -16,8 +17,9 @@ function readHistory() {
   }
 }
 
-export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) {
+export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
   const { t } = useTranslation()
+  const { listTimeOfDay } = useMapContext()
   const [keyword, setKeyword] = useState('')
   const [history, setHistory] = useState(readHistory)
   const [results, setResults] = useState([])
@@ -93,7 +95,7 @@ export default function BoothSearchPanel({ timeSlot, onSelectBooth, onCancel }) 
       }} role="search">
         <S.InputWrapper>
           <S.IconButton type="submit" aria-label={t('map.search')} title={t('map.search')}>
-            <SearchIcon isNight={timeSlot === 'night'} />
+            <SearchIcon isNight={listTimeOfDay === 'night'} />
           </S.IconButton>
           <S.Input
             type="search"

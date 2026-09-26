@@ -10,7 +10,7 @@ let openModalCount = 0
 
 // 등불 성공/실패, 삭제 확인, 쿠폰 안내 등 — 와이어프레임에 반복적으로 등장하는
 // "가운데 뜨는 모달"의 공용 껍데기. 내용(children)만 각 도메인에서 채워 넣는다.
-export default function Modal({ open, isOpen, onClose, children, style = {} }) {
+export default function Modal({ open, isOpen, onClose, children, style = {}, portal = false }) {
   const isModalOpen = open ?? isOpen ?? false
 
   // 모달이 열려있을 때 배경 페이지 스크롤 방지
@@ -34,12 +34,13 @@ export default function Modal({ open, isOpen, onClose, children, style = {} }) {
 
   if (!isModalOpen) return null
 
-  return createPortal(
+  const modal = (
     <S.Overlay onClick={onClose}>
       <S.Panel role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={style}>
         {children}
       </S.Panel>
-    </S.Overlay>,
-    document.body
+    </S.Overlay>
   )
+
+  return portal ? createPortal(modal, document.body) : modal
 }

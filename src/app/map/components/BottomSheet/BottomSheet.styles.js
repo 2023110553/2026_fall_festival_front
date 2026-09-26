@@ -5,7 +5,7 @@ export const Sheet = styled.div`
     bottom: 0;
     left: 0;
 
-    width: 100vw;
+    width: 100%;
     --sheet-top-gap: 40px;
     --middle-height: 62dvh;
     --collapsed-height: min(calc(100dvh - var(--sheet-top-gap)), max(26dvh, calc(${({ theme }) => theme.nav.height} + 142px + env(safe-area-inset-bottom))));

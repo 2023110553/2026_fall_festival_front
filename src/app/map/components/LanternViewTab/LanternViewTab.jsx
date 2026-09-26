@@ -117,7 +117,7 @@ function BoothLanternList({ boothId, date, isLoggedIn }) {
 
   return (
     <section aria-label={t('map.boothLanternList')}>
-      <LoginModal open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <LoginModal portal open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <Notice>
         <Prompt>{t('map.lanternPrompt')}</Prompt>
         <Warning>{t('map.lanternWarning')}</Warning>

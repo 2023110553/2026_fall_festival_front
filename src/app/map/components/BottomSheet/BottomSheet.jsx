@@ -28,12 +28,6 @@ export default function BottomSheet() {
   }, [selectedBoothId])
 
   useEffect(() => {
-    if (!isSearching) return
-    setSheetHeight(null)
-    setSnapPosition('high')
-  }, [isSearching])
-
-  useEffect(() => {
     if (!isSheetOpen || isSearching) return
 
     const handleOutsidePointerDown = (event) => {
@@ -55,7 +49,6 @@ export default function BottomSheet() {
   }, [isSheetOpen, isSearching])
 
   const handleDragStart = (event) => {
-    if (isSearching) return
     if (!event.isPrimary || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     const sheet = sheetRef.current
@@ -123,19 +116,21 @@ export default function BottomSheet() {
   return (
     <S.Sheet
       ref={sheetRef}
-      $snapPosition={isSearching ? 'high' : snapPosition}
+      $snapPosition={snapPosition}
       $isDragging={isDragging}
       style={{ height: sheetHeight == null ? undefined : `${sheetHeight}px` }}
     >
-      <S.DragHandle
-        onPointerDown={handleDragStart}
-        onPointerMove={handleDragMove}
-        onPointerUp={handleDragEnd}
-        onPointerCancel={handleDragEnd}
-        onLostPointerCapture={handleDragEnd}
-      >
-        <S.HandleBar $isNight={listTimeOfDay === 'night'} />
-      </S.DragHandle>
+      {!isSearching && (
+        <S.DragHandle
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+          onLostPointerCapture={handleDragEnd}
+        >
+          <S.HandleBar $isNight={listTimeOfDay === 'night'} />
+        </S.DragHandle>
+      )}
       <S.Content ref={contentRef}>
         {selectedBoothId == null ? (
         <BoothListPanel
