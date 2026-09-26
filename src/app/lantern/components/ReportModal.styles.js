@@ -36,6 +36,11 @@ export const OptionList = styled.div`
     margin-bottom: 24px;
 `
 
+export const ErrorText = styled.p`
+    margin: ${({ $mapAppearance }) => $mapAppearance ? '8px 0' : '1em 0'};
+    font-size: ${({ $mapAppearance }) => $mapAppearance ? '12px' : 'inherit'};
+`
+
 export const OptionItem = styled.label`
     display: flex;
     align-items: center;

@@ -381,6 +381,8 @@ Object.entries(myLanternTranslations).forEach(([language, messages]) => {
 const mapTranslations = {
   ko: {
     'map.title': '지도', 'map.day': '주간', 'map.night': '야간', 'map.openSearch': '검색 열기',
+    'map.lanternGuide': '등불 안내 보기',
+    'map.lanternGuideDescription': '마커의 색상은 단과대와 부스를 구분하고, 숫자는 그곳에 모인 등불의 개수를 나타내요.',
     'map.loadingBooths': '부스 목록을 불러오는 중이에요...', 'map.noBooths': '표시할 부스가 없어요.',
     'map.collab': '협업', 'map.lanternRegistered': '등불 등록 완료', 'map.lanternNotRegistered': '등불 미등록',
     'map.restroomType': '이용 가능한 화장실', 'map.restroomWomen': '여성 화장실', 'map.restroomMen': '남성 화장실',
@@ -428,6 +430,8 @@ const mapTranslations = {
   },
   en: {
     'map.title': 'Map', 'map.day': 'Day', 'map.night': 'Night', 'map.openSearch': 'Open search',
+    'map.lanternGuide': 'View lantern guide',
+    'map.lanternGuideDescription': 'Marker colors distinguish colleges and booths, and the number shows how many lanterns have gathered there.',
     'map.loadingBooths': 'Loading booths…', 'map.noBooths': 'No booths to display.',
     'map.collab': 'Partner', 'map.lanternRegistered': 'Lantern added', 'map.lanternNotRegistered': 'No lantern added',
     'map.restroomType': 'Available restrooms', 'map.restroomWomen': "Women's restroom", 'map.restroomMen': "Men's restroom",
@@ -475,6 +479,8 @@ const mapTranslations = {
   },
   ja: {
     'map.title': '地図', 'map.day': '昼間', 'map.night': '夜間', 'map.openSearch': '検索を開く',
+    'map.lanternGuide': '灯籠ガイドを見る',
+    'map.lanternGuideDescription': 'マーカーの色は学部とブースを区別し、数字はそこに集まった灯籠の数を示します。',
     'map.loadingBooths': 'ブースを読み込み中…', 'map.noBooths': '表示するブースがありません。',
     'map.collab': '協力', 'map.lanternRegistered': '灯籠登録済み', 'map.lanternNotRegistered': '灯籠未登録',
     'map.restroomType': '利用可能なトイレ', 'map.restroomWomen': '女性用トイレ', 'map.restroomMen': '男性用トイレ',
@@ -522,6 +528,8 @@ const mapTranslations = {
   },
   zh: {
     'map.title': '地图', 'map.day': '日间', 'map.night': '夜间', 'map.openSearch': '打开搜索',
+    'map.lanternGuide': '查看灯笼指南',
+    'map.lanternGuideDescription': '标记颜色用于区分学院和摊位，数字表示该处聚集的灯笼数量。',
     'map.loadingBooths': '正在加载摊位…', 'map.noBooths': '没有可显示的摊位。',
     'map.collab': '合作', 'map.lanternRegistered': '已挂灯笼', 'map.lanternNotRegistered': '未挂灯笼',
     'map.restroomType': '可用洗手间', 'map.restroomWomen': '女洗手间', 'map.restroomMen': '男洗手间',

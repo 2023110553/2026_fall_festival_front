@@ -2,11 +2,11 @@ import Modal from './Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './AlertModal.styles'
 
-export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText, onConfirm, confirmText, disabled = false }) {
+export default function AlertModal({ isOpen, onClose, title, subTitle, buttonText, onConfirm, confirmText, disabled = false, portal = false }) {
     const { t } = useTranslation()
     const resolvedButtonText = buttonText ?? t('common.close')
     return (
-        <Modal isOpen={isOpen} onClose={disabled ? undefined : onClose} style={S.modalStyle}>
+        <Modal isOpen={isOpen} onClose={disabled ? undefined : onClose} style={S.modalStyle} portal={portal}>
             <S.Container>
                 <S.Header>
                 {title && <S.Title>{title}</S.Title>}

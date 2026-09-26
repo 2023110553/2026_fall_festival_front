@@ -10,7 +10,7 @@ const REPORT_REASONS = [
     { value: 'ETC', labelKey: 'report.other' },
 ]
 
-    export default function ReportModal({ isOpen, onClose, onSubmit }) {
+    export default function ReportModal({ isOpen, onClose, onSubmit, portal = false, mapAppearance = false }) {
     const { t } = useTranslation()
     const [selectedReason, setSelectedReason] = useState('')
     const [pending, setPending] = useState(false)
@@ -47,14 +47,14 @@ const REPORT_REASONS = [
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose}>
+        <Modal isOpen={isOpen} onClose={handleClose} portal={portal}>
         <S.Container>
             <S.Header>
             <S.Title>{t('report.title')}</S.Title>
             <S.SubTitle>{t('report.description')}</S.SubTitle>
             </S.Header>
 
-            <S.OptionList>
+            <S.OptionList $mapAppearance={mapAppearance}>
             {REPORT_REASONS.map((reason) => (
                 <S.OptionItem key={reason.value}>
                 <S.RadioInput
@@ -70,7 +70,7 @@ const REPORT_REASONS = [
             ))}
             </S.OptionList>
 
-            {error && <p role="alert">{error}</p>}
+            {error && <S.ErrorText $mapAppearance={mapAppearance} role="alert">{error}</S.ErrorText>}
             <S.ButtonGroup>
             <S.CancelButton disabled={pending} type="button" onClick={handleClose}>
                 {t('common.cancel')}
