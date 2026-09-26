@@ -5,6 +5,8 @@ export const getBoothLanterns = (boothId, { mine = false, date, page = 0, size =
   apiClient.get('/api/lanterns/', {
     params: { booth_id: boothId, mine, date: date || undefined, page, size },
     signal,
+    // 공개 목록은 토큰 만료·재발급 실패 시 비로그인으로 재시도 (백엔드가 잘못된 토큰이면 401을 줌)
+    optionalUserAuth: !mine,
   })
 
 // festival_date는 body에 없음 — 서버 시간 기준 자동 설정

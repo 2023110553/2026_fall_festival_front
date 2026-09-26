@@ -104,6 +104,14 @@ function AccountLanternProvider({ children, userId }) {
     }
   }, [userId])
 
+  // 이 컨텍스트 밖에서 등불을 바꾼 경우(지도 등불 보기 등) 목록을 서버 기준으로 다시 맞춘다
+  const refreshLanterns = useCallback(() => {
+    if (userId == null) return
+    fetchAllFestivalDaysLanterns()
+      .then(setLanterns)
+      .catch(() => {})
+  }, [userId])
+
   // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
   // boothName은 등록 응답에 없어서, 등불 달기 모달에서 이미 알고 있는 값을 그대로 받아 로컬에만 붙여둔다
   const addLantern = async ({ boothId, boothName, nickname, message }) => {
@@ -183,6 +191,7 @@ function AccountLanternProvider({ children, userId }) {
         addLantern,
         deleteLantern,
         editLantern,
+        refreshLanterns,
         registerTriggers,
         requestCreateModal,
         requestLanternList,
