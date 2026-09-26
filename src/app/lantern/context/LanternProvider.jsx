@@ -30,6 +30,7 @@ const fetchAllFestivalDaysLanterns = async () => {
       status: item.status ?? 'active',
       festivalDate: FESTIVAL_DATES[index],
       createdAt: item.created_at,
+      updatedAt: item.updated_at,
     }))
   )
 }
