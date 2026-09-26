@@ -38,7 +38,7 @@ export const Thumb = styled.div`
   height: 44px;
   flex: 0 0 44px;
   border-radius: ${({ theme }) => theme.radius.sm};
-  background: ${PLACEHOLDER};
+  background: ${({ $hasImage }) => ($hasImage ? 'transparent' : PLACEHOLDER)};
   object-fit: cover;
 `
 

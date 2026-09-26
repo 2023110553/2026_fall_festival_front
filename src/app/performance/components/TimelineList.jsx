@@ -22,7 +22,7 @@ export default function TimelineList({ performances = [], onSelect }) {
           >
             <S.Left>
               {p.image_url
-                ? <S.Thumb as="img" src={p.image_url} alt="" />
+                ? <S.Thumb as="img" src={p.image_url} alt="" $hasImage />
                 : <S.Thumb />}
               <S.TextGroup>
                 <S.Name>{p.team_name}</S.Name>
