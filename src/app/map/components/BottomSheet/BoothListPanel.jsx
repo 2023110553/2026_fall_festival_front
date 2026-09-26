@@ -2,8 +2,8 @@ import { useMapContext } from '../../context/MapProvider'
 import { BOOTH_FILTER_CHIPS } from '../../../../constants/categories'
 import BoothCardList from '../BoothCardList/BoothCardList'
 import BoothSearchPanel from './BoothSearchPanel'
+import SearchIcon from './SearchIcon'
 import * as S from './BoothListPanel.styles'
-import SearchIcon from '../Search/SearchIcon'
 import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearch, onCancelSearch }) {
@@ -23,11 +23,11 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
           <S.Button type="button" $active={listTimeOfDay === 'night'} aria-pressed={listTimeOfDay === 'night'} onClick={() => setListTimeOfDay('night')}>{t('map.night')}</S.Button>
         </S.ButtonWrapper>
         <S.SearchButton type="button" onClick={onOpenSearch} aria-label={t('map.openSearch')} title={t('map.openSearch')}>
-          <SearchIcon />
+          <SearchIcon isNight={listTimeOfDay === 'night'} />
         </S.SearchButton>
       </S.Top>
       <S.Time>
-        {listTimeOfDay === 'day' ? '11:00-16:30' : '17:30-22:00'}
+        {listTimeOfDay === 'day' ? '11:00 - 16:30' : '17:30 - 22:00'}
       </S.Time>
     </S.TimeWrapper>
 
@@ -45,9 +45,9 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
         ))}
       </S.CategoryList>
       {isLoading ? (
-        <S.StatusMessage>{t('map.loadingBooths')}</S.StatusMessage>
+        <S.StatusMessage $isNight={listTimeOfDay === 'night'}>{t('map.loadingBooths')}</S.StatusMessage>
       ) : isError ? (
-        <S.StatusMessage>{listError}</S.StatusMessage>
+        <S.StatusMessage $isNight={listTimeOfDay === 'night'}>{listError}</S.StatusMessage>
       ) : (
         <BoothCardList filterBySearchTerm={false} booths={booths} onSelectBooth={onSelectBooth} />
       )}

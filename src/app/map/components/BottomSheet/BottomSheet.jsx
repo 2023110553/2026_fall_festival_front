@@ -5,7 +5,7 @@ import BoothDetailPanel from './BoothDetailPanel'
 import * as S from './BottomSheet.styles'
 
 export default function BottomSheet() {
-  const { isSheetOpen, selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate, setSearchTerm } = useMapContext()
+  const { isSheetOpen, selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate, setSearchTerm, listTimeOfDay } = useMapContext()
   const [isSearching, setIsSearching] = useState(false)
   const previousSnap = useRef('middle')
   const [sheetHeight, setSheetHeight] = useState(null)
@@ -120,15 +120,17 @@ export default function BottomSheet() {
       $isDragging={isDragging}
       style={{ height: sheetHeight == null ? undefined : `${sheetHeight}px` }}
     >
-      <S.DragHandle
-        onPointerDown={handleDragStart}
-        onPointerMove={handleDragMove}
-        onPointerUp={handleDragEnd}
-        onPointerCancel={handleDragEnd}
-        onLostPointerCapture={handleDragEnd}
-      >
-        <S.HandleBar />
-      </S.DragHandle>
+      {!isSearching && (
+        <S.DragHandle
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+          onLostPointerCapture={handleDragEnd}
+        >
+          <S.HandleBar $isNight={listTimeOfDay === 'night'} />
+        </S.DragHandle>
+      )}
       <S.Content ref={contentRef}>
         {selectedBoothId == null ? (
         <BoothListPanel
@@ -154,6 +156,7 @@ export default function BottomSheet() {
           sheetTab={sheetTab}
           setSheetTab={setSheetTab}
           selectedDate={selectedDate}
+          isNight={listTimeOfDay === 'night'}
         />
         )}
       </S.Content>

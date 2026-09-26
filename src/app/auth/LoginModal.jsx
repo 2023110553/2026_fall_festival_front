@@ -5,7 +5,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as S from './LoginModal.styles'
 
 // 카카오 1초 로그인 모달 — 등불 달기(+) 진입 시 비로그인 상태면 이 모달을 먼저 띄운다.
-export default function LoginModal({ open, onClose, message }) {
+export default function LoginModal({ open, onClose, message, portal = false }) {
   const { t } = useTranslation()
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -37,7 +37,7 @@ export default function LoginModal({ open, onClose, message }) {
   }
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={handleClose} portal={portal}>
       <S.Container>
         <S.CloseButton onClick={handleClose} aria-label={t('common.close')}>
           ✕

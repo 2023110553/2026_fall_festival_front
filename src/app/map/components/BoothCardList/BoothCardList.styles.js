@@ -1,5 +1,12 @@
 import styled from "styled-components";
 
+export const StatusMessage = styled.p`
+    padding: 24px 0;
+    text-align: center;
+    font-size: 13px;
+    color: ${({ $isNight }) => $isNight ? '#272727' : '#9F9C99'};
+`
+
 export const BoothCardList = styled.div`
     display: flex;
     flex-direction: column;
@@ -28,6 +35,7 @@ export const Thumbnail = styled.img`
 export const Info = styled.div`
     flex: 1;
     min-width: 0;
+    min-height: 66px;
     overflow-wrap: anywhere;
     display: flex;
     flex-direction: column;
@@ -39,7 +47,7 @@ export const Title = styled.span`
     font-size: 16px;
     line-height: 100%;
     letter-spacing: 0;
-    padding-bottom: 5px;
+    margin-bottom: 4px;
 `
 export const Department = styled.span`
     font-family: var(--font-pretendard);
@@ -48,10 +56,11 @@ export const Department = styled.span`
     line-height: 100%;
     letter-spacing: 0;
     color: #737373;
-    padding-bottom: 15px;
-;
+    min-height: 12px;
+    margin-bottom: 12px;
 `
 export const Location = styled.span`
+    min-height: 12px;
     font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 12px;
@@ -60,7 +69,10 @@ export const Location = styled.span`
     color: #9F9C99;
 `
 export const LanternWrapper = styled.div`
-    flex-shrink: 0;
+    width: 34px;
+    min-width: 34px;
+    max-width: 34px;
+    flex: 0 0 34px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -68,11 +80,13 @@ export const LanternWrapper = styled.div`
     margin-left: auto;
 `
 export const CollabBadge = styled.span`
-    gap: 2px;
+    width: 34px;
+    box-sizing: border-box;
+    gap: 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 3px 5px;
+    padding: 3px 0;
     border-radius: 4px;
     background: #DC7054;
     color: #FDFDFD;

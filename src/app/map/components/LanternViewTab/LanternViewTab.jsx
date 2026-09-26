@@ -10,15 +10,80 @@ import { useOptionalMapContext } from '../../context/MapProvider'
 import { getCurrentFestivalDate } from '../../../lantern/utils/getCurrentFestivalDate'
 import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
+import LoginModal from '../../../auth/LoginModal'
 import { useTranslation } from '../../../../i18n/useTranslation'
 
 const List = styled.ul`
   list-style: none;
-  margin: 16px 0;
+  margin: 6px 0 16px;
   padding: 0;
   display: grid;
   gap: 12px;
   > li { min-width: 0; }
+`
+const Notice = styled.div`
+  font-family: Pretendard;
+`
+const Prompt = styled.p`
+  margin: 0;
+  color: #5C5C5C;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+`
+const Warning = styled.p`
+  margin: 4px 0 0;
+  color: #808080;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+`
+const Divider = styled.hr`
+  width: 100%;
+  height: 0.959px;
+  margin: 16px 0 0;
+  border: 0;
+  background: #FFF;
+`
+const MineFilter = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 16px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: Pretendard;
+  color: #7C7C7C;
+  font-size: 14px;
+  line-height: normal;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #DC7054;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+`
+const CheckboxIconSlot = styled.span`
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
+  display: grid;
+  place-items: center;
+`
+const CheckboxIcon = styled.svg`
+  display: block;
+  flex-shrink: 0;
 `
 const Action = styled.button`
   min-height: 44px;
@@ -40,14 +105,44 @@ export default function LanternViewTab({ boothId, selectedDate }) {
 function BoothLanternList({ boothId, date, isLoggedIn }) {
   const { t } = useTranslation()
   const [onlyMine, setOnlyMine] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+
+  const toggleOnlyMine = () => {
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+      return
+    }
+    setOnlyMine((checked) => !checked)
+  }
+
   return (
     <section aria-label={t('map.boothLanternList')}>
-      <p>{t('map.lanternNotice')}</p>
-      <label>
-        <input type="checkbox" checked={onlyMine} disabled={!isLoggedIn}
-          onChange={(event) => setOnlyMine(event.target.checked)} />
+      <LoginModal portal open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <Notice>
+        <Prompt>{t('map.lanternPrompt')}</Prompt>
+        <Warning>{t('map.lanternWarning')}</Warning>
+      </Notice>
+      <Divider />
+      <MineFilter
+        type="button"
+        role="checkbox"
+        aria-checked={onlyMine}
+        onClick={toggleOnlyMine}
+      >
         {t('map.onlyMine')}
-      </label>
+        <CheckboxIconSlot>
+          {onlyMine ? (
+            <CheckboxIcon xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" fill="none" aria-hidden="true">
+              <path d="M14.875 2.625H6.125C4.192 2.625 2.625 4.192 2.625 6.125V14.875C2.625 16.808 4.192 18.375 6.125 18.375H14.875C16.808 18.375 18.375 16.808 18.375 14.875V6.125C18.375 4.192 16.808 2.625 14.875 2.625Z" stroke="#7C7C7C" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7.875 10.5L9.84375 12.25L13.125 8.75" stroke="#7C7C7C" strokeLinecap="round" strokeLinejoin="round" />
+            </CheckboxIcon>
+          ) : (
+            <CheckboxIcon xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+              <path d="M12.75 0.5H4C2.067 0.5 0.5 2.067 0.5 4V12.75C0.5 14.683 2.067 16.25 4 16.25H12.75C14.683 16.25 16.25 14.683 16.25 12.75V4C16.25 2.067 14.683 0.5 12.75 0.5Z" stroke="#7C7C7C" strokeLinecap="round" strokeLinejoin="round" />
+            </CheckboxIcon>
+          )}
+        </CheckboxIconSlot>
+      </MineFilter>
       <LanternResults key={String(onlyMine)} boothId={boothId} date={date} mine={onlyMine} isLoggedIn={isLoggedIn} />
     </section>
   )
