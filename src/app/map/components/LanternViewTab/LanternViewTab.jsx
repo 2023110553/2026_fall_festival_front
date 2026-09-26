@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { useAuthStore } from '../../../../store/useAuthStore'
 import { getBoothLanterns, updateLantern, deleteLantern, reportLantern } from '../../../../api/lantern'
 import { useOptionalMapContext } from '../../context/MapProvider'
+import { useLanterns } from '../../../lantern/context/LanternProvider'
 import { getCurrentFestivalDate } from '../../../lantern/utils/getCurrentFestivalDate'
 import EmptyState from '../../../../components/common/EmptyState'
 import LanternCard from '../../../lantern/components/LanternCard'
@@ -155,6 +156,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
   const { t } = useTranslation()
   // 홈 랭킹 모달처럼 MapProvider 밖에서 열리면 부스 목록 갱신은 건너뛴다.
   const refreshBooths = useOptionalMapContext()?.refreshBooths
+  const { refreshLanterns } = useLanterns()
   const [reporting, setReporting] = useState(null)
   const [reportNotice, setReportNotice] = useState(null)
   const [editing, setEditing] = useState(null)
@@ -177,6 +179,8 @@ function LanternResults({ boothId, date, mine, isLoggedIn }) {
       const { data } = await (kind === 'edit' ? updateLantern(id, changes) : deleteLantern(id))
       if (!data?.success) throw new Error(t('map.requestFailed'))
       refreshBooths?.()
+      // 나의 등불(개수·사용한 부스)도 같이 갱신
+      refreshLanterns()
       if (!mounted.current) return
       setEditing(null)
       setDeleting(null)

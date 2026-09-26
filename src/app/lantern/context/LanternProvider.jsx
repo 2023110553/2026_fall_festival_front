@@ -5,8 +5,10 @@ import {
   createLantern as createLanternRequest,
   deleteLantern as deleteLanternRequest,
   getLanterns as getLanternsRequest,
+  getLanternBoothOptions,
   updateLantern as updateLanternRequest,
 } from '../../../api/lantern'
+import { getToday, setServerTime } from '../utils/getToday'
 
 const LanternContext = createContext(null)
 
@@ -28,6 +30,7 @@ const fetchAllFestivalDaysLanterns = async () => {
       status: item.status ?? 'active',
       festivalDate: FESTIVAL_DATES[index],
       createdAt: item.created_at,
+      updatedAt: item.updated_at,
     }))
   )
 }
@@ -52,6 +55,34 @@ function AccountLanternProvider({ children, userId }) {
   const [activeBooth, setActiveBooth] = useState(null)
   const [lanterns, setLanterns] = useState([])
   const [coupon, setCoupon] = useState(null)
+  // 서버 기준 오늘 — 바뀌면 소비 컴포넌트가 다시 렌더링되도록 state로 보관
+  const [serverToday, setServerToday] = useState(getToday)
+
+  const refreshToday = useCallback(() => setServerToday(getToday()), [])
+
+  // 서버(가상 시계) 시각 동기화 — 실패 시 기기 날짜로 동작
+  const syncServerTime = useCallback(() => {
+    getLanternBoothOptions()
+      .then((res) => {
+        setServerTime(res.data.data?.server_time)
+        refreshToday()
+      })
+      .catch(() => {})
+  }, [refreshToday])
+
+  // 앱 시작 + 탭 복귀 시 동기화, 1분마다 자정 넘김 확인
+  useEffect(() => {
+    syncServerTime()
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') syncServerTime()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    const timer = setInterval(refreshToday, 60 * 1000)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      clearInterval(timer)
+    }
+  }, [syncServerTime, refreshToday])
 
   // 로그인 상태일 때만 본인 등불을 서버에서 조회 — 로그아웃/게스트면 목록을 비운다
   useEffect(() => {
@@ -74,11 +105,21 @@ function AccountLanternProvider({ children, userId }) {
     }
   }, [userId])
 
+  // 이 컨텍스트 밖에서 등불을 바꾼 경우(지도 등불 보기 등) 목록을 서버 기준으로 다시 맞춘다
+  const refreshLanterns = useCallback(() => {
+    if (userId == null) return
+    fetchAllFestivalDaysLanterns()
+      .then(setLanterns)
+      .catch(() => {})
+  }, [userId])
+
   // 실패 시(금칙어/부스 없음/일일 한도 등) 그대로 reject해서 호출부가 에러 코드로 분기하게 둔다
   // boothName은 등록 응답에 없어서, 등불 달기 모달에서 이미 알고 있는 값을 그대로 받아 로컬에만 붙여둔다
   const addLantern = async ({ boothId, boothName, nickname, message }) => {
     const res = await createLanternRequest({ boothId, nickname, message })
     const data = res.data.data
+    // 서버가 저장한 날짜와 다르면 서버 시각을 다시 맞춘다
+    if (data.festival_date && data.festival_date !== getToday()) syncServerTime()
     const created = {
       id: data.lantern_id,
       boothId: data.booth_id,
@@ -147,9 +188,11 @@ function AccountLanternProvider({ children, userId }) {
         lanterns,
         coupon,
         setCoupon,
+        serverToday,
         addLantern,
         deleteLantern,
         editLantern,
+        refreshLanterns,
         registerTriggers,
         requestCreateModal,
         requestLanternList,

@@ -1,23 +1,20 @@
 import { getLocalDateString } from './getLocalDateString'
 
-const DEV_DATE_OVERRIDE_KEY = 'dev_mock_today'
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000
 
-// 오늘 날짜 — DEV 환경에서 localStorage에 임시로 지정해둔 날짜가 있으면 그걸 대신 반환한다.
-// 축제 시작 전/종료 후에도 지난 날짜 화면(수정 제한 등)을 눈으로 확인해볼 수 있게 하는 개발용 오버라이드.
-// 프로덕션 빌드에서는 import.meta.env.DEV가 false라 항상 실제 오늘 날짜만 사용한다.
-export function getToday() {
-  if (import.meta.env.DEV) {
-    const override = localStorage.getItem(DEV_DATE_OVERRIDE_KEY)
-    if (override) return override
-  }
-  return getLocalDateString()
+// 서버(가상 시계) 시각 - 기기 시각 차이 — 자정이 지나도 오늘 날짜가 따라 넘어가도록 날짜 대신 차이를 저장
+let serverOffsetMs = null
+
+// serverTime: 'YYYY-MM-DDTHH:MM:SS' (KST, 타임존 표기 없음)
+export function setServerTime(serverTime) {
+  if (typeof serverTime !== 'string') return
+  const serverMs = Date.parse(`${serverTime.slice(0, 19)}+09:00`)
+  if (Number.isNaN(serverMs)) return
+  serverOffsetMs = serverMs - Date.now()
 }
 
-// dateStr을 넘기면 그 날짜로, null/undefined를 넘기면 오버라이드 해제(실제 날짜로 복귀)
-export function setMockToday(dateStr) {
-  if (dateStr) {
-    localStorage.setItem(DEV_DATE_OVERRIDE_KEY, dateStr)
-  } else {
-    localStorage.removeItem(DEV_DATE_OVERRIDE_KEY)
-  }
+// 서버 기준 오늘(KST). 서버 시각을 받기 전엔 기기 날짜로 대체
+export function getToday() {
+  if (serverOffsetMs === null) return getLocalDateString()
+  return new Date(Date.now() + serverOffsetMs + KST_OFFSET_MS).toISOString().slice(0, 10)
 }

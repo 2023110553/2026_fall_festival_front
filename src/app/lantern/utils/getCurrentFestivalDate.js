@@ -3,7 +3,6 @@ import { FESTIVAL_DATES } from '../../../constants/festivalDates'
 
 // 오늘이 축제 시작 전이면 1일차로, 기간 중이면 실제 맞는 날짜로, 기간이 다 끝났으면 마지막 날로 취급.
 // 축제 시작 전/종료 후에도 "나의 등불"이 어느 day에도 안 걸려서 확인 자체가 안 되는 문제를 막기 위한 보정 —
-// 축제 기간 중엔 today가 그대로 정확히 일치하는 날짜를 반환하므로 실제 서비스 동작에는 영향 없다.
 export function getCurrentFestivalDate() {
   const today = getToday()
   return FESTIVAL_DATES.find((date) => date >= today) ?? FESTIVAL_DATES[FESTIVAL_DATES.length - 1]

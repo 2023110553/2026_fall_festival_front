@@ -35,10 +35,17 @@ export default function MyLanternList({ isOpen, onClose, lanterns = [], onDelete
   const [deletingId, setDeletingId] = useState(null)
   const [editingLantern, setEditingLantern] = useState(null)
   const [selectedDayIndex, setSelectedDayIndex] = useState(getDefaultDayIndex)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
   const [isDayDropdownOpen, setIsDayDropdownOpen] = useState(false)
   const [isEditRestrictedOpen, setIsEditRestrictedOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const dayPickerRef = useRef(null)
+
+  // 항상 마운트돼 있어 초기값이 서버 시각 동기화 전에 정해지므로, 열 때마다 오늘 탭으로 다시 맞춘다
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen)
+    if (isOpen) setSelectedDayIndex(getDefaultDayIndex())
+  }
 
   // 드롭다운 바깥 클릭 시 닫기 (LanternCard의 더보기 메뉴와 동일한 패턴)
   useEffect(() => {
