@@ -16,13 +16,15 @@ export default function NowPlaying({ performance, now }) {
         )
     }
 
-    const { team_name, affiliation, start_at, end_at } = performance
+    const { team_name, affiliation, image_url, start_at, end_at } = performance
     const progress = getProgress(now, start_at, end_at)
 
     return (
         <S.Card>
             <S.Row>
-                <S.Thumb />
+                {image_url
+                    ? <S.Thumb as="img" src={image_url} alt="" />
+                    : <S.Thumb />}
                 <S.TextGroup>
                     <S.Name>{team_name}</S.Name>
                     {affiliation && <S.Category>{affiliation}</S.Category>}

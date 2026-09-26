@@ -21,7 +21,9 @@ export default function TimelineList({ performances = [], onSelect }) {
             onClick={() => p.has_setlist === true && onSelect(p.performance_id)}
           >
             <S.Left>
-              <S.Thumb />
+              {p.image_url
+                ? <S.Thumb as="img" src={p.image_url} alt="" />
+                : <S.Thumb />}
               <S.TextGroup>
                 <S.Name>{p.team_name}</S.Name>
                 {p.affiliation && <S.Category>{p.affiliation}</S.Category>}
