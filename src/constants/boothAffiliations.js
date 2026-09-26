@@ -63,6 +63,15 @@ export const NIGHT_BOOTH_AFFILIATION = Object.freeze({
   39: AFFILIATION.FUTURE_CONVERGENCE, // 사회복지상담학과 — 미래융합대학(운영표 밖, 위 예외)
 })
 
-// 주간 푸드트럭 booth_id. 2026-09-24 기준 DB에 푸드트럭이 한 곳도 없어서 비어 있다.
-// 등록되면 여기에 booth_id를 넣으면 '주간 푸드트럭' 색으로 바뀐다.
+// 주간 푸드트럭 booth_id — 등불 색을 '주간 푸드트럭'으로 **강제 지정**하고 싶을 때만 쓴다.
+//
+// 2026-09-26 변경: 푸드트럭이 부스로 등록되면서(만해광장, 트럭 11대를 부스 1개로 묶음) 판정 방식을 바꿨다.
+// 이제 기본 판정은 부스 목록 API가 내려주는 placements의 structure === "TRUCK"이다
+// (boothMarkerColors.js의 isFoodTruck). 지도에 트럭 모형으로 그려지는 기준과 같은 값을 보는 거라
+// 모양과 색이 따로 놀 수가 없고, 사람이 booth_id를 표에 옮겨 적을 필요도 없다 —
+// DB를 다시 넣어 pk가 바뀌어도 색이 안 깨진다.
+//
+// 이 배열은 placements를 못 받는 경로에서 쓰는 보조 수단으로 남겨둔다:
+// 좌표를 아직 안 받아 placements가 빈 부스, 목데이터, placements를 안 내려주는 API를 쓰게 될 때.
+// 그런 경우가 없으면 비워 둬도 된다.
 export const FOOD_TRUCK_BOOTH_IDS = Object.freeze([])
