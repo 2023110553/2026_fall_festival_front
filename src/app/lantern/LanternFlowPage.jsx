@@ -7,7 +7,7 @@ import { getMyCoupons, issueCoupon, scratchCoupon, useCoupon as redeemCoupon } f
 import { useCreateLanternFlow } from './hooks/useCreateLanternFlow'
 import { useLanterns } from './context/LanternProvider'
 import { getTodayLanternCount, getTodayUsedBoothIds, getCurrentFestivalDate } from './utils/getCurrentFestivalDate'
-import { getLocalDateString } from './utils/getLocalDateString'
+import { getToday } from './utils/getToday'
 import CreateLanternModal from './components/CreateLanternModal'
 import ScratchCouponModal from './components/ScratchCouponModal'
 import CouponResultModal from './components/CouponResultModal'
@@ -65,7 +65,7 @@ export default function LanternFlowPage() {
       } catch (error) {
         try {
           const items = await loadCoupons()
-          const todayCoupon = items.find((item) => item.date === getLocalDateString())
+          const todayCoupon = items.find((item) => item.date === getToday())
           if (todayCoupon) {
             setCoupon(todayCoupon)
             setIsNewCoupon(true)

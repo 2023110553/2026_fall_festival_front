@@ -5,8 +5,10 @@ import {
   createLantern as createLanternRequest,
   deleteLantern as deleteLanternRequest,
   getLanterns as getLanternsRequest,
+  getLanternBoothOptions,
   updateLantern as updateLanternRequest,
 } from '../../../api/lantern'
+import { getToday, setServerTime } from '../utils/getToday'
 
 const LanternContext = createContext(null)
 
@@ -52,6 +54,34 @@ function AccountLanternProvider({ children, userId }) {
   const [activeBooth, setActiveBooth] = useState(null)
   const [lanterns, setLanterns] = useState([])
   const [coupon, setCoupon] = useState(null)
+  // 서버 기준 오늘 — 바뀌면 소비 컴포넌트가 다시 렌더링되도록 state로 보관
+  const [serverToday, setServerToday] = useState(getToday)
+
+  const refreshToday = useCallback(() => setServerToday(getToday()), [])
+
+  // 서버(가상 시계) 시각 동기화 — 실패 시 기기 날짜로 동작
+  const syncServerTime = useCallback(() => {
+    getLanternBoothOptions()
+      .then((res) => {
+        setServerTime(res.data.data?.server_time)
+        refreshToday()
+      })
+      .catch(() => {})
+  }, [refreshToday])
+
+  // 앱 시작 + 탭 복귀 시 동기화, 1분마다 자정 넘김 확인
+  useEffect(() => {
+    syncServerTime()
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') syncServerTime()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    const timer = setInterval(refreshToday, 60 * 1000)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      clearInterval(timer)
+    }
+  }, [syncServerTime, refreshToday])
 
   // 로그인 상태일 때만 본인 등불을 서버에서 조회 — 로그아웃/게스트면 목록을 비운다
   useEffect(() => {
@@ -79,6 +109,8 @@ function AccountLanternProvider({ children, userId }) {
   const addLantern = async ({ boothId, boothName, nickname, message }) => {
     const res = await createLanternRequest({ boothId, nickname, message })
     const data = res.data.data
+    // 서버가 저장한 날짜와 다르면 서버 시각을 다시 맞춘다
+    if (data.festival_date && data.festival_date !== getToday()) syncServerTime()
     const created = {
       id: data.lantern_id,
       boothId: data.booth_id,
@@ -147,6 +179,7 @@ function AccountLanternProvider({ children, userId }) {
         lanterns,
         coupon,
         setCoupon,
+        serverToday,
         addLantern,
         deleteLantern,
         editLantern,
