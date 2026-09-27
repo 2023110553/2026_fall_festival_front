@@ -25,7 +25,7 @@ export default function LanternFlowPage() {
   const { t } = useTranslation()
   const { isLoggedIn } = useAuth()
   const {
-    lanterns, addLantern, deleteLantern, editLantern, registerTriggers,
+    lanterns, lanternsReady, addLantern, deleteLantern, editLantern, registerTriggers,
     activeBooth, coupon, setCoupon,
   } = useLanterns()
   const todayLanternCount = getTodayLanternCount(lanterns)
@@ -97,11 +97,13 @@ export default function LanternFlowPage() {
 
   useEffect(() => {
     if (!isLoggedIn) return
+    // 오늘 등불 목록을 아직 못 받아온 상태면 카운트가 0으로 오판돼 한도 체크가 무력화된다 — 로딩 끝날 때까지 대기
+    if (!lanternsReady) return
     if (!new URLSearchParams(window.location.search).has(OPEN_LANTERN_PARAM)) return
     clearOpenLanternParam()
     openCreateModal()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn])
+  }, [isLoggedIn, lanternsReady])
 
   const handleOpenCreateFlow = () => {
     if (!isLoggedIn) {
@@ -111,6 +113,8 @@ export default function LanternFlowPage() {
       setIsLoginModalOpen(true)
       return
     }
+    // 오늘 등불 목록 조회가 아직 안 끝났으면 카운트가 0으로 오판될 수 있어 무시 (새로고침 직후 짧은 순간)
+    if (!lanternsReady) return
     if (activeBooth?.festivalDate && activeBooth.festivalDate !== getCurrentFestivalDate()) {
       setWrongDateVariant(activeBooth.festivalDate < getCurrentFestivalDate() ? 'past' : 'future')
       return
