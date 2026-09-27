@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router-dom'
 
 import * as S from './AdminNoticePage.styles'
 import { getAdminNotices } from '../../../../api/admin'
-import { getNoticeTypeLabel, isUrgentNotice } from './noticeTypes'
+import {
+  formatNoticeLongDate,
+  formatNoticeShortDate,
+  getNoticeTypeLabel,
+  isUrgentNotice,
+} from './noticeTypes'
 import NoticeTypeSelectModal from './NoticeTypeSelectModal'
 import { ADMIN_PATHS } from '../../../../router/adminPaths'
 
@@ -58,16 +63,22 @@ export default function AdminNoticePage() {
     <S.Page>
       <S.TotalCount>{totalCount}개</S.TotalCount>
       <S.NoticeList>
-        {notices.map((n) => (
-          <S.NoticeCard key={n.id} onClick={() => navigate(ADMIN_PATHS.noticeDetail(n.id))}>
-            <S.TitleRow>
-              <S.TypeTag $urgent={isUrgentNotice(n.type)}>{getNoticeTypeLabel(n.type)}</S.TypeTag>
-              <S.Title>{n.title}</S.Title>
-            </S.TitleRow>
-            {/* 목록도 본문 전체가 오므로 한 줄 말줄임으로 미리보기만 보여준다 */}
-            <S.Preview>{n.content}</S.Preview>
-          </S.NoticeCard>
-        ))}
+        {notices.map((n) => {
+          const urgent = isUrgentNotice(n.type)
+          // 긴급 공지는 제목 앞에, 모든 공지는 미리보기 앞에 등록일을 붙인다
+          const title = urgent ? `${formatNoticeShortDate(n.created_at)} ${n.title}`.trim() : n.title
+          const preview = `${formatNoticeLongDate(n.created_at)} ${n.content}`
+          return (
+            <S.NoticeCard key={n.id} onClick={() => navigate(ADMIN_PATHS.noticeDetail(n.id))}>
+              <S.TitleRow>
+                <S.TypeTag $urgent={urgent}>{getNoticeTypeLabel(n.type)}</S.TypeTag>
+                <S.Title>{title}</S.Title>
+              </S.TitleRow>
+              {/* 목록도 본문 전체가 오므로 한 줄 말줄임으로 미리보기만 보여준다 */}
+              <S.Preview>{preview.trim()}</S.Preview>
+            </S.NoticeCard>
+          )
+        })}
       </S.NoticeList>
 
       {error && <S.StatusMessage role="alert">{error}</S.StatusMessage>}
