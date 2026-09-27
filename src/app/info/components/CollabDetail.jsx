@@ -1,5 +1,5 @@
 import InfoDetailHeader from './InfoDetailHeader'
-import instagramIcon from '../../../assets/info/instagram-icon.png'
+import instagramIcon from '../../../assets/info/instagram-icon.svg'
 import * as S from './CollabDetail.styles'
 
 export default function CollabDetail({ collab, onBack, headerTitle = '협업' }) {

@@ -157,6 +157,7 @@ export const ProfileButton = styled.button`
   border: 0;
   border-radius: 50%;
   background: transparent;
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.15);
   -webkit-tap-highlight-color: transparent;
 
   &:focus:not(:focus-visible) {

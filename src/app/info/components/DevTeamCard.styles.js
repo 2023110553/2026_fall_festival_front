@@ -19,11 +19,14 @@ export const Track = styled.p`
   position: absolute;
   top: 16.8px;
   left: 16.8px;
+  right: 16.8px;
   z-index: 2;
   margin: 0;
-  font-size: ${({ $compact }) => ($compact ? '12px' : '14px')};
+  font-size: 14px;
   font-weight: 500;
-  line-height: normal;
+  line-height: 1.25;
+  text-align: left;
+  white-space: pre-line;
 `
 
 export const Glow = styled.div`
