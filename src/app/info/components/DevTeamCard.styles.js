@@ -24,6 +24,7 @@ export const Track = styled.p`
   font-size: ${({ $compact }) => ($compact ? '12px' : '14px')};
   font-weight: 500;
   line-height: normal;
+  white-space: pre-line;
 `
 
 export const Glow = styled.div`

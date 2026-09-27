@@ -167,6 +167,8 @@ export const DEV_TEAM_MOCKS = [
       withTrack(MEMBERS.yoonseoPm, '기획·디자인 / 홍보팀'),
       withTrack(MEMBERS.soi, '기획·디자인 / 홍보팀'),
       withTrack(MEMBERS.sara, '기획·디자인 / 홍보팀'),
+      withTrack(MEMBERS.jaewon, '3D 지도 기획·디자인\n프론트엔드 / 대외협력팀'),
+      withTrack(MEMBERS.sejin, '3D 지도 기획·디자인\n프론트엔드'),
     ],
   },
   {
@@ -175,12 +177,12 @@ export const DEV_TEAM_MOCKS = [
     members: [
       withTrack(MEMBERS.hyunwoo, '프론트엔드 팀장 / 대외협력팀'),
       withTrack(MEMBERS.seongchae, '프론트엔드'),
-      withTrack(MEMBERS.sejin, '프론트엔드 / 3D 지도'),
+      withTrack(MEMBERS.sejin, '프론트엔드\n3D 지도 기획·디자인'),
       withTrack(MEMBERS.chaehyun, '프론트엔드'),
       withTrack(MEMBERS.yoonseoFront, '프론트엔드'),
       withTrack(MEMBERS.hyori, '프론트엔드'),
       withTrack(MEMBERS.seolhee, '프론트엔드'),
-      withTrack(MEMBERS.jaewon, '프론트엔드 / 대외협력팀 / 3D 지도'),
+      withTrack(MEMBERS.jaewon, '프론트엔드 / 대외협력팀\n3D 지도 기획·디자인'),
       withTrack(MEMBERS.hyoryeong, '프론트엔드 / 홍보팀 팀장'),
       withTrack(MEMBERS.heesooFront, '프론트엔드 / 대외협력팀 팀장'),
       withTrack(MEMBERS.hyeon, '프론트엔드'),
@@ -208,7 +210,7 @@ export const DEV_TEAM_MOCKS = [
     label: 'Ext. Relations',
     members: [
       withTrack(MEMBERS.heesooFront, '대외협력팀 팀장 / 프론트엔드'),
-      withTrack(MEMBERS.jaewon, '대외협력팀 / 프론트엔드 / 3D 지도'),
+      withTrack(MEMBERS.jaewon, '대외협력팀 / 프론트엔드\n3D 지도 기획·디자인'),
       withTrack(MEMBERS.seungwon, '대외협력팀'),
       withTrack(MEMBERS.hyunwoo, '대외협력팀 / 프론트엔드 팀장'),
       withTrack(MEMBERS.sua, '대외협력팀 / 백엔드'),
