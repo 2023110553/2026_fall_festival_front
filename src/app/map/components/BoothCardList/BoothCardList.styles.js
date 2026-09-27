@@ -33,6 +33,13 @@ export const Thumbnail = styled.img`
     object-fit: cover;
     border-radius: 8px;
 `
+export const ThumbnailPlaceholder = styled.div`
+    width: 66px;
+    height: 66px;
+    flex: 0 0 66px;
+    border-radius: 8px;
+    background: #272727;
+`
 export const RestroomThumbnail = styled.div`
     width: 66px;
     height: 66px;
@@ -88,7 +95,7 @@ export const Info = styled.div`
 `
 export const TitleRow = styled.div`
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 4px;
     min-width: 0;
     margin-bottom: 4px;
@@ -104,6 +111,7 @@ export const Title = styled.span`
 `
 export const ZoneBadge = styled.span`
     flex-shrink: 0;
+    margin-top: 0.5px;
     padding: 2px 4px;
     border-radius: 4px;
     background: rgba(159, 156, 153, 0.18);

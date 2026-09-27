@@ -113,10 +113,14 @@ export default function BoothCardList({
             onClick={selectBooth}
             onKeyDown={selectBoothWithKeyboard}
           >
-            <S.Thumbnail
-              src={booth.thumbnail_url}
-              alt={booth.name}
-            />
+            {booth.thumbnail_url ? (
+              <S.Thumbnail
+                src={booth.thumbnail_url}
+                alt={booth.name}
+              />
+            ) : (
+              <S.ThumbnailPlaceholder aria-hidden="true" />
+            )}
 
             <S.Info>
               <S.TitleRow>

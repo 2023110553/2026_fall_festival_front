@@ -20,7 +20,11 @@ export const Sheet = styled.div`
     left: 0;
 
     width: 100%;
-    --sheet-top-gap: 40px;
+    /* 화면 높이에 비례해 최상단 위치를 조절하되 지나치게 붙거나 내려가지 않게 제한한다.
+       검색 중에는 키보드가 열려도 위치가 바뀌지 않도록 small viewport 높이를 기준으로 삼는다. */
+    --sheet-top-gap: ${({ $isSearching }) => $isSearching
+      ? 'clamp(32px, 5svh, 48px)'
+      : 'clamp(32px, 5dvh, 48px)'};
     --middle-height: 62dvh;
     /* 하단 내비게이션(+ 버튼) 상단보다 80px 위에 low 시트 상단을 맞춘다. */
     --low-height: min(
