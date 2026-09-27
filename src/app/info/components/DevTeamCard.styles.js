@@ -23,7 +23,7 @@ export const Track = styled.p`
   margin: 0;
   font-size: ${({ $compact }) => ($compact ? '12px' : '14px')};
   font-weight: 500;
-  line-height: normal;
+  line-height: 1.25;
   white-space: pre-line;
 `
 
