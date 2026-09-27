@@ -121,8 +121,7 @@ export function MapProvider({ children }) {
   // setSelectedBoothId의 참조가 바뀌고, 그 함수를 받는 컨텍스트 value와 자식 memo가 전부 깨진다.
   const allBoothsRef = useRef(null)
 
-  // 부스를 고르거나 닫으면 URL(?booth=)도 같이 갱신 — zone과 같은 규칙이라 새로고침·공유·뒤로가기 동작이 일관된다.
-  // replace라 부스를 눌러볼 때마다 뒤로가기 히스토리가 쌓이지는 않는다(zone과 동일).
+  // 부스를 고르거나 닫으면 URL(?booth=)도 같이 갱신해 새로고침·공유·뒤로가기 동작을 일관되게 유지한다.
   //
   // 2026-09-24: 고른 부스가 지금 보고 있는 구역 밖이면 구역(zoneId)도 같이 옮긴다.
   // 전체 검색(GET /api/booths/search/)은 날짜·시간대·구역을 가리지 않고 결과를 주는데 지도는 한 구역만
@@ -146,15 +145,16 @@ export function MapProvider({ children }) {
       updateParams((params) => params.set('zone', pickedZoneId), { replace: true })
     }
 
-    // 부스 선택은 push — 상세에서 뒤로가기를 누르면 방금 있던 화면(목록 또는 검색 결과)으로 돌아온다.
+    // 목록·검색에서 처음 상세를 열 때만 push한다. 상세를 보는 중 지도에서 다른 부스를 고르면
+    // 현재 상세 기록을 replace해 [목록, 상세 A, 상세 B]처럼 상세 기록이 연속으로 쌓이지 않게 한다.
+    // 그래야 상세의 ← 버튼이 이전 부스 상세를 거치지 않고 항상 목록으로 돌아간다.
     // q는 일부러 지우지 않는다. 검색 결과에서 부스를 골랐다면 뒤로가기했을 때 그 검색어가 남아 있어야 한다.
-    // 부스를 닫는 건 여기가 아니라 goBack()이 한다 — 히스토리를 거슬러 올라가야 "들어온 자리"로 정확히 돌아간다.
     updateParams((params) => {
       if (resolved == null) params.delete('booth')
       else params.set('booth', String(resolved))
       if (pickedZoneId) params.set('zone', pickedZoneId)
-    }, { replace: false })
-  }, [updateParams, zoneId, selectedDate])
+    }, { replace: selectedBoothId != null })
+  }, [updateParams, zoneId, selectedDate, selectedBoothId])
 
   // 검색 화면 진입 — push. 뒤로가기 한 번이면 목록으로 돌아온다.
   const openSearch = useCallback(() => {
