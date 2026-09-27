@@ -9,6 +9,7 @@ import performanceThumbnail from '../../performance/assets/performance-thumbnail
 import artistThumbnail from '../assets/artist.png'
 import { getPerformanceProgress } from '../utils/getPerformanceProgress'
 
+
 import * as S from './NowPlayingCards.styles'
 
 function ChevronRightIcon() {
@@ -43,6 +44,17 @@ export default function NowPlayingCards({
 
   const now = useServerTime(serverTime)
 
+  const getCurrentDate = () => {
+    if (!now) return null
+
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(now))
+  }
+
   const visiblePerformances =
     !isLoading && !isError && now
       ? performances
@@ -66,9 +78,15 @@ export default function NowPlayingCards({
 
         <S.MoreLink
           type="button"
-          onClick={() =>
-            navigate('/performance')
-          }
+          onClick={() => {
+            const currentDate = getCurrentDate()
+
+            navigate(
+              currentDate
+                ? `/performance?date=${currentDate}`
+                : '/performance'
+            )
+          }}
         >
           {t('home.viewFullSchedule')}
           <ChevronRightIcon />
