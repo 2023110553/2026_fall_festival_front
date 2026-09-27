@@ -18,10 +18,16 @@ export const Header = styled.header`
 export const Back = styled.button`
   width: 24px;
   height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #100b0b;
-  font-size: 30px;
-  line-height: 20px;
+`
+
+export const BackIcon = styled.img`
+  width: 11px;
+  height: 18px;
+  display: block;
 `

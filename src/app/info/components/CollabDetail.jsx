@@ -7,7 +7,7 @@ export default function CollabDetail({ collab, onBack, headerTitle = '협업' })
 
   return (
     <S.Page>
-      <InfoDetailHeader title={headerTitle} onBack={onBack} compact />
+      <InfoDetailHeader title={headerTitle} onBack={onBack} />
       <S.Title>{collab.name}</S.Title>
       <S.Card>
         <S.Image
