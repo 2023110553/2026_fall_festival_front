@@ -9,7 +9,7 @@ import { getCurrentFestivalDate } from '../../lantern/utils/getCurrentFestivalDa
 import donggam from '../assets/donggam.png'
 import ecoco from '../assets/ecoco.png'
 import scien from '../assets/scien.png'
-import sogaeting from '../assets/sogaeting.svg'
+import sogaeting from '../assets/sogaeting.png'
 import ba from '../assets/ba.png'
 import ace from '../assets/ace.png'
 import leaders from '../assets/108.png'
@@ -46,7 +46,7 @@ const BANNERS = [
   },
   {
     id: 4,
-    title: '소개팅',
+    title: '운명도 꿰어야 사랑이다',
     image: sogaeting,
     href: 'https://threadoffate.site/?ref=dgufest',
     boothId: null,

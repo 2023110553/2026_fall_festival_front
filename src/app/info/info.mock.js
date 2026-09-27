@@ -5,6 +5,7 @@ import naturalScienceImage from '../../assets/info/collab-natural-science.webp'
 import leaders108Image from '../../assets/info/collab-108.jpg'
 import studentCouncilImage from '../../assets/info/collab-student-council.png'
 import jogakImage from '../../assets/info/collab-jogak.webp'
+import fateDatingImage from '../../assets/info/collab-fate-dating.png'
 import medicalAiBoothImage from '../../assets/info/booth-medical-ai.jpg'
 import businessBoothImage from '../../assets/info/booth-business.webp'
 
@@ -73,6 +74,27 @@ export const COLLAB_MOCKS = [
     imageUrl: naturalScienceImage,
     snsHandle: '@dgu_club',
     snsUrl: 'https://www.instagram.com/science_dgu_buddhism/',
+  },
+  {
+    id: 'fate-dating',
+    name: '운명도 꿰어야 사랑이다',
+    description: `사주로 나를 알아보고, 궁합으로 인연을 찾아보세요.
+
+‘운명도 꿰어야 사랑이다’는
+나의 사주를 바탕으로 연애·결혼·자녀 운세를 확인하고,
+친구와의 궁합부터 새로운 사람과의 인연까지
+재미있게 탐색할 수 있는 사주 기반 소개팅 서비스입니다.
+
+친구와 궁합지도를 만들어 서로의 인연을 확인하고,
+나와 잘 맞는 사람을 찾아 새로운 인연으로 이어져 보세요.
+
+재미로 시작한 사주가
+어쩌면 설레는 인연의 시작이 될지도 몰라요.
+
+당신의 운명은 이미 정해져 있을지도 몰라요.
+하지만 그 인연을 꿰는 건, 당신입니다.`,
+    imageUrl: fateDatingImage,
+    imageFit: 'contain',
   },
 ]
 
