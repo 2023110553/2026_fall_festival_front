@@ -54,6 +54,9 @@ function AccountLanternProvider({ children, userId }) {
   // festivalDate가 오늘이 아니면 등불 달기 자체를 막는 데 쓰인다.
   const [activeBooth, setActiveBooth] = useState(null)
   const [lanterns, setLanterns] = useState([])
+  // 오늘 등불 목록 조회가 끝났는지 — 로그인 직후 이 값을 기다리지 않고 카운트를 보면
+  // 아직 [] 상태라 0으로 오판해서 3개 다 채운 사용자도 작성 모달이 열려버린다
+  const [lanternsReady, setLanternsReady] = useState(true)
   const [coupon, setCoupon] = useState(null)
   // 서버 기준 오늘 — 바뀌면 소비 컴포넌트가 다시 렌더링되도록 state로 보관
   const [serverToday, setServerToday] = useState(getToday)
@@ -88,16 +91,21 @@ function AccountLanternProvider({ children, userId }) {
   useEffect(() => {
     if (userId == null) {
       setLanterns([])
+      setLanternsReady(true)
       return
     }
 
     let cancelled = false
+    setLanternsReady(false)
     fetchAllFestivalDaysLanterns()
       .then((items) => {
         if (!cancelled) setLanterns(items)
       })
       .catch(() => {
         // 조회 실패 시엔 빈 목록 유지 — 등록 시점에 서버가 다시 검증해준다
+      })
+      .finally(() => {
+        if (!cancelled) setLanternsReady(true)
       })
 
     return () => {
@@ -186,6 +194,7 @@ function AccountLanternProvider({ children, userId }) {
         activeBooth,
         setActiveBooth,
         lanterns,
+        lanternsReady,
         coupon,
         setCoupon,
         serverToday,
