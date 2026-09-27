@@ -30,7 +30,7 @@ export const Description = styled.div`
   top: calc(100% + 12px);
   right: 0;
   width: min(220px, calc(100vw - 32px));
-  padding: 11px 13px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: rgba(253, 253, 253, 0.75);
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.25);

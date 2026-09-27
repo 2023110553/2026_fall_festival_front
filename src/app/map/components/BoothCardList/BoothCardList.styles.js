@@ -114,10 +114,9 @@ export const Location = styled.span`
     color: #9F9C99;
 `
 export const LanternWrapper = styled.div`
-    width: 34px;
     min-width: 34px;
-    max-width: 34px;
-    flex: 0 0 34px;
+    width: max-content;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -125,13 +124,14 @@ export const LanternWrapper = styled.div`
     margin-left: auto;
 `
 export const CollabBadge = styled.span`
-    width: 34px;
+    width: max-content;
+    min-width: 34px;
     box-sizing: border-box;
     gap: 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 3px 0;
+    padding: 3px 4px;
     border-radius: 4px;
     background: #DC7054;
     color: #FDFDFD;

@@ -1,5 +1,4 @@
 import { useMapContext } from '../../context/MapProvider'
-import { useBoothSearch } from '../../hooks/useMapZones'
 import * as S from './BoothCardList.styles'
 import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
@@ -17,17 +16,12 @@ const RESTROOM_TYPE_BADGES = {
 export default function BoothCardList({
   booths: providedBooths,
   onSelectBooth,
-  filterBySearchTerm = true,
 }) {
   const { t } = useTranslation()
-  const { searchTerm, listTimeOfDay } = useMapContext()
+  const { listTimeOfDay } = useMapContext()
+  const booths = Array.isArray(providedBooths) ? providedBooths : []
 
-  const filtered = useBoothSearch(
-    providedBooths,
-    filterBySearchTerm ? searchTerm : '',
-  )
-
-  if (filtered.length === 0) {
+  if (booths.length === 0) {
     return (
       <S.StatusMessage $isNight={listTimeOfDay === 'night'}>
         {t('map.noBooths')}
@@ -37,7 +31,7 @@ export default function BoothCardList({
 
   return (
     <S.BoothCardList>
-      {filtered.map((booth) => {
+      {booths.map((booth) => {
         const isRestroom = booth.category === 'TOILET'
         const simple = isSimplePlace(booth)
 

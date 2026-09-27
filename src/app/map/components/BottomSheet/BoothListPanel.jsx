@@ -10,7 +10,7 @@ import { useTranslation } from '../../../../i18n/useTranslation'
 
 export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearch, onCancelSearch }) {
   const { t } = useTranslation()
-  const { selectedDate, booths, isLoading, isError, listError, listTimeOfDay, setListTimeOfDay,
+  const { selectedDate, allBooths, isLoading, isError, listError, listTimeOfDay, setListTimeOfDay,
     selectedCategory, setSelectedCategory } = useMapContext()
 
   useAnalyticsView('booth_list_opened', !isSearching, 'list', { festival_day: festivalDay(selectedDate) })
@@ -55,8 +55,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
         <S.StatusMessage $isNight={listTimeOfDay === 'night'}>{listError}</S.StatusMessage>
       ) : (
         <BoothCardList
-          filterBySearchTerm={false}
-          booths={booths}
+          booths={allBooths}
           onSelectBooth={onSelectBooth}
         />
       )}

@@ -38,7 +38,7 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 //   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
 //     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
 export default function Zone1Scene({ brightnessLevel = null, onBoothClick }) {
-  const { booths } = useMapZoneBooths()
+  const booths = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone1.glb')
 
   // 2026-09-13: 낮/노을/밤 그림자(PCFSoft, directionalLight) 적용을 위해

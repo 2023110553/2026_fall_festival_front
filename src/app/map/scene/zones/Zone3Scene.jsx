@@ -39,7 +39,7 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 const MAP_SCALE = 2
 
 export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
-  const { booths } = useMapZoneBooths()
+  const booths = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone3.glb')
 
   // Zone1/2/4Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요).

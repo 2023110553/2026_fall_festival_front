@@ -155,7 +155,7 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
           {status === 'loading' ? <S.Empty $isNight={listTimeOfDay === 'night'} role="status">{t('map.searching')}</S.Empty>
             : status === 'error' ? <S.Empty $isNight={listTimeOfDay === 'night'} role="alert">{error}</S.Empty>
             : results.length === 0 ? <S.Empty $isNight={listTimeOfDay === 'night'}>{t('map.noSearchResults')}</S.Empty>
-            : <BoothCardList booths={results} filterBySearchTerm={false} onSelectBooth={(boothId, booth) => {
+            : <BoothCardList booths={results} onSelectBooth={(boothId, booth) => {
               rememberSearch(keyword)
               onSelectBooth(boothId, booth)
             }} />}

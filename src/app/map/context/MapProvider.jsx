@@ -7,10 +7,12 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { MAP_ZONES } from '../../../constants/zones'
 import { useTranslation } from '../../../i18n/useTranslation'
 
-// URL의 ?zone=zoneN이 실제 구역 id일 때만 인정, 아니면 첫 구역(혜화관).
+const DEFAULT_ZONE_ID = 'zone2' // 팔정도
+
+// URL의 ?zone=zoneN이 실제 구역 id일 때만 인정, 아니면 기본 구역(팔정도).
 // 홈 "현재 인기" 지도 미리보기가 /map?zone=zone2 식으로 특정 구역으로 바로 진입할 때 쓴다.
 const resolveZoneId = (candidate) =>
-  MAP_ZONES.some((zone) => zone.id === candidate) ? candidate : MAP_ZONES[0].id
+  MAP_ZONES.some((zone) => zone.id === candidate) ? candidate : DEFAULT_ZONE_ID
 
 // URL의 ?booth=<부스 id>. 홈 부스 랭킹에서 /map?zone=zone2&booth=57 식으로 특정 부스 상세로 바로 들어올 때 쓴다.
 // 부스 id는 백엔드에서 1부터 올라가는 정수라 그 형태가 아니면(빈 값, 문자열, 0 이하) 무시하고 목록 화면으로 연다.
@@ -32,6 +34,7 @@ function findZoneIdByBoothId(allBooths, boothId) {
 // map-section-scope-and-roles.md 합의사항: "여전히 전역 상태까지는 불필요 —
 // 지도 섹션 스코프 안에서만 쓰는 상태이므로 Context 하나로 묶는 걸 추천"
 const MapContext = createContext(null)
+const EMPTY_BOOTHS = []
 
 // 2026-09-13: 기존 isNight(boolean, 주/야 2단계)를 timeOfDay('day'|'sunset'|'night', 3단계)로
 // 교체함 — MapCanvas가 원래 문서화하고 있던 3단계 계약(day/sunset/night)에 맞추기 위함.
@@ -74,20 +77,19 @@ export function MapProvider({ children }) {
     }, { replace })
   }, [setSearchParams])
 
-  // 구역 토글 — replace. 구역을 둘러보는 건 "들어가는" 동작이 아니라서 히스토리에 쌓으면
-  // 뒤로가기가 구역 토글 되감기가 돼버린다.
+  // 사용자가 구역을 바꾸면 이전 구역의 상세·검색 상태를 닫고 새 구역의 목록을 보여준다.
+  // replace로 갱신해 구역 토글이 뒤로가기 기록에 쌓이지 않게 한다.
   const setZoneId = useCallback((nextZoneId) => {
     const resolved = resolveZoneId(nextZoneId)
-    updateParams((params) => params.set('zone', resolved), { replace: true })
+    updateParams((params) => {
+      params.set('zone', resolved)
+      params.delete('booth')
+      params.delete('q')
+    }, { replace: true })
   }, [updateParams])
 
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const [isSheetOpen, setIsSheetOpen] = useState(true)
-  //바텀시트 디자인 후 주석 풀어야합니다!!!!!!
-  // const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   // 아래 setSelectedBoothId가 "고른 부스가 어느 구역인지"를 찾을 때 쓰는 전체 목록(구역 필터 전).
   // 실제 값은 목록 응답이 계산된 뒤(아래 allBooths 자리)에 넣는다 — 렌더 중에 넣으므로
@@ -170,26 +172,8 @@ export function MapProvider({ children }) {
     navigate(`${location.pathname}?${params}`, { replace: true })
   }, [navigate, location.pathname, searchParams])
   const [sheetTab, setSheetTab] = useState('info') // 'info' | 'lantern'
-  // 2026-09-13(3차): 부스 밝기 단계 임시 미리보기 상태 — 0~MAX_LANTERN_TIER(constants/lanternTiers.js).
-  // 원래 설계(final-plan-team-share.md 2-3절)는 부스마다 실제 등불 개수(lantern_count)를
-  // 기준으로 단계를 "각 부스별로 다르게" 계산해야 하는데, 아직 백엔드가 그 값을 내려주지
-  // 않아서(부스 데이터 미확정 단계) 지금은 전체 부스에 같은 값을 임시로 넣어보는 미리보기용
-  // 상태만 만들어둔 것 — timeOfDay와 동일하게 "정하는 로직"(지금은 이 상태값, 나중엔
-  // lantern_count 기반 getLanternTier())과 "그리는 로직"(BoothMarker의 brightnessLevel prop)을
-  // 분리해뒀으니, 실제 데이터가 들어와도 이 자리만 교체하면 됨.
-  //
-  // 2026-09-18: 팀 합의로 등불 구간을 0/1/5/10/50개(0~4단계) → 0/1/10/30/50/100개(0~5단계, 6단계)로
-  // 확장 + 단계별 밝기 차이 강화(BoothMarker.jsx 18번 항목). 이 값의 상한도 4 → MAX_LANTERN_TIER(현재 5).
-  //
-  // 2026-09-19: 부스별 lantern_count → getLanternTier() 자동 계산으로 전환(BoothMarker.jsx 19번 항목).
-  // 이제 이 값은 "null이면 자동(부스마다 등불 개수 기준), 숫자면 네 구역 전체 부스를 그 단계로 강제"하는
-  // 개발용 override다. 지도 UI 리스타일 이후 MapShell의 순환 버튼이 빠져서 setBoothBrightnessPreview를
-  // 부르는 곳은 현재 없다 — 기본값이 null이라 앱에서는 항상 자동 계산으로 동작하고, 단계별 비교가 필요할
-  // 때만 개발용 버튼을 달아 0~MAX_LANTERN_TIER 값을 넣어보면 된다.
-  const [boothBrightnessPreview, setBoothBrightnessPreview] = useState(null) // null(자동) | 0~MAX_LANTERN_TIER(현재 5)
-
   const [listTimeOfDay, setListTimeOfDay] = useState(null)
-  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState('BOOTH')
   const [boothRevision, setBoothRevision] = useState(0)
   const refreshBooths = useCallback(() => setBoothRevision((value) => value + 1), [])
   const [listResponse, setListResponse] = useState(null)
@@ -200,9 +184,12 @@ export function MapProvider({ children }) {
   const isError = Boolean(currentList?.error)
   const listError = currentList?.error ?? ''
   const zoneLabel = MAP_ZONES.find((zone) => zone.id === zoneId)?.label
-  const booths = useMemo(() => (currentList?.data?.booths ?? []).filter(
+  // API가 내려준 같은 날짜·주야간·카테고리의 전체 구역 목록은 바텀시트가 사용하고,
+  // 현재 구역으로 좁힌 목록은 3D 지도와 카메라 포커스가 사용한다.
+  const allBooths = currentList?.data?.booths
+  const booths = useMemo(() => (allBooths ?? EMPTY_BOOTHS).filter(
     (booth) => booth.zone === zoneLabel
-  ), [currentList, zoneLabel])
+  ), [allBooths, zoneLabel])
 
   // 구역 필터를 거치기 전의 전체 목록. 위 setSelectedBoothId와 아래 첫 진입 보정이 함께 쓴다.
   const appliedFilters = useRef(null)
@@ -220,7 +207,6 @@ export function MapProvider({ children }) {
     appliedFilters.current = next
   }, [currentList, selectedDate, selectedCategory, listTimeOfDay])
 
-  const allBooths = currentList?.data?.booths
   allBoothsRef.current = allBooths
 
   // 밖에서 ?booth=를 달고 지도에 들어온 경우(홈 인기부스 클릭, 공유 링크) 히스토리에 "목록" 칸을
@@ -263,8 +249,10 @@ export function MapProvider({ children }) {
     if (pendingBoothId == null || !Array.isArray(allBooths)) return
     pendingZoneFixRef.current = null
     const boothZoneId = findZoneIdByBoothId(allBooths, pendingBoothId)
-    if (boothZoneId && boothZoneId !== zoneId) setZoneId(boothZoneId)
-  }, [allBooths, zoneId, setZoneId])
+    if (boothZoneId && boothZoneId !== zoneId) {
+      updateParams((params) => params.set('zone', boothZoneId), { replace: true })
+    }
+  }, [allBooths, zoneId, updateParams])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -294,16 +282,13 @@ export function MapProvider({ children }) {
   const value = useMemo(
     () => ({
       boothRevision, refreshBooths,
-      booths, isLoading, isError, listError,
+      booths, allBooths: allBooths ?? EMPTY_BOOTHS, isLoading, isError, listError,
       listTimeOfDay, setListTimeOfDay, selectedCategory, setSelectedCategory,
       zoneId,
       setZoneId,
       timeOfDay,
-      setTimeOfDay,
       selectedDate,
       setSelectedDate,
-      searchTerm,
-      setSearchTerm,
       selectedBoothId,
       setSelectedBoothId,
       searchQuery,
@@ -311,20 +296,15 @@ export function MapProvider({ children }) {
       updateSearchQuery,
       openBoothList,
       goBack,
-      isSheetOpen,
-      setIsSheetOpen,
       sheetTab,
       setSheetTab,
-      boothBrightnessPreview,
-      setBoothBrightnessPreview,
     }),
     [
       boothRevision, refreshBooths,
-      booths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
+      booths, allBooths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
       zoneId, setZoneId,
       timeOfDay,
       selectedDate,
-      searchTerm,
       selectedBoothId,
       setSelectedBoothId,
       searchQuery,
@@ -332,9 +312,7 @@ export function MapProvider({ children }) {
       updateSearchQuery,
       openBoothList,
       goBack,
-      isSheetOpen,
       sheetTab,
-      boothBrightnessPreview,
     ]
   )
 
