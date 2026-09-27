@@ -103,7 +103,8 @@ export default function EditLanternModal({ isOpen, onClose, lantern, onSubmit, p
           {submitError && <S.ErrorText>{submitError}</S.ErrorText>}
 
           <S.Footer>
-            <S.Time>{formatLanternTime(lantern?.createdAt)}</S.Time>
+            {/* 수정된 적 있으면 수정 시각, 없으면 작성 시각 (LanternCard와 동일한 기준) */}
+            <S.Time>{formatLanternTime(lantern?.updatedAt ?? lantern?.createdAt)}</S.Time>
             <S.ButtonGroup>
               <S.CancelButton type="button" onClick={requestClose}>
                 취소
