@@ -95,6 +95,8 @@ export const COLLAB_MOCKS = [
 하지만 그 인연을 꿰는 건, 당신입니다.`,
     imageUrl: fateDatingImage,
     imageFit: 'contain',
+    snsHandle: '@doyoubelieve_fate',
+    snsUrl: 'https://www.instagram.com/doyoubelieve_fate/',
   },
 ]
 
