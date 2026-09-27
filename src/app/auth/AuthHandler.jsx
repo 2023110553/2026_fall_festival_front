@@ -4,6 +4,7 @@ import { useAuthStore, subscribeToAuthStorage } from '../../store/useAuthStore'
 import LoginModal from './LoginModal'
 import { completeKakaoLogin, clearKakaoCallback, loginErrorMessage } from './kakaoOAuth'
 import { useTranslation } from '../../i18n/useTranslation'
+import styled from 'styled-components'
 
 export default function AuthHandler({ children }) {
   const { t } = useTranslation()
@@ -54,7 +55,24 @@ export default function AuthHandler({ children }) {
   }, [isCallback, location.search, navigate])
 
   return <>
-    {isCallback ? <p role="status">{t('auth.kakaoPending')}</p> : children}
+    {isCallback ? <PendingMessage role="status">{t('auth.kakaoPending')}</PendingMessage> : children}
     <LoginModal open={Boolean(message)} message={message} onClose={() => setMessage('')} />
   </>
 }
+
+const PendingMessage = styled.p`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 375px;
+  margin: 84px auto 0;
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--aurora_gray, #9F9C99);
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+`;

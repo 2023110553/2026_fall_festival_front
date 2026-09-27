@@ -18,7 +18,7 @@ export function startKakaoLogin() {
   const returnTo = window.location.pathname + window.location.search + window.location.hash
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ state, returnTo }))
   const url = new URL('https://kauth.kakao.com/oauth/authorize')
-  url.search = new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri, response_type: 'code', state }).toString()
+  url.search = new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri, response_type: 'code', state, prompt: 'login' }).toString()
   window.location.assign(url.href)
 }
 
