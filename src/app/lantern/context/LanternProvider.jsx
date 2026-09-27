@@ -56,7 +56,9 @@ function AccountLanternProvider({ children, userId }) {
   const [lanterns, setLanterns] = useState([])
   // 오늘 등불 목록 조회가 끝났는지 — 로그인 직후 이 값을 기다리지 않고 카운트를 보면
   // 아직 [] 상태라 0으로 오판해서 3개 다 채운 사용자도 작성 모달이 열려버린다
-  const [lanternsReady, setLanternsReady] = useState(true)
+  // true로 초기화하면, 이미 로그인된 채로 마운트될 때(새로고침 등) fetch effect가 돌기 전
+  // 첫 렌더에서 lanterns=[]인데도 '조회 완료'로 오판되는 순간이 생긴다 — userId 유무로 초기값을 바로 잡는다
+  const [lanternsReady, setLanternsReady] = useState(() => userId == null)
   const [coupon, setCoupon] = useState(null)
   // 서버 기준 오늘 — 바뀌면 소비 컴포넌트가 다시 렌더링되도록 state로 보관
   const [serverToday, setServerToday] = useState(getToday)
