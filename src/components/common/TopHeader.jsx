@@ -28,6 +28,7 @@ export default function TopHeader({
   appearance = 'dark',
   zIndex = 100,
   isLoggedIn: isLoggedInOverride,
+  loginModalPortal = false,
 }) {
   const { isLoggedIn: authIsLoggedIn } = useAuth()
   const { language, changeLanguage, t } = useTranslation()
@@ -189,7 +190,11 @@ export default function TopHeader({
           </S.Menu>
         )}
       </S.Header>
-      <LoginModal open={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <LoginModal
+        open={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        portal={loginModalPortal}
+      />
       <ConfirmLogoutModal
         isOpen={isLogoutOpen}
         onClose={() => setIsLogoutOpen(false)}
