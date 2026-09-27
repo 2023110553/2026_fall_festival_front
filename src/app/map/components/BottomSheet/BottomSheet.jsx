@@ -6,8 +6,8 @@ import * as S from './BottomSheet.styles'
 
 export default function BottomSheet() {
   const {
-    isSheetOpen, selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate,
-    setSearchTerm, listTimeOfDay, searchQuery, openSearch, openBoothList, goBack,
+    selectedBoothId, setSelectedBoothId, sheetTab, setSheetTab, selectedDate,
+    listTimeOfDay, searchQuery, openSearch, openBoothList, goBack,
   } = useMapContext()
   // 검색 화면인지는 URL이 정한다(MapProvider). 부스를 고르면 q가 남아 있어도 상세를 보여줘야 하므로
   // booth가 없을 때만 검색 화면이다 — 이 값이 true면 아래에서 드래그 핸들도 숨긴다.
@@ -18,10 +18,11 @@ export default function BottomSheet() {
   const sheetRef = useRef(null)
   const dragRef = useRef(null)
   const contentRef = useRef(null)
+  const searchInputRef = useRef(null)
 
   // 2026-09-26: 진입 경로에 따라 시트 높이를 다르게 연다(기획 요구).
   //   홈 인기부스 클릭(= URL에 ?booth=를 달고 지도에 들어온 경우) → 'high', 상세를 바로 읽게
-  //   지도 안에서 고른 경우(3D 핀 / 목록 카드 / 검색 결과) → 'low', 카메라가 옮겨간 부스가 보이게
+  //   지도 안에서 고른 경우(3D 핀 / 목록 카드 / 검색 결과) → 'detail', 이름과 소속만 먼저 보이게
   //
   // 'high'는 화면 위 40px만 남기고 전부 덮어서 카메라 연출이 사용자 눈에 안 보인다. 그래서 지도 안에서
   // 고를 때는 쓰지 않는다(지도 앱에서 핀을 누르면 카드가 살짝 올라오는 것과 같은 흐름).
@@ -35,7 +36,7 @@ export default function BottomSheet() {
   useEffect(() => {
     if (selectedBoothId != null) {
       setSheetHeight(null)
-      setSnapPosition(selectedBoothId === entryBoothIdRef.current ? 'high' : 'low')
+      setSnapPosition(selectedBoothId === entryBoothIdRef.current ? 'high' : 'detail')
     }
     if (contentRef.current) contentRef.current.scrollTop = 0
   }, [selectedBoothId])
@@ -50,7 +51,7 @@ export default function BottomSheet() {
   }, [selectedBoothId, isSearching])
 
   useEffect(() => {
-    if (!isSheetOpen || isSearching) return
+    if (isSearching) return
 
     const handleOutsidePointerDown = (event) => {
       if (!event.isPrimary || event.button !== 0 || dragRef.current) return
@@ -68,7 +69,7 @@ export default function BottomSheet() {
     return () => {
       document.removeEventListener('pointerdown', handleOutsidePointerDown, true)
     }
-  }, [isSheetOpen, isSearching])
+  }, [isSearching])
 
   const handleDragStart = (event) => {
     if (!event.isPrimary || event.button !== 0) return
@@ -81,6 +82,8 @@ export default function BottomSheet() {
     sheet.style.transition = 'none'
     const points = [
       { position: 'low', cssHeight: 'var(--low-height)' },
+      { position: 'detail', cssHeight: 'var(--detail-height)' },
+      // middle은 코드에서 강제로 여는 화면이 아니라 사용자가 드래그할 때 거치는 중간 스냅이다.
       { position: 'middle', cssHeight: 'var(--middle-height)' },
       { position: 'high', cssHeight: 'calc(100dvh - var(--sheet-top-gap))' },
     ].map(({ position, cssHeight }) => {
@@ -97,7 +100,7 @@ export default function BottomSheet() {
       startHeight,
       currentHeight: startHeight,
       minHeight: points[0].height,
-      maxHeight: points[2].height,
+      maxHeight: points.at(-1).height,
       points,
     }
   }
@@ -126,23 +129,29 @@ export default function BottomSheet() {
     }
   }
 
-  if (!isSheetOpen) return null
-
-  // 지도 안에서 부스를 직접 골랐다 — 진입 부스 플래그를 버려서 이후로는 전부 'low'로 열린다.
+  // 지도 안에서 부스를 직접 골랐다 — 진입 부스 플래그를 버려서 이후로는 'detail'로 열린다.
   // 검색 화면을 닫지 않는 것은 의도다(setIsSearching 같은 게 사라진 이유): 검색 결과에서 고른
   // 부스는 URL에 q를 남겨 둬야 뒤로가기했을 때 그 검색어 상태로 돌아온다.
   const handleSelectBooth = (id, booth) => {
     entryBoothIdRef.current = null
-    setSearchTerm('')
     setSelectedBoothId(id, isSearching ? 'search' : 'booth_list', booth)
     setSheetTab('info')
   }
 
   const handleBackToBoothList = () => {
     entryBoothIdRef.current = null
-    setSearchTerm('')
     setSheetTab('info')
     openBoothList()
+  }
+
+  const handleOpenSearch = () => {
+    entryBoothIdRef.current = null
+    // iOS Safari는 사용자 클릭 이벤트가 끝난 뒤 focus하면 키보드를 열지 않는다.
+    // 검색 패널을 동기적으로 마운트하고 같은 클릭 이벤트 안에서 입력창에 focus한다.
+    setSheetHeight(null)
+    setSnapPosition('high')
+    openSearch()
+    searchInputRef.current?.focus({ preventScroll: true })
   }
 
   return (
@@ -169,19 +178,11 @@ export default function BottomSheet() {
         <BoothListPanel
           onSelectBooth={handleSelectBooth}
           isSearching={isSearching}
-          onOpenSearch={() => {
-            entryBoothIdRef.current = null
-            setSearchTerm('')
-            setSheetHeight(null)
-            setSnapPosition('high')
-            openSearch()
-          }}
+          onOpenSearch={handleOpenSearch}
+          searchInputRef={searchInputRef}
           // 「취소」도 뒤로가기와 같은 동작이어야 버튼과 제스처가 서로 다른 데로 가지 않는다.
           // 돌아간 뒤 높이는 아래 이펙트가 목록 기준('low')으로 맞춘다.
-          onCancelSearch={() => {
-            setSearchTerm('')
-            goBack()
-          }}
+          onCancelSearch={goBack}
         />
       ) : (
         <BoothDetailPanel

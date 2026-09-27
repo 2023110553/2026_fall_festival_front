@@ -19,7 +19,7 @@ function readHistory() {
   }
 }
 
-export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
+export default function BoothSearchPanel({ onSelectBooth, onCancel, inputRef }) {
   const { t } = useTranslation()
   const { selectedDate, listTimeOfDay, searchQuery, updateSearchQuery } = useMapContext()
   // 2026-09-26: 검색어를 URL(?q=)에도 싣는다. 검색 결과에서 부스를 고른 뒤 뒤로가기를 누르면
@@ -117,6 +117,7 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
             <SearchIcon isNight={listTimeOfDay === 'night'} />
           </S.IconButton>
           <S.Input
+            ref={inputRef}
             $isNight={listTimeOfDay === 'night'}
             type="search"
             maxLength={50}
@@ -131,7 +132,6 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
               composingRef.current = false
             }}
             onChange={(event) => handleKeywordChange(event.target.value)}
-            autoFocus
           />
           {keyword && (
             <S.ClearInputButton
@@ -155,7 +155,7 @@ export default function BoothSearchPanel({ onSelectBooth, onCancel }) {
           {status === 'loading' ? <S.Empty $isNight={listTimeOfDay === 'night'} role="status">{t('map.searching')}</S.Empty>
             : status === 'error' ? <S.Empty $isNight={listTimeOfDay === 'night'} role="alert">{error}</S.Empty>
             : results.length === 0 ? <S.Empty $isNight={listTimeOfDay === 'night'}>{t('map.noSearchResults')}</S.Empty>
-            : <BoothCardList booths={results} filterBySearchTerm={false} onSelectBooth={(boothId, booth) => {
+            : <BoothCardList booths={results} onSelectBooth={(boothId, booth) => {
               rememberSearch(keyword)
               onSelectBooth(boothId, booth)
             }} />}

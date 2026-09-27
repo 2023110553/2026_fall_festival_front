@@ -3,8 +3,10 @@ import styled from 'styled-components'
 const getSheetHeight = ({ $isSearching, $snapPosition }) => {
     if ($isSearching) return 'calc(100svh - var(--sheet-top-gap))'
     if ($snapPosition === 'high') return 'calc(100dvh - var(--sheet-top-gap))'
+    if ($snapPosition === 'detail') return 'var(--detail-height)'
     if ($snapPosition === 'low') return 'var(--low-height)'
-    return 'var(--middle-height)'
+    if ($snapPosition === 'middle') return 'var(--middle-height)'
+    return 'var(--low-height)'
 }
 
 const getSheetMaxHeight = ({ $isSearching }) => $isSearching
@@ -20,7 +22,17 @@ export const Sheet = styled.div`
     width: 100%;
     --sheet-top-gap: 40px;
     --middle-height: 62dvh;
-    --low-height: max(20px, calc(100dvh - 600px));
+    /* 하단 내비게이션(+ 버튼) 상단보다 80px 위에 low 시트 상단을 맞춘다. */
+    --low-height: min(
+      calc(100dvh - var(--sheet-top-gap)),
+      calc(${({ theme }) => theme.nav.height} + 95px + env(safe-area-inset-bottom))
+    );
+    /* 하단 내비게이션(+ 버튼) 상단보다 200px 위에 상세 시트 상단을 맞춘다.
+       내비게이션은 화면 하단에서 safe-area + 15px 떨어져 있고 높이가 88px이다. */
+    --detail-height: min(
+      calc(100dvh - var(--sheet-top-gap)),
+      calc(${({ theme }) => theme.nav.height} + 215px + env(safe-area-inset-bottom))
+    );
     height: ${getSheetHeight};
     min-height: var(--low-height);
     max-height: ${getSheetMaxHeight};
@@ -45,7 +57,7 @@ export const DragHandle = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 20px;
+    height: 30px;
     flex-shrink: 0;
     touch-action: none;
     user-select: none;

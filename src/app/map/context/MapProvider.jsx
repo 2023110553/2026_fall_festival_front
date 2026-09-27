@@ -7,10 +7,12 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { MAP_ZONES } from '../../../constants/zones'
 import { useTranslation } from '../../../i18n/useTranslation'
 
-// URL의 ?zone=zoneN이 실제 구역 id일 때만 인정, 아니면 첫 구역(혜화관).
+const DEFAULT_ZONE_ID = 'zone2' // 팔정도
+
+// URL의 ?zone=zoneN이 실제 구역 id일 때만 인정, 아니면 기본 구역(팔정도).
 // 홈 "현재 인기" 지도 미리보기가 /map?zone=zone2 식으로 특정 구역으로 바로 진입할 때 쓴다.
 const resolveZoneId = (candidate) =>
-  MAP_ZONES.some((zone) => zone.id === candidate) ? candidate : MAP_ZONES[0].id
+  MAP_ZONES.some((zone) => zone.id === candidate) ? candidate : DEFAULT_ZONE_ID
 
 // URL의 ?booth=<부스 id>. 홈 부스 랭킹에서 /map?zone=zone2&booth=57 식으로 특정 부스 상세로 바로 들어올 때 쓴다.
 // 부스 id는 백엔드에서 1부터 올라가는 정수라 그 형태가 아니면(빈 값, 문자열, 0 이하) 무시하고 목록 화면으로 연다.
@@ -32,6 +34,7 @@ function findZoneIdByBoothId(allBooths, boothId) {
 // map-section-scope-and-roles.md 합의사항: "여전히 전역 상태까지는 불필요 —
 // 지도 섹션 스코프 안에서만 쓰는 상태이므로 Context 하나로 묶는 걸 추천"
 const MapContext = createContext(null)
+const EMPTY_BOOTHS = []
 
 // 2026-09-13: 기존 isNight(boolean, 주/야 2단계)를 timeOfDay('day'|'sunset'|'night', 3단계)로
 // 교체함 — MapCanvas가 원래 문서화하고 있던 3단계 계약(day/sunset/night)에 맞추기 위함.
@@ -66,28 +69,49 @@ export function MapProvider({ children }) {
   const searchQuery = searchParams.has('q') ? searchParams.get('q') ?? '' : null
 
   // URL을 한 번에 갱신하는 공용 함수. mutate로 파라미터를 바꾸고, push/replace만 골라 쓴다.
-  const updateParams = useCallback((mutate, { replace }) => {
+  const updateParams = useCallback((mutate, { replace, flushSync = false }) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       mutate(next)
       return next
-    }, { replace })
+    }, { replace, flushSync })
   }, [setSearchParams])
 
-  // 구역 토글 — replace. 구역을 둘러보는 건 "들어가는" 동작이 아니라서 히스토리에 쌓으면
-  // 뒤로가기가 구역 토글 되감기가 돼버린다.
+  const pendingZoneIdRef = useRef(null)
+  const historyStepsToList = selectedBoothId != null
+    ? (searchQuery != null ? 2 : 1)
+    : (searchQuery != null ? 1 : 0)
+
+  // 상세·검색에서 구역을 바꾸면 먼저 실제 목록 히스토리로 돌아간 뒤 그 칸의 구역을 교체한다.
+  // 현재 상세 칸을 목록으로 replace하면 동일한 목록 칸이 하나 더 남아 뒤로가기가 한 번 비게 된다.
   const setZoneId = useCallback((nextZoneId) => {
     const resolved = resolveZoneId(nextZoneId)
-    updateParams((params) => params.set('zone', resolved), { replace: true })
-  }, [updateParams])
+    if (historyStepsToList > 0 && window.history.state?.idx >= historyStepsToList) {
+      pendingZoneIdRef.current = resolved
+      navigate(-historyStepsToList)
+      return
+    }
+    updateParams((params) => {
+      params.set('zone', resolved)
+      params.delete('booth')
+      params.delete('q')
+    }, { replace: true })
+  }, [historyStepsToList, navigate, updateParams])
+
+  // 위 history 이동이 끝난 뒤 도착한 목록 칸에 사용자가 고른 구역을 반영한다.
+  useEffect(() => {
+    const pendingZoneId = pendingZoneIdRef.current
+    if (pendingZoneId == null) return
+    pendingZoneIdRef.current = null
+    updateParams((params) => {
+      params.set('zone', pendingZoneId)
+      params.delete('booth')
+      params.delete('q')
+    }, { replace: true })
+  }, [location.key, updateParams])
 
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const [isSheetOpen, setIsSheetOpen] = useState(true)
-  //바텀시트 디자인 후 주석 풀어야합니다!!!!!!
-  // const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   // 아래 setSelectedBoothId가 "고른 부스가 어느 구역인지"를 찾을 때 쓰는 전체 목록(구역 필터 전).
   // 실제 값은 목록 응답이 계산된 뒤(아래 allBooths 자리)에 넣는다 — 렌더 중에 넣으므로
@@ -137,7 +161,7 @@ export function MapProvider({ children }) {
     updateParams((params) => {
       params.set('q', '')
       params.delete('booth')
-    }, { replace: false })
+    }, { replace: false, flushSync: true })
   }, [updateParams])
 
   // 검색어 갱신 — replace. 한 글자마다 히스토리가 쌓이면 뒤로가기를 글자 수만큼 눌러야 한다.
@@ -145,14 +169,19 @@ export function MapProvider({ children }) {
     updateParams((params) => params.set('q', text), { replace: true })
   }, [updateParams])
 
-  // 상세 화면의 ← 버튼은 진입 경로와 관계없이 현재 구역의 부스 목록으로 이동한다.
-  // 검색 결과에서 상세로 들어온 경우에도 q를 함께 지워 검색 화면으로 돌아가지 않게 한다.
+  // 상세 화면의 ← 버튼은 실제 목록 히스토리로 돌아간다. 검색 결과를 거쳤으면 검색 칸까지 건너뛴다.
+  // 직접 링크처럼 돌아갈 칸이 없을 때만 현재 칸을 목록 URL로 교체한다.
   const openBoothList = useCallback(() => {
+    const steps = searchQuery != null ? 2 : 1
+    if (window.history.state?.idx >= steps) {
+      navigate(-steps)
+      return
+    }
     updateParams((params) => {
       params.delete('booth')
       params.delete('q')
     }, { replace: true })
-  }, [updateParams])
+  }, [searchQuery, navigate, updateParams])
 
   // 검색의 「취소」 버튼이 쓴다. 브라우저 뒤로가기와 같은 동작이어야
   // 검색 진입 전 화면으로 정확히 돌아간다.
@@ -170,26 +199,8 @@ export function MapProvider({ children }) {
     navigate(`${location.pathname}?${params}`, { replace: true })
   }, [navigate, location.pathname, searchParams])
   const [sheetTab, setSheetTab] = useState('info') // 'info' | 'lantern'
-  // 2026-09-13(3차): 부스 밝기 단계 임시 미리보기 상태 — 0~MAX_LANTERN_TIER(constants/lanternTiers.js).
-  // 원래 설계(final-plan-team-share.md 2-3절)는 부스마다 실제 등불 개수(lantern_count)를
-  // 기준으로 단계를 "각 부스별로 다르게" 계산해야 하는데, 아직 백엔드가 그 값을 내려주지
-  // 않아서(부스 데이터 미확정 단계) 지금은 전체 부스에 같은 값을 임시로 넣어보는 미리보기용
-  // 상태만 만들어둔 것 — timeOfDay와 동일하게 "정하는 로직"(지금은 이 상태값, 나중엔
-  // lantern_count 기반 getLanternTier())과 "그리는 로직"(BoothMarker의 brightnessLevel prop)을
-  // 분리해뒀으니, 실제 데이터가 들어와도 이 자리만 교체하면 됨.
-  //
-  // 2026-09-18: 팀 합의로 등불 구간을 0/1/5/10/50개(0~4단계) → 0/1/10/30/50/100개(0~5단계, 6단계)로
-  // 확장 + 단계별 밝기 차이 강화(BoothMarker.jsx 18번 항목). 이 값의 상한도 4 → MAX_LANTERN_TIER(현재 5).
-  //
-  // 2026-09-19: 부스별 lantern_count → getLanternTier() 자동 계산으로 전환(BoothMarker.jsx 19번 항목).
-  // 이제 이 값은 "null이면 자동(부스마다 등불 개수 기준), 숫자면 네 구역 전체 부스를 그 단계로 강제"하는
-  // 개발용 override다. 지도 UI 리스타일 이후 MapShell의 순환 버튼이 빠져서 setBoothBrightnessPreview를
-  // 부르는 곳은 현재 없다 — 기본값이 null이라 앱에서는 항상 자동 계산으로 동작하고, 단계별 비교가 필요할
-  // 때만 개발용 버튼을 달아 0~MAX_LANTERN_TIER 값을 넣어보면 된다.
-  const [boothBrightnessPreview, setBoothBrightnessPreview] = useState(null) // null(자동) | 0~MAX_LANTERN_TIER(현재 5)
-
   const [listTimeOfDay, setListTimeOfDay] = useState(null)
-  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState('BOOTH')
   const [boothRevision, setBoothRevision] = useState(0)
   const refreshBooths = useCallback(() => setBoothRevision((value) => value + 1), [])
   const [listResponse, setListResponse] = useState(null)
@@ -200,9 +211,12 @@ export function MapProvider({ children }) {
   const isError = Boolean(currentList?.error)
   const listError = currentList?.error ?? ''
   const zoneLabel = MAP_ZONES.find((zone) => zone.id === zoneId)?.label
-  const booths = useMemo(() => (currentList?.data?.booths ?? []).filter(
+  // API가 내려준 같은 날짜·주야간·카테고리의 전체 구역 목록은 바텀시트가 사용하고,
+  // 현재 구역으로 좁힌 목록은 3D 지도와 카메라 포커스가 사용한다.
+  const allBooths = currentList?.data?.booths
+  const booths = useMemo(() => (allBooths ?? EMPTY_BOOTHS).filter(
     (booth) => booth.zone === zoneLabel
-  ), [currentList, zoneLabel])
+  ), [allBooths, zoneLabel])
 
   // 구역 필터를 거치기 전의 전체 목록. 위 setSelectedBoothId와 아래 첫 진입 보정이 함께 쓴다.
   const appliedFilters = useRef(null)
@@ -220,7 +234,6 @@ export function MapProvider({ children }) {
     appliedFilters.current = next
   }, [currentList, selectedDate, selectedCategory, listTimeOfDay])
 
-  const allBooths = currentList?.data?.booths
   allBoothsRef.current = allBooths
 
   // 밖에서 ?booth=를 달고 지도에 들어온 경우(홈 인기부스 클릭, 공유 링크) 히스토리에 "목록" 칸을
@@ -228,7 +241,8 @@ export function MapProvider({ children }) {
   //
   // 왜 필요한가: 홈에서 /map?zone=zone2&booth=57로 바로 들어오면 히스토리가 [홈, 상세]라서
   // 상세에서 뒤로가기를 누르면 홈으로 나가버린다. 기획 요구는 "지도의 부스 목록으로 올라오기"다.
-  // 한 칸을 미리 만들어두면 [홈, 목록, 상세]가 되어 뒤로가기 한 번이 목록, 두 번이 홈이 된다.
+  // 목록 칸을 미리 만들고, q가 있는 직접 링크는 검색 칸도 함께 만들어
+  // 일반 진입과 똑같이 [목록, 상세] 또는 [목록, 검색, 상세] 구조를 갖게 한다.
   //
   // 딱 한 번만 — 지도 안에서 이동하는 동안 MapProvider는 계속 떠 있으므로 페이지 로드당 1회 실행된다.
   const didSeedHistoryRef = useRef(false)
@@ -239,8 +253,14 @@ export function MapProvider({ children }) {
 
     const listParams = new URLSearchParams(searchParams)
     listParams.delete('booth')
+    listParams.delete('q')
     const detailUrl = `${location.pathname}?${searchParams}`
     navigate(`${location.pathname}?${listParams}`, { replace: true })
+    if (searchParams.has('q')) {
+      const searchUrlParams = new URLSearchParams(searchParams)
+      searchUrlParams.delete('booth')
+      navigate(`${location.pathname}?${searchUrlParams}`)
+    }
     navigate(detailUrl)
     // 마운트 시 한 번만 도는 이펙트라 의존성을 비워 둔다(위 ref가 재실행도 막는다).
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -263,8 +283,10 @@ export function MapProvider({ children }) {
     if (pendingBoothId == null || !Array.isArray(allBooths)) return
     pendingZoneFixRef.current = null
     const boothZoneId = findZoneIdByBoothId(allBooths, pendingBoothId)
-    if (boothZoneId && boothZoneId !== zoneId) setZoneId(boothZoneId)
-  }, [allBooths, zoneId, setZoneId])
+    if (boothZoneId && boothZoneId !== zoneId) {
+      updateParams((params) => params.set('zone', boothZoneId), { replace: true })
+    }
+  }, [allBooths, zoneId, updateParams])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -294,16 +316,13 @@ export function MapProvider({ children }) {
   const value = useMemo(
     () => ({
       boothRevision, refreshBooths,
-      booths, isLoading, isError, listError,
+      booths, allBooths: allBooths ?? EMPTY_BOOTHS, isLoading, isError, listError,
       listTimeOfDay, setListTimeOfDay, selectedCategory, setSelectedCategory,
       zoneId,
       setZoneId,
       timeOfDay,
-      setTimeOfDay,
       selectedDate,
       setSelectedDate,
-      searchTerm,
-      setSearchTerm,
       selectedBoothId,
       setSelectedBoothId,
       searchQuery,
@@ -311,20 +330,15 @@ export function MapProvider({ children }) {
       updateSearchQuery,
       openBoothList,
       goBack,
-      isSheetOpen,
-      setIsSheetOpen,
       sheetTab,
       setSheetTab,
-      boothBrightnessPreview,
-      setBoothBrightnessPreview,
     }),
     [
       boothRevision, refreshBooths,
-      booths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
+      booths, allBooths, isLoading, isError, listError, listTimeOfDay, selectedCategory,
       zoneId, setZoneId,
       timeOfDay,
       selectedDate,
-      searchTerm,
       selectedBoothId,
       setSelectedBoothId,
       searchQuery,
@@ -332,9 +346,7 @@ export function MapProvider({ children }) {
       updateSearchQuery,
       openBoothList,
       goBack,
-      isSheetOpen,
       sheetTab,
-      boothBrightnessPreview,
     ]
   )
 

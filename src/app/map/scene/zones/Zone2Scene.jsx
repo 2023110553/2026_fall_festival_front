@@ -21,8 +21,8 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 // 2026-09-19(2차): booth 스키마를 세호님 '장소 목록 조회' API(GET /api/booths/) 응답과 1:1로 맞춤.
 //   - map_x/map_y/map_elevation/rotation이 이제 3D 좌표 그 자체다(명세: FE 씬 좌표 무변환 반환) —
 //     별도 coordinates 필드가 없어졌으므로 ZoneBooths에는 boothData.booths를 그대로 넘긴다.
-export default function Zone2Scene({ brightnessLevel = null, onBoothClick }) {
-  const { booths } = useMapZoneBooths()
+export default function Zone2Scene({ onBoothClick }) {
+  const booths = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone2.glb')
 
   // Zone1Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요) —
@@ -39,7 +39,7 @@ export default function Zone2Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} />
-      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} onBoothClick={onBoothClick} />
     </>
   )
 }

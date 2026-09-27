@@ -1,11 +1,11 @@
 import { useMapContext } from '../../context/MapProvider'
-import { useBoothSearch } from '../../hooks/useMapZones'
 import * as S from './BoothCardList.styles'
 import lanternOn from '../../../../assets/map/lantern/lanternOn.svg'
 import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import helpingHand from '../../../../assets/map/Helping Hand.svg'
 import { useTranslation } from '../../../../i18n/useTranslation'
 import { isSimplePlace } from '../../../../constants/categories'
+import { MAP_ZONES } from '../../../../constants/zones'
 
 const RESTROOM_TYPE_BADGES = {
   BOTH: ['W', 'M'],
@@ -17,17 +17,13 @@ const RESTROOM_TYPE_BADGES = {
 export default function BoothCardList({
   booths: providedBooths,
   onSelectBooth,
-  filterBySearchTerm = true,
 }) {
   const { t } = useTranslation()
-  const { searchTerm, listTimeOfDay } = useMapContext()
+  const { listTimeOfDay, zoneId } = useMapContext()
+  const booths = Array.isArray(providedBooths) ? providedBooths : []
+  const currentZoneLabel = MAP_ZONES.find((zone) => zone.id === zoneId)?.label
 
-  const filtered = useBoothSearch(
-    providedBooths,
-    filterBySearchTerm ? searchTerm : '',
-  )
-
-  if (filtered.length === 0) {
+  if (booths.length === 0) {
     return (
       <S.StatusMessage $isNight={listTimeOfDay === 'night'}>
         {t('map.noBooths')}
@@ -37,7 +33,7 @@ export default function BoothCardList({
 
   return (
     <S.BoothCardList>
-      {filtered.map((booth) => {
+      {booths.map((booth) => {
         const isRestroom = booth.category === 'TOILET'
         const simple = isSimplePlace(booth)
 
@@ -123,7 +119,12 @@ export default function BoothCardList({
             />
 
             <S.Info>
-              <S.Title>{booth.name}</S.Title>
+              <S.TitleRow>
+                <S.Title>{booth.name}</S.Title>
+                {booth.zone && booth.zone !== currentZoneLabel && (
+                  <S.ZoneBadge>{booth.zone}</S.ZoneBadge>
+                )}
+              </S.TitleRow>
 
               <S.Department>
                 {simple ? booth.location_detail : booth.subtitle}
