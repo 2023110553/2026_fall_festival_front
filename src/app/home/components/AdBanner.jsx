@@ -87,6 +87,9 @@ const BANNERS = [
 ]
 
 const ROLLING_INTERVAL = 5000
+const LOOP_BANNERS = BANNERS.length > 1
+  ? [BANNERS[BANNERS.length - 1], ...BANNERS, BANNERS[0]]
+  : BANNERS
 
 let lastIndex = 0
 
@@ -147,6 +150,9 @@ export default function AdBanner() {
   const navigate = useNavigate()
   const location = useLocation()
   const [index, setIndex] = useState(lastIndex % BANNERS.length)
+  const [slideIndex, setSlideIndex] = useState(
+    BANNERS.length > 1 ? (lastIndex % BANNERS.length) + 1 : 0,
+  )
   const [openBoothId, setOpenBoothId] = useState(null)
   const [sheetTab, setSheetTab] = useState('info')
   const triggerRef = useRef(null)
@@ -158,7 +164,7 @@ export default function AdBanner() {
     triggerRef.current?.focus()
   }, [])
 
-  // 현재 index로 스크롤 위치를 맞춘다 (자동 롤링 / 첫 진입 복원)
+  // 실제 배너 앞뒤에 복제 슬라이드를 두어 양방향으로 끊김 없이 순환한다.
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -167,21 +173,33 @@ export default function AdBanner() {
     if (!track || isUserScrolling.current) return
 
     track.scrollTo({
-      left: track.clientWidth * index,
+      left: track.clientWidth * slideIndex,
       behavior: isFirstRender.current ? 'auto' : 'smooth',
     })
     isFirstRender.current = false
-  }, [index])
+  }, [index, slideIndex])
 
   // 사용자가 직접 넘긴 경우 index를 스크롤 위치에 맞춘다
   const handleScroll = () => {
     const track = trackRef.current
     if (!track) return
     isUserScrolling.current = true
-    const next = Math.round(track.scrollLeft / track.clientWidth)
-    setIndex((current) => (next === current ? current : next))
+    const nextSlide = Math.round(track.scrollLeft / track.clientWidth)
+    const nextIndex = BANNERS.length > 1
+      ? (nextSlide - 1 + BANNERS.length) % BANNERS.length
+      : 0
+
+    setSlideIndex(nextSlide)
+    setIndex(nextIndex)
     window.clearTimeout(trackRef.current._t)
     trackRef.current._t = window.setTimeout(() => {
+      if (BANNERS.length > 1 && nextSlide === 0) {
+        track.scrollTo({ left: track.clientWidth * BANNERS.length, behavior: 'auto' })
+        setSlideIndex(BANNERS.length)
+      } else if (BANNERS.length > 1 && nextSlide === BANNERS.length + 1) {
+        track.scrollTo({ left: track.clientWidth, behavior: 'auto' })
+        setSlideIndex(1)
+      }
       isUserScrolling.current = false
     }, 200)
   }
@@ -189,7 +207,7 @@ export default function AdBanner() {
   useEffect(() => {
     const timer = setInterval(() => {
       if (isUserScrolling.current) return
-      setIndex((current) => (current + 1) % BANNERS.length)
+      setSlideIndex((current) => current + 1)
     }, ROLLING_INTERVAL)
 
     return () => clearInterval(timer)
@@ -220,9 +238,9 @@ export default function AdBanner() {
   return (
     <>
       <Track ref={trackRef} onScroll={handleScroll}>
-        {BANNERS.map((banner) => (
+        {LOOP_BANNERS.map((banner, bannerIndex) => (
           <Slide
-            key={banner.id}
+            key={`${banner.id}-${bannerIndex}`}
             type="button"
             $image={banner.image}
             aria-label={banner.title}
