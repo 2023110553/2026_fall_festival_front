@@ -1,5 +1,6 @@
-﻿import { useMemo } from 'react'
+import { useMemo } from 'react'
 import MapCanvas from '../../scene/MapCanvas'
+import MapSceneBoundary from '../MapSceneBoundary/MapSceneBoundary'
 import PinLabel from '../PinLabel/PinLabel'
 import BottomSheet from '../BottomSheet/BottomSheet'
 import { useMapContext } from '../../context/MapProvider'
@@ -46,12 +47,16 @@ export default function MapShell() {
       </S.DateArea>
       </S.HeaderArea>
       <S.MapArea>
-        <MapCanvas
-          zoneId={zoneId}
-          timeOfDay={timeOfDay}
-          focusBooth={focusBooth}
-          onBoothClick={handleBoothClick}
-        />
+        {/* 2026-09-27(#299): 3D 씬만 에러 경계로 감싼다 — glb 로드가 실패해도 아래의 PlaceSelector와
+            BottomSheet(부스 목록·검색·상세)는 그대로 살아 있어야 한다. 자세한 이유는 MapSceneBoundary.jsx. */}
+        <MapSceneBoundary zoneId={zoneId}>
+          <MapCanvas
+            zoneId={zoneId}
+            timeOfDay={timeOfDay}
+            focusBooth={focusBooth}
+            onBoothClick={handleBoothClick}
+          />
+        </MapSceneBoundary>
         <PinLabel />
         <PlaceSelector zoneId={zoneId} onSelectPlace={setZoneId} />
         <LanternGuide />
