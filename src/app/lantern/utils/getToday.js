@@ -18,3 +18,9 @@ export function getToday() {
   if (serverOffsetMs === null) return getLocalDateString()
   return new Date(Date.now() + serverOffsetMs + KST_OFFSET_MS).toISOString().slice(0, 10)
 }
+
+// 서버 가상 시계 동기화가 (이 세션에서) 한 번이라도 성공했는지 — 동기화 전엔 getToday()가
+// 기기 날짜로 대체되므로, 그 값을 신뢰해도 되는 시점인지 판단하는 데 쓴다.
+export function hasServerTime() {
+  return serverOffsetMs !== null
+}
