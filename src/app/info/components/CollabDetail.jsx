@@ -14,6 +14,7 @@ export default function CollabDetail({ collab, onBack, headerTitle = '협업' })
           src={collab.imageUrl || undefined}
           alt={`${collab.name} 소개 이미지`}
           $fit={collab.imageFit}
+          decoding="async"
         />
         <S.Copy>
           <S.Label>Introduction</S.Label>

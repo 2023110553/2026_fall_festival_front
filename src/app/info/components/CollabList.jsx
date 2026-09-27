@@ -19,7 +19,9 @@ function CollabSection({ title, items, initialVisibleCount, onSelect }) {
         {visibleItems.map((item) => (
           <S.Card key={item.id} type="button" onClick={() => onSelect(item.id)}>
             <S.Thumbnail>
-              {item.imageUrl && <img src={item.imageUrl} alt="" />}
+              {item.imageUrl && (
+                <img src={item.imageUrl} alt="" loading="lazy" decoding="async" />
+              )}
             </S.Thumbnail>
             <S.Body>
               <strong>{item.name}</strong>
