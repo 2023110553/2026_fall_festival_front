@@ -3,7 +3,7 @@ import { festivalDay, boothType } from '../../../../analytics/policy'
 import { useAnalyticsView } from '../../../../analytics/useAnalyticsView'
 import LanternViewTab from '../LanternViewTab/LanternViewTab'
 import { useOptionalMapContext } from '../../context/MapProvider'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLanterns } from '../../../lantern/context/LanternProvider'
 import { useAuth } from '../../../../hooks/useAuth'
 import { getBoothDetail } from '../../../../api/map'
@@ -18,7 +18,7 @@ import * as S from './BoothDetailPanel.styles'
 // 실제 부스 설명은 장소 상세 페이지와 공통 콘텐츠를 재사용하도록 연결한다.
 export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTab, selectedDate, isNight = false }) {
   const { language, t } = useTranslation()
-  const { setActiveBooth } = useLanterns()
+  const { setActiveBooth, lanterns } = useLanterns()
   const { isLoggedIn } = useAuth()
   // 등불 보기 탭에서 수정/삭제가 일어나면 MapProvider의 boothRevision이 올라간다.
   // 홈 랭킹 모달처럼 MapProvider 밖에서 열릴 때는 컨텍스트가 없으므로 0으로 고정(재조회 없음).
@@ -71,11 +71,22 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
 
   const activeBoothId = booth && !simple ? booth.booth_id : null
   const festivalDate = selectedDate ?? DEFAULT_FESTIVAL_DATE
+  const ownLanternVersion = lanterns
+    .filter((item) => Number(item.boothId) === Number(boothId) && item.festivalDate === festivalDate)
+    .map((item) => `${item.id}:${item.status}`)
+    .join('|')
   const currentLanternTotal = lanternTotal?.boothId === boothId
     && lanternTotal?.date === festivalDate
     && lanternTotal?.revision === boothRevision
     ? lanternTotal.count
     : null
+
+  const updateLanternTotal = useCallback((value) => {
+    if (value == null || value === '') return
+    const count = Number(value)
+    if (!Number.isInteger(count) || count < 0) return
+    setLanternTotal({ boothId, date: festivalDate, revision: boothRevision, count })
+  }, [boothId, boothRevision, festivalDate])
 
   // TODO(BE): 상세 API가 날짜별 lantern_count를 내려주면 이 임시 추가 조회를 제거한다.
   // 현재 상세 API의 lantern_count는 날짜 조건이 없어서 목록 API의 total_count로 보정한다.
@@ -94,9 +105,8 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
     })
       .then(({ data: response }) => {
         if (controller.signal.aborted) return
-        const totalCount = response?.data?.total_count
-        if (!response?.success || !Number.isInteger(totalCount) || totalCount < 0) return
-        setLanternTotal({ boothId, date: festivalDate, revision: boothRevision, count: totalCount })
+        if (!response?.success) return
+        updateLanternTotal(response?.data?.total_count ?? response?.data?.meta?.total_count)
       })
       .catch((error) => {
         // total_count 조회 실패 시 상세 API의 lantern_count를 그대로 사용한다.
@@ -106,7 +116,7 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
       })
 
     return () => controller.abort()
-  }, [booth, boothId, boothRevision, festivalDate, simple])
+  }, [booth, boothId, boothRevision, festivalDate, ownLanternVersion, simple, updateLanternTotal])
 
   useEffect(() => {
     setActiveBooth(activeBoothId == null ? null : {
@@ -193,6 +203,7 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
               boothId={booth.booth_id}
               selectedDate={festivalDate}
               isNight={isNight}
+              onTotalCountChange={updateLanternTotal}
             />
           ) : (
             <>
