@@ -76,11 +76,9 @@ import {
 //
 // props:
 //   - booths: 부스 배열(없으면 아무것도 안 그림)
-//   - brightnessLevel: (선택) 밝기 단계 override — null이면 BoothMarker가 lantern_count로 자동 계산
-//     (BoothMarker.jsx 19번 항목). MapProvider.boothBrightnessPreview가 MapCanvas → 씬 → 여기로 내려온다.
 //   - timeSlot: (선택) 'DAY' | 'NIGHT' — 없으면 MapProvider의 listTimeOfDay를 쓴다(위 2026-09-24(2차) 항목)
 //   - onBoothClick(boothId): 부스 클릭 콜백(MapShell이 바텀시트 열기로 연결)
-export default function ZoneBooths({ booths = [], brightnessLevel = null, timeSlot: timeSlotProp, onBoothClick }) {
+export default function ZoneBooths({ booths = [], timeSlot: timeSlotProp, onBoothClick }) {
   const { markerKind, showLabel } = BOOTH_PIN_PREVIEW
   const mapContext = useOptionalMapContext()
   const timeSlot = normalizeTimeSlot(timeSlotProp ?? mapContext?.listTimeOfDay)
@@ -113,7 +111,6 @@ export default function ZoneBooths({ booths = [], brightnessLevel = null, timeSl
             showLabel={showLabel && tent === labelTent}
             category={booth.category}
             lanternCount={booth.lantern_count}
-            brightnessLevel={brightnessLevel}
             onClick={handleClick}
           />
         ))}

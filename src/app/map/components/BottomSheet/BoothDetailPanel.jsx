@@ -77,8 +77,8 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
     ? lanternTotal.count
     : null
 
-  // 상세 API의 lantern_count는 날짜 조건이 없으므로, 선택 날짜의 정확한 개수는
-  // 등불 목록 API가 내려주는 total_count를 사용한다.
+  // TODO(BE): 상세 API가 날짜별 lantern_count를 내려주면 이 임시 추가 조회를 제거한다.
+  // 현재 상세 API의 lantern_count는 날짜 조건이 없어서 목록 API의 total_count로 보정한다.
   useEffect(() => {
     if (!booth || simple) {
       setLanternTotal(null)
@@ -98,8 +98,11 @@ export default function BoothDetailPanel({ boothId, onBack, sheetTab, setSheetTa
         if (!response?.success || !Number.isInteger(totalCount) || totalCount < 0) return
         setLanternTotal({ boothId, date: festivalDate, revision: boothRevision, count: totalCount })
       })
-      .catch(() => {
+      .catch((error) => {
         // total_count 조회 실패 시 상세 API의 lantern_count를 그대로 사용한다.
+        if (import.meta.env.DEV) {
+          console.warn('[booth detail] 날짜별 등불 수 조회 실패', error)
+        }
       })
 
     return () => controller.abort()

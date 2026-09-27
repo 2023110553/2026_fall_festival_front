@@ -38,7 +38,7 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 //   - .blend를 고치지 않았으므로, 후문쪽 거리를 추가해 glb를 다시 뽑아도 이 배율이 그대로 적용된다.
 const MAP_SCALE = 2
 
-export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
+export default function Zone3Scene({ onBoothClick }) {
   const booths = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone3.glb')
 
@@ -55,7 +55,7 @@ export default function Zone3Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} scale={MAP_SCALE} />
-      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} onBoothClick={onBoothClick} />
     </>
   )
 }

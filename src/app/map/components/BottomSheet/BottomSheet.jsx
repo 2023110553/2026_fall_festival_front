@@ -82,6 +82,7 @@ export default function BottomSheet() {
     const points = [
       { position: 'low', cssHeight: 'var(--low-height)' },
       { position: 'detail', cssHeight: 'var(--detail-height)' },
+      // middle은 코드에서 강제로 여는 화면이 아니라 사용자가 드래그할 때 거치는 중간 스냅이다.
       { position: 'middle', cssHeight: 'var(--middle-height)' },
       { position: 'high', cssHeight: 'calc(100dvh - var(--sheet-top-gap))' },
     ].map(({ position, cssHeight }) => {

@@ -77,16 +77,38 @@ export function MapProvider({ children }) {
     }, { replace })
   }, [setSearchParams])
 
-  // 사용자가 구역을 바꾸면 이전 구역의 상세·검색 상태를 닫고 새 구역의 목록을 보여준다.
-  // replace로 갱신해 구역 토글이 뒤로가기 기록에 쌓이지 않게 한다.
+  const pendingZoneIdRef = useRef(null)
+  const historyStepsToList = selectedBoothId != null
+    ? (searchQuery != null ? 2 : 1)
+    : (searchQuery != null ? 1 : 0)
+
+  // 상세·검색에서 구역을 바꾸면 먼저 실제 목록 히스토리로 돌아간 뒤 그 칸의 구역을 교체한다.
+  // 현재 상세 칸을 목록으로 replace하면 동일한 목록 칸이 하나 더 남아 뒤로가기가 한 번 비게 된다.
   const setZoneId = useCallback((nextZoneId) => {
     const resolved = resolveZoneId(nextZoneId)
+    if (historyStepsToList > 0 && window.history.state?.idx >= historyStepsToList) {
+      pendingZoneIdRef.current = resolved
+      navigate(-historyStepsToList)
+      return
+    }
     updateParams((params) => {
       params.set('zone', resolved)
       params.delete('booth')
       params.delete('q')
     }, { replace: true })
-  }, [updateParams])
+  }, [historyStepsToList, navigate, updateParams])
+
+  // 위 history 이동이 끝난 뒤 도착한 목록 칸에 사용자가 고른 구역을 반영한다.
+  useEffect(() => {
+    const pendingZoneId = pendingZoneIdRef.current
+    if (pendingZoneId == null) return
+    pendingZoneIdRef.current = null
+    updateParams((params) => {
+      params.set('zone', pendingZoneId)
+      params.delete('booth')
+      params.delete('q')
+    }, { replace: true })
+  }, [location.key, updateParams])
 
   const [timeOfDay, setTimeOfDay] = useState('day') // 'day' | 'sunset' | 'night'
   const [selectedDate, setSelectedDate] = useState(null) // 29 / 30 / 1
@@ -147,14 +169,19 @@ export function MapProvider({ children }) {
     updateParams((params) => params.set('q', text), { replace: true })
   }, [updateParams])
 
-  // 상세 화면의 ← 버튼은 진입 경로와 관계없이 현재 구역의 부스 목록으로 이동한다.
-  // 검색 결과에서 상세로 들어온 경우에도 q를 함께 지워 검색 화면으로 돌아가지 않게 한다.
+  // 상세 화면의 ← 버튼은 실제 목록 히스토리로 돌아간다. 검색 결과를 거쳤으면 검색 칸까지 건너뛴다.
+  // 직접 링크처럼 돌아갈 칸이 없을 때만 현재 칸을 목록 URL로 교체한다.
   const openBoothList = useCallback(() => {
+    const steps = searchQuery != null ? 2 : 1
+    if (window.history.state?.idx >= steps) {
+      navigate(-steps)
+      return
+    }
     updateParams((params) => {
       params.delete('booth')
       params.delete('q')
     }, { replace: true })
-  }, [updateParams])
+  }, [searchQuery, navigate, updateParams])
 
   // 검색의 「취소」 버튼이 쓴다. 브라우저 뒤로가기와 같은 동작이어야
   // 검색 진입 전 화면으로 정확히 돌아간다.
@@ -214,7 +241,8 @@ export function MapProvider({ children }) {
   //
   // 왜 필요한가: 홈에서 /map?zone=zone2&booth=57로 바로 들어오면 히스토리가 [홈, 상세]라서
   // 상세에서 뒤로가기를 누르면 홈으로 나가버린다. 기획 요구는 "지도의 부스 목록으로 올라오기"다.
-  // 한 칸을 미리 만들어두면 [홈, 목록, 상세]가 되어 뒤로가기 한 번이 목록, 두 번이 홈이 된다.
+  // 목록 칸을 미리 만들고, q가 있는 직접 링크는 검색 칸도 함께 만들어
+  // 일반 진입과 똑같이 [목록, 상세] 또는 [목록, 검색, 상세] 구조를 갖게 한다.
   //
   // 딱 한 번만 — 지도 안에서 이동하는 동안 MapProvider는 계속 떠 있으므로 페이지 로드당 1회 실행된다.
   const didSeedHistoryRef = useRef(false)
@@ -225,8 +253,14 @@ export function MapProvider({ children }) {
 
     const listParams = new URLSearchParams(searchParams)
     listParams.delete('booth')
+    listParams.delete('q')
     const detailUrl = `${location.pathname}?${searchParams}`
     navigate(`${location.pathname}?${listParams}`, { replace: true })
+    if (searchParams.has('q')) {
+      const searchUrlParams = new URLSearchParams(searchParams)
+      searchUrlParams.delete('booth')
+      navigate(`${location.pathname}?${searchUrlParams}`)
+    }
     navigate(detailUrl)
     // 마운트 시 한 번만 도는 이펙트라 의존성을 비워 둔다(위 ref가 재실행도 막는다).
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -86,13 +86,33 @@ export const Info = styled.div`
     flex-direction: column;
     
 `
+export const TitleRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin-bottom: 4px;
+`
 export const Title = styled.span`
+    min-width: 0;
     font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 16px;
     line-height: 100%;
     letter-spacing: 0;
-    margin-bottom: 4px;
+    overflow-wrap: anywhere;
+`
+export const ZoneBadge = styled.span`
+    flex-shrink: 0;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(159, 156, 153, 0.18);
+    color: #737373;
+    font-family: var(--font-pretendard);
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
 `
 export const Department = styled.span`
     font-family: var(--font-pretendard);

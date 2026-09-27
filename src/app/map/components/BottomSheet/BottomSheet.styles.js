@@ -5,7 +5,8 @@ const getSheetHeight = ({ $isSearching, $snapPosition }) => {
     if ($snapPosition === 'high') return 'calc(100dvh - var(--sheet-top-gap))'
     if ($snapPosition === 'detail') return 'var(--detail-height)'
     if ($snapPosition === 'low') return 'var(--low-height)'
-    return 'var(--middle-height)'
+    if ($snapPosition === 'middle') return 'var(--middle-height)'
+    return 'var(--low-height)'
 }
 
 const getSheetMaxHeight = ({ $isSearching }) => $isSearching

@@ -5,6 +5,7 @@ import lanternOff from '../../../../assets/map/lantern/lanternOff.svg'
 import helpingHand from '../../../../assets/map/Helping Hand.svg'
 import { useTranslation } from '../../../../i18n/useTranslation'
 import { isSimplePlace } from '../../../../constants/categories'
+import { MAP_ZONES } from '../../../../constants/zones'
 
 const RESTROOM_TYPE_BADGES = {
   BOTH: ['W', 'M'],
@@ -18,8 +19,9 @@ export default function BoothCardList({
   onSelectBooth,
 }) {
   const { t } = useTranslation()
-  const { listTimeOfDay } = useMapContext()
+  const { listTimeOfDay, zoneId } = useMapContext()
   const booths = Array.isArray(providedBooths) ? providedBooths : []
+  const currentZoneLabel = MAP_ZONES.find((zone) => zone.id === zoneId)?.label
 
   if (booths.length === 0) {
     return (
@@ -117,7 +119,12 @@ export default function BoothCardList({
             />
 
             <S.Info>
-              <S.Title>{booth.name}</S.Title>
+              <S.TitleRow>
+                <S.Title>{booth.name}</S.Title>
+                {booth.zone && booth.zone !== currentZoneLabel && (
+                  <S.ZoneBadge>{booth.zone}</S.ZoneBadge>
+                )}
+              </S.TitleRow>
 
               <S.Department>
                 {simple ? booth.location_detail : booth.subtitle}

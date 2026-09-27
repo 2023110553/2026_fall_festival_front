@@ -36,12 +36,8 @@ import {
 //      광원 자체는 항상 은은하게 빛나 보이게 했다(과제 요구사항: "크지 않게, 광원은 보이도록").
 //   4) 부스별 밝기 단계(brightnessLevel) 추가 — final-plan-team-share.md 2-3절 "등불 밝히기"
 //      기획의 "개별 부스 — 천막 밝기/장식 단계 조절" 표를 반영. 등불 개수 구간에 따라 단계가
-//      나뉘는데(당시 0/1/5/10/50개 → 0~4단계, 현재 구간은 18번 항목 참고), 아직 백엔드가
-//      lantern_count를 내려주지 않아서(부스 데이터 미확정) 지금은 MapProvider의 임시
-//      boothBrightnessPreview 상태로 brightnessLevel을 수동으로 넘겨서 시안만 확인하는 단계다.
-//      나중에 실제 등불 개수가 연동되면 constants/lanternTiers.js의 getLanternTier(lanternCount)
-//      (순수 함수)로 계산한 값을 여기 넘기기만 하면 되고, 이 컴포넌트(그리는 로직)는 손댈 필요
-//      없다 — timeOfDay와 동일한 원칙.
+//      나뉘며 현재는 API의 lantern_count를 constants/lanternTiers.js의
+//      getLanternTier(lanternCount)로 변환해 적용한다(현재 구간은 18번 항목 참고).
 //      지붕뿐 아니라 처마 밑 천(valance)에도 같은 emissive를 줘서 천막 전체가 같이
 //      밝아지도록 했다(재원 피드백 반영 — 처음엔 지붕에만 적용해서 어색했음).
 //   5) 빛 확산(블룸) 효과 추가 — 재원 피드백("색상만 밝아지는 게 아니라 빛이 번지는
@@ -64,8 +60,7 @@ import {
 //      미리보기"). 처음엔 "위치 식별용이라 인기도(brightnessLevel)와 역할이 다르다"고
 //      항상 고정값으로 뒀었는데, 재원이 오히려 인기 부스가 더 확실히 부각되길 원해서
 //      opacity(밝기)와 radius(반경)를 둘 다 brightnessLevel에 비례해서 커지도록 바꿈
-//      (0단계에서도 완전히 안 보이진 않게 최소값은 유지). 지금은 다른 밝기 효과들과
-//      마찬가지로 MapProvider의 임시 boothBrightnessPreview 값으로 확인 가능.
+//      (0단계에서도 완전히 안 보이진 않게 최소값은 유지).
 //   8) 지붕 조명끈(RoofLightStrings) 추가 — 재원이 공유한 참고 사진(밤에 텐트 지붕의
 //      각진 라인을 따라 전구 조명이 쭉 이어진 캠핑/웨딩 텐트 사진)을 보고 요청한 장식 요소.
 //      지붕의 "각진 부분" = 용마루(능선)와, 용마루 양 끝에서 앞/뒤 처마 모서리로 뻗는
@@ -160,12 +155,8 @@ import {
 //          사라졌고(1.9쯤부터 허옇게 됨), 1.55에서 멈춰야 최대 단계도 "따뜻한 노란빛"으로 남는다.
 //      (d) 지붕/처마(천막 자체) 밝기 효과는 여전히 넣지 않는다(9번 항목, 재원 요청) — 드라마틱하게
 //          만드는 수단은 바닥 글로우 + 조명끈 두 가지로 한정.
-//  19) 2026-09-19: 밝기 단계를 부스별 등불 개수(lanternCount)로 자동 계산 — 재원 요청("맵마다 부스
-//      목데이터 추가, 팔정도는 가장 높은 단계 위주")을 받으면서, 그동안 MapProvider의 임시 미리보기 값
-//      (boothBrightnessPreview, 전체 부스 동일)만 받던 brightnessLevel을 "명시하지 않으면(null/undefined)
-//      lanternCount → getLanternTier()로 스스로 계산"하도록 바꿨다. 이미 PinLabel용으로 lanternCount를
-//      받고 있었으니 props 추가 없이 그 값을 같이 쓴다. brightnessLevel은 개발용 override로 남겨둠 —
-//      숫자를 주면 등불 개수와 무관하게 그 단계로 강제(전 부스 같은 단계로 놓고 비교할 때 유용).
+//  19) 2026-09-19: 밝기 단계를 부스별 등불 개수(lanternCount)로 자동 계산한다.
+//      이미 PinLabel용으로 받는 lanternCount를 getLanternTier()에 전달한다.
 //      "정하는 로직"(lanternTiers.js) / "그리는 로직"(BRIGHTNESS_TIERS) 분리는 그대로 — 이 파일은
 //      getLanternTier()를 호출만 할 뿐 구간 숫자는 여전히 모른다.
 //  20) 2026-09-19(2차): 낮 시간대 바닥 글로우 게이팅 — 19번으로 부스마다 진짜 단계가 들어오자, 낮(timeOfDay
@@ -205,10 +196,6 @@ import {
 //   - accentColor: 용마루 포인트 컬러(큰 천막만 — 작은 천막은 용마루가 없다)
 //   - lanternCount: 이 부스에 달린 등불 개수(place.lantern_count) — PinLabel의 숫자 표시와 밝기 단계
 //     계산(19번 항목, getLanternTier)에 같이 쓰인다. 없으면 0개로 취급.
-//   - brightnessLevel: (선택) 0~MAX_LANTERN_TIER(현재 5) 밝기 단계 override. null/undefined(기본)면
-//     lanternCount로 자동 계산하고, 숫자를 주면 그 단계로 강제한다(개발용 미리보기 — MapProvider의
-//     boothBrightnessPreview가 이 자리로 내려온다). 범위 밖 값/문자열이 와도 내부에서 clamp하므로
-//     크래시는 나지 않는다.
 //
 // 주의: 이 컴포넌트를 사용하는 화면(MapCanvas.jsx)은 반드시 <Selection> 컨텍스트 안에서
 // 렌더링돼야 한다 — 그래야 아래 <Select enabled>들이 EffectComposer의 SelectiveBloom에
@@ -324,10 +311,8 @@ const GROUND_GLOW_FRAGMENT_SHADER = `
 // 자체는 눈에 띄도록 하는 용도. radius는 부스 풋프린트(6m x 3m)보다 여유 있게 크게 잡았다.
 // color 기본값은 GROUND_GLOW_COLOR(랜턴과 같은 따뜻한 노란빛) — 필요하면 개별 호출부에서 override 가능.
 //
-// 2026-09-13(2차): opacity를 밝기 단계(brightnessLevel)에 연동 — 재원 요청("등불 개수에
-// 연동해서, 일단 버튼으로 미리 볼 수 있게"). 지금은 MapProvider의 boothBrightnessPreview 상태값이
-// MapCanvas → Zone1Scene을 거쳐 그대로 들어온다(실제 lantern_count 연동은 나중 단계, timeOfDay와
-// 동일한 원칙). uniforms는 <shaderMaterial uniforms={...}>로 매번 새 객체를 넘기는 대신
+// 2026-09-13(2차): opacity를 등불 개수 기반 밝기 단계에 연동했다.
+// uniforms는 <shaderMaterial uniforms={...}>로 매번 새 객체를 넘기는 대신
 // ref로 material을 잡아 uniform .value만 직접 갱신 — three.js 셰이더 유니폼을 리액트
 // 상태에 반응해서 바꿀 때 흔히 쓰는 패턴(매 프레임 재생성 없이 값만 갱신되어 더 안전함).
 //
@@ -738,7 +723,6 @@ export default function BoothMarker({
   spec,
   color,
   accentColor,
-  brightnessLevel = null,
   onClick,
 }) {
   // 천막 규격(21번 항목) — API의 booth_size를 "BIG" | "SMALL"로 정리한다. 값이 없거나 모르는 값이면 "BIG"(기존 천막).
@@ -757,10 +741,8 @@ export default function BoothMarker({
     Math.min(footprint.width, footprint.depth) / BOOTH_SIZE_SPECS[BOOTH_SIZE.BIG].width
   )
 
-  // 밝기 단계 결정(19번 항목): brightnessLevel이 명시되면(개발용 override) 그 값을, 아니면 이 부스의
-  // 등불 개수로 getLanternTier()가 정한 단계를 쓴다. lanternCount도 Number()로 감싸는 이유는 API 응답이
-  // 문자열("32")이나 null로 올 수 있어서(NaN/null → 0개 → 0단계).
-  const resolvedLevel = brightnessLevel ?? getLanternTier(Number(lanternCount) || 0)
+  // 등불 개수로 밝기 단계를 계산한다. API 값이 문자열이거나 null이면 0개로 취급한다.
+  const resolvedLevel = getLanternTier(Number(lanternCount) || 0)
   // 0~MAX_BRIGHTNESS_LEVEL(현재 5) 범위로 안전하게 clamp — 잘못된 값(음수, 범위 초과, 문자열,
   // undefined/NaN)이 들어와도 배열 밖을 참조하지 않도록. Number()로 한 번 감싸는 이유는 나중에
   // API 응답값이 문자열("3")로 들어오는 경우까지 방어하기 위함(NaN이면 || 0으로 0단계 처리).
