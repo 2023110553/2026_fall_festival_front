@@ -7,7 +7,7 @@ let blocked = false
 let pending = []
 let language
 let pageViewSent = false
-const allowedParams = new Set('language festival_day page_name from_language to_language booth_id booth_type selection_source result_count filter_type filter_value performance_id notice_id notice_type banner_id destination_type rank link_type error_type share_method ticket_type page_location page_title page_referrer'.split(' '))
+const allowedParams = new Set('language festival_day page_name source from_language to_language booth_id booth_type selection_source result_count filter_type filter_value performance_id notice_id notice_type banner_id destination_type rank link_type error_type share_method ticket_type page_location page_title page_referrer'.split(' '))
 function command() { window.dataLayer.push(arguments) }
 
 export function syncAnalyticsPolicy(target = window.location) {

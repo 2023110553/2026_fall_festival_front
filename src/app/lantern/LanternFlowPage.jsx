@@ -1,8 +1,10 @@
 import { useAnalyticsView } from '../../analytics/useAnalyticsView'
+import { useLanternWriteSource, restoreLanternWriteSource } from '../../analytics/lanternSource'
 'use client'
 import { useTranslation } from '../../i18n/useTranslation'
 
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { getMyCoupons, issueCoupon, scratchCoupon, useCoupon as redeemCoupon } from '../../api/coupon'
 import { useCreateLanternFlow } from './hooks/useCreateLanternFlow'
@@ -19,10 +21,12 @@ import LoginModal from '../auth/LoginModal'
 import AlertModal from '../../components/common/AlertModal'
 
 const OPEN_LANTERN_PARAM = 'openLantern'
+const LANTERN_SOURCE_PARAM = 'lanternSource'
 const getApiMessage = (error, fallback) => error?.response?.data?.message || fallback
 
 export default function LanternFlowPage() {
   const { t } = useTranslation()
+  const location = useLocation()
   const { isLoggedIn } = useAuth()
   const {
     lanterns, lanternsReady, serverTimeReady, addLantern, deleteLantern, editLantern, registerTriggers,
@@ -35,6 +39,7 @@ export default function LanternFlowPage() {
   const [isNewCoupon, setIsNewCoupon] = useState(false)
   const [isCouponListOpen, setIsCouponListOpen] = useState(false)
   const [couponError, setCouponError] = useState('')
+  const [writeSource, setWriteSource] = useState('other')
   useAnalyticsView('site_error_shown', Boolean(couponError), 'coupon', { page_name: 'ticket', error_type: 'coupon_failed' })
 
   useEffect(() => {
@@ -82,6 +87,14 @@ export default function LanternFlowPage() {
     },
   })
 
+  const getWriteSource = useLanternWriteSource({
+    pathname: location.pathname,
+    locationKey: location.key,
+    activeBooth,
+    ticketOpen: isCouponListOpen || couponFlow !== null,
+    writeOpen: isCreateModalOpen,
+  })
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [wrongDateVariant, setWrongDateVariant] = useState(null)
   const [isLanternListOpen, setIsLanternListOpen] = useState(false)
@@ -91,6 +104,7 @@ export default function LanternFlowPage() {
     const params = new URLSearchParams(window.location.search)
     if (!params.has(OPEN_LANTERN_PARAM)) return
     params.delete(OPEN_LANTERN_PARAM)
+    params.delete(LANTERN_SOURCE_PARAM)
     const query = params.toString()
     window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : '') + window.location.hash)
   }
@@ -102,15 +116,22 @@ export default function LanternFlowPage() {
     // 대체된 채로 "오늘"을 잘못 판단해서 이미 쓴 등불이 다른 날짜로 카운트되는 문제가 생긴다
     if (!lanternsReady || !serverTimeReady) return
     if (!new URLSearchParams(window.location.search).has(OPEN_LANTERN_PARAM)) return
+    setWriteSource(restoreLanternWriteSource(
+      new URLSearchParams(window.location.search).get(LANTERN_SOURCE_PARAM),
+      getWriteSource(),
+    ))
     clearOpenLanternParam()
     openCreateModal()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, lanternsReady, serverTimeReady])
 
   const handleOpenCreateFlow = () => {
+    const source = getWriteSource()
+    setWriteSource(source)
     if (!isLoggedIn) {
       const params = new URLSearchParams(window.location.search)
       params.set(OPEN_LANTERN_PARAM, '1')
+      params.set(LANTERN_SOURCE_PARAM, source)
       window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}${window.location.hash}`)
       setIsLoginModalOpen(true)
       return
@@ -200,6 +221,7 @@ export default function LanternFlowPage() {
       }} />
       <CreateLanternModal
         isOpen={isCreateModalOpen}
+        source={writeSource}
         onClose={closeCreateModal}
         onSubmitSuccess={handleCreateLantern}
         currentCount={todayLanternCount}
