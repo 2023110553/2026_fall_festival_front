@@ -12,6 +12,7 @@ import { getPerformances } from '../../api/performance'
 import useServerTime from '../../hooks/useServerTime'
 import { useTranslation } from '../../i18n/useTranslation'
 import { FESTIVAL_DATES } from '../../constants/festivalDates'
+import { getDefaultFestivalDate } from '../lantern/utils/getCurrentFestivalDate'
 
 const INITIAL_STATE = {
   performances: [],
@@ -29,7 +30,7 @@ export default function PerformancePage() {
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const dateParam = searchParams.get('date')
-  const selectedDate = FESTIVAL_DATES.includes(dateParam) ? dateParam : FESTIVAL_DATES[0]
+  const selectedDate = FESTIVAL_DATES.includes(dateParam) ? dateParam : getDefaultFestivalDate()
   const handleDateChange = (date) => {
     setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('date', date); return next })
   }

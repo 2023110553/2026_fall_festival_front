@@ -1,5 +1,11 @@
 import { getToday } from './getToday'
-import { FESTIVAL_DATES } from '../../../constants/festivalDates'
+import { DEFAULT_FESTIVAL_DATE, FESTIVAL_DATES } from '../../../constants/festivalDates'
+
+// 날짜 탭의 초기 선택값 — 축제 기간 중이면 오늘, 그 외에는 1일차를 사용한다.
+export function getDefaultFestivalDate() {
+  const today = getToday()
+  return FESTIVAL_DATES.includes(today) ? today : DEFAULT_FESTIVAL_DATE
+}
 
 // 오늘이 축제 시작 전이면 1일차로, 기간 중이면 실제 맞는 날짜로, 기간이 다 끝났으면 마지막 날로 취급.
 // 축제 시작 전/종료 후에도 "나의 등불"이 어느 day에도 안 걸려서 확인 자체가 안 되는 문제를 막기 위한 보정 —
