@@ -135,14 +135,8 @@ export const Thumbnail = styled.img`
     width: 100%;
     height: 100%;
 
-    object-fit: ${({ $isArtistPerformance }) =>
-        $isArtistPerformance
-            ? 'cover'
-            : 'contain'};
-
+    object-fit: cover;
     object-position: center;
-
-    background: #000;
 `
 
 export const BottomGradient = styled.div`

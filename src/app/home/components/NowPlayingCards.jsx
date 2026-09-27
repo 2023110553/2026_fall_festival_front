@@ -157,9 +157,6 @@ export default function NowPlayingCards({
                   >
                     <S.Thumbnail
                       src={thumbnailSrc}
-                      $isArtistPerformance={
-                        isArtistPerformance
-                      }
                       alt={t(
                         'home.performanceImageAlt',
                         {
