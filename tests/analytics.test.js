@@ -225,3 +225,14 @@ test('view episodes survive StrictMode/rerender and count real reopen and A-B-A 
     delete globalThis.window; delete globalThis.document; delete globalThis.IS_REACT_ACT_ENVIRONMENT
   }
 })
+
+test('lantern write event sends source along with the existing page name', () => {
+  const h = harness()
+  for (const source of ['home', 'map', 'booth_detail', 'ticket']) {
+    h.trackEvent('lantern_write_started', { page_name: 'lantern', source })
+  }
+  h.load()
+  assert.deepEqual(Array.from(h.events(), (event) => event.params.source), ['home', 'map', 'booth_detail', 'ticket'])
+  assert.ok(h.events().every((event) => event.params.page_name === 'lantern'))
+  h.dom.window.close()
+})
