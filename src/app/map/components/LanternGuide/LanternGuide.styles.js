@@ -40,7 +40,8 @@ export const Description = styled.div`
   font-style: normal;
   font-weight: 400;
   line-height: 14px;
-  word-break: keep-all;
+  overflow-wrap: anywhere;
+  word-break: normal;
 
   &::before {
     position: absolute;

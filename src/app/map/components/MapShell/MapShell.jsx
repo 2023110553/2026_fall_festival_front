@@ -41,7 +41,12 @@ export default function MapShell() {
   return (
     <S.Shell>
       <S.HeaderArea>
-      <TopHeader title={t('map.title')} appearance="light" zIndex={2} />
+      <TopHeader
+        title={t('map.title')}
+        appearance="light"
+        zIndex={2}
+        loginModalPortal
+      />
       <S.DateArea data-sheet-collapse-ignore>
         <FestivalDateTabs value={selectedDate ?? DEFAULT_FESTIVAL_DATE} onChange={setSelectedDate} />
       </S.DateArea>
