@@ -100,7 +100,7 @@ export default function AdminLostFoundEditPage() {
       initialTitle={item.title}
       initialImageUrl={sortBySortOrder(item.images)[0]?.image_url ?? ''}
       initialKeywords={toKeywords(item.tags)}
-      lockLastKeyword
+      requireKeywordToSubmit
       submitLabel="게시물 저장하기"
       continueLabel="계속 수정하기"
       leaveDescription="저장하지 않은 게시물은 수정사항이 반영되지 않습니다."

@@ -27,8 +27,8 @@ export default function LostFoundEditor({
   initialTitle = '',
   initialImageUrl = '',
   initialKeywords = [],
-  // 수정 화면에서만 true — tags 빈 배열은 400이라 마지막 남은 칩의 X를 막는다
-  lockLastKeyword = false,
+  // 수정 화면에서만 true — tags 빈 배열은 400이라 칩을 다 지우면 저장 버튼을 비활성화한다
+  requireKeywordToSubmit = false,
   submitLabel,
   continueLabel,
   leaveDescription,
@@ -104,6 +104,10 @@ export default function LostFoundEditor({
 
   // "#"은 저장하지 않고, 중복은 추가 단계에서 걸러서 tags 배열 순서를 그대로 sort_order로 쓸 수 있게 한다
   const normalizeKeyword = (value) => value.trim().replace(/^#+/, '').slice(0, KEYWORD_MAX_LENGTH)
+
+  // 입력 중인 키워드도 저장 시 포함되므로 칩이 없어도 작성 중인 값이 있으면 활성화한다
+  const isMissingKeyword =
+    requireKeywordToSubmit && keywords.length === 0 && !normalizeKeyword(keywordDraft)
 
   const commitKeyword = () => {
     const keyword = normalizeKeyword(keywordDraft)
@@ -219,7 +223,6 @@ export default function LostFoundEditor({
                 <S.KeywordRemoveButton
                   type="button"
                   aria-label={`${keyword} 키워드 삭제`}
-                  disabled={lockLastKeyword && keywords.length === 1}
                   onClick={() => setKeywords((prev) => prev.filter((k) => k !== keyword))}
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -266,7 +269,7 @@ export default function LostFoundEditor({
           </S.Toast>
         )}
         <S.BottomBar>
-          <S.PrimaryButton type="button" disabled={isSubmitting} onClick={handleSubmit}>
+          <S.PrimaryButton type="button" disabled={isSubmitting || isMissingKeyword} onClick={handleSubmit}>
             {isSubmitting ? '저장 중...' : submitLabel}
           </S.PrimaryButton>
         </S.BottomBar>
