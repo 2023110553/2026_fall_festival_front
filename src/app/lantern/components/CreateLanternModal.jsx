@@ -85,7 +85,9 @@ export default function CreateLanternModal({
     };
   }, [isOpen, boothList.length]);
 
-  const resolvedBoothList = boothList.length > 0 ? boothList : fetchedBoothList;
+  // 드롭다운은 가나다순으로 보여준다 (부스 목록 응답 순서와 무관하게 정렬)
+  const resolvedBoothList = [...(boothList.length > 0 ? boothList : fetchedBoothList)]
+    .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
   const selectedBoothName = resolvedBoothList.find((booth) => booth.id === selectedBooth)?.name ?? '';
 
