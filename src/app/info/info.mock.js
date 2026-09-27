@@ -68,14 +68,6 @@ export const COLLAB_MOCKS = [
     snsUrl: 'https://www.instagram.com/donggukuniv_donggam/',
   },
   {
-    id: 'with-nature',
-    name: '이과대학 불교동아리 ‘자연科 함께',
-    description: '🪷이과대학 불교동아리 ‘자연科 함께’ 🪷 안녕하세요, 이과대학 불교동아리 ’자연科 함께‘입니다. 저희는 불교의 가르침을 중심으로 활동하지만, 종교적 배경에 상관없이 누구나 참여할 수 있는 환경을 제공합니다.',
-    imageUrl: naturalScienceImage,
-    snsHandle: '@dgu_club',
-    snsUrl: 'https://www.instagram.com/science_dgu_buddhism/',
-  },
-  {
     id: 'fate-dating',
     name: '운명도 꿰어야 사랑이다',
     description: `사주로 나를 알아보고, 궁합으로 인연을 찾아보세요.
@@ -98,12 +90,28 @@ export const COLLAB_MOCKS = [
     snsHandle: '@doyoubelieve_fate',
     snsUrl: 'https://www.instagram.com/doyoubelieve_fate/',
   },
+  {
+    id: 'with-nature',
+    name: '이과대학 불교동아리 ‘자연科 함께',
+    description: '🪷이과대학 불교동아리 ‘자연科 함께’ 🪷 안녕하세요, 이과대학 불교동아리 ’자연科 함께‘입니다. 저희는 불교의 가르침을 중심으로 활동하지만, 종교적 배경에 상관없이 누구나 참여할 수 있는 환경을 제공합니다.',
+    imageUrl: naturalScienceImage,
+    snsHandle: '@dgu_club',
+    snsUrl: 'https://www.instagram.com/science_dgu_buddhism/',
+  },
 ]
 
 // 협업 부스 데이터 형식:
 // { id, name, description, imageUrl, snsHandle, snsUrl }
 // 객체를 추가하면 목록 개수·펼쳐보기·상세 라우팅이 자동으로 반영된다.
 export const COLLAB_BOOTH_MOCKS = [
+  {
+    id: 'business-administration',
+    name: '경영학과',
+    description: '👻강철상사 x 오뚜기 진라면 서포터즈👻 오뚜기 진라면 서포터즈와 함께하는 강철상사 할로윈 파티에 여러분을 초대합니다. 다양한 분장을 한 임직원들과 오뚜기의 라면들을 만나보세요 ! 🎃🧙🏻‍♀️',
+    imageUrl: businessBoothImage,
+    snsHandle: '@dongguk_biz',
+    snsUrl: 'https://www.instagram.com/dongguk_biz/',
+  },
   {
     id: 'medical-ai',
     name: '의료인공지능공학과',
@@ -112,13 +120,5 @@ export const COLLAB_BOOTH_MOCKS = [
     imageFit: 'contain',
     snsHandle: '@dgu_medai',
     snsUrl: 'https://www.instagram.com/dgu_medai/',
-  },
-  {
-    id: 'business-administration',
-    name: '경영학과',
-    description: '👻강철상사 x 오뚜기 진라면 서포터즈👻 오뚜기 진라면 서포터즈와 함께하는 강철상사 할로윈 파티에 여러분을 초대합니다. 다양한 분장을 한 임직원들과 오뚜기의 라면들을 만나보세요 ! 🎃🧙🏻‍♀️',
-    imageUrl: businessBoothImage,
-    snsHandle: '@dongguk_biz',
-    snsUrl: 'https://www.instagram.com/dongguk_biz/',
   },
 ]
