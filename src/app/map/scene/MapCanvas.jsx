@@ -11,6 +11,7 @@ import Zone5Scene from './zones/Zone5Scene'
 import SceneEnvironment from './environment/SceneEnvironment'
 import { TimeOfDayContext } from './environment/TimeOfDayContext'
 import { getBoothFocus } from './camera/getBoothFocus'
+import SceneLoading from './SceneLoading'
 
 // 재원 담당 — 구역별 3D 씬(터레인+건물+부스 앵커)을 감싸는 진입 컴포넌트.
 // 프론트1은 이 컴포넌트를 지도 메인 레이아웃 안에 그대로 끼워 넣기만 하면 된다.
@@ -442,7 +443,9 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
       <TimeOfDayContext.Provider value={timeOfDay}>
         <Selection>
           <SceneEnvironment timeOfDay={timeOfDay} />
-          <Suspense fallback={null}>
+          {/* 2026-09-27(#299): fallback이 null이면 모델을 받는 몇 초 동안 화면이 비어 있어서
+              사용자가 '로딩 중'과 '실패'를 구분할 수 없다. 실패 화면은 MapSceneBoundary가 맡는다. */}
+          <Suspense fallback={<SceneLoading />}>
             {zoneId === 'zone1' ? (
               <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
             ) : zoneId === 'zone2' ? (

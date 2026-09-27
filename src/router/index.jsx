@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import AppLayout from '../components/layout/AppLayout'
+import AppErrorPage from '../components/common/AppErrorPage'
 import AdminAppLayout from '../components/layout/AdminAppLayout'
 import AdminRoute from './AdminRoute'
 import AdminHostRedirect from './AdminHostRedirect'
@@ -39,6 +40,9 @@ const userRoutes = [
   {
     path: '/',
     element: <AppLayout />,
+    // 2026-09-27(#299): 처리되지 않은 예외가 라우터까지 올라왔을 때 개발자용 기본 화면 대신 보여줄 화면.
+    // 지도 씬 실패는 MapSceneBoundary가 먼저 잡으므로 여기까지 오지 않는다.
+    errorElement: <AppErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
       { path: 'map', element: <MapPage /> },
