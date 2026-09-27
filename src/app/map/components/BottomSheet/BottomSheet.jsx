@@ -18,6 +18,7 @@ export default function BottomSheet() {
   const sheetRef = useRef(null)
   const dragRef = useRef(null)
   const contentRef = useRef(null)
+  const searchInputRef = useRef(null)
 
   // 2026-09-26: 진입 경로에 따라 시트 높이를 다르게 연다(기획 요구).
   //   홈 인기부스 클릭(= URL에 ?booth=를 달고 지도에 들어온 경우) → 'high', 상세를 바로 읽게
@@ -143,6 +144,16 @@ export default function BottomSheet() {
     openBoothList()
   }
 
+  const handleOpenSearch = () => {
+    entryBoothIdRef.current = null
+    // iOS Safari는 사용자 클릭 이벤트가 끝난 뒤 focus하면 키보드를 열지 않는다.
+    // 검색 패널을 동기적으로 마운트하고 같은 클릭 이벤트 안에서 입력창에 focus한다.
+    setSheetHeight(null)
+    setSnapPosition('high')
+    openSearch()
+    searchInputRef.current?.focus({ preventScroll: true })
+  }
+
   return (
     <S.Sheet
       ref={sheetRef}
@@ -167,12 +178,8 @@ export default function BottomSheet() {
         <BoothListPanel
           onSelectBooth={handleSelectBooth}
           isSearching={isSearching}
-          onOpenSearch={() => {
-            entryBoothIdRef.current = null
-            setSheetHeight(null)
-            setSnapPosition('high')
-            openSearch()
-          }}
+          onOpenSearch={handleOpenSearch}
+          searchInputRef={searchInputRef}
           // 「취소」도 뒤로가기와 같은 동작이어야 버튼과 제스처가 서로 다른 데로 가지 않는다.
           // 돌아간 뒤 높이는 아래 이펙트가 목록 기준('low')으로 맞춘다.
           onCancelSearch={goBack}

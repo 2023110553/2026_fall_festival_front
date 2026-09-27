@@ -8,7 +8,7 @@ import SearchIcon from './SearchIcon'
 import * as S from './BoothListPanel.styles'
 import { useTranslation } from '../../../../i18n/useTranslation'
 
-export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearch, onCancelSearch }) {
+export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearch, onCancelSearch, searchInputRef }) {
   const { t } = useTranslation()
   const { selectedDate, allBooths, isLoading, isError, listError, listTimeOfDay, setListTimeOfDay,
     selectedCategory, setSelectedCategory } = useMapContext()
@@ -16,7 +16,7 @@ export default function BoothListPanel({ onSelectBooth, isSearching, onOpenSearc
   useAnalyticsView('booth_list_opened', !isSearching, 'list', { festival_day: festivalDay(selectedDate) })
   useAnalyticsView('site_error_shown', !isSearching && isError, 'list', { error_type: 'load_failed' })
   if (isSearching) {
-    return <BoothSearchPanel onSelectBooth={onSelectBooth} onCancel={onCancelSearch} />
+    return <BoothSearchPanel onSelectBooth={onSelectBooth} onCancel={onCancelSearch} inputRef={searchInputRef} />
   }
 
   return (

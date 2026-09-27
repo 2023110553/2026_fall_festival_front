@@ -69,12 +69,12 @@ export function MapProvider({ children }) {
   const searchQuery = searchParams.has('q') ? searchParams.get('q') ?? '' : null
 
   // URL을 한 번에 갱신하는 공용 함수. mutate로 파라미터를 바꾸고, push/replace만 골라 쓴다.
-  const updateParams = useCallback((mutate, { replace }) => {
+  const updateParams = useCallback((mutate, { replace, flushSync = false }) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       mutate(next)
       return next
-    }, { replace })
+    }, { replace, flushSync })
   }, [setSearchParams])
 
   const pendingZoneIdRef = useRef(null)
@@ -161,7 +161,7 @@ export function MapProvider({ children }) {
     updateParams((params) => {
       params.set('q', '')
       params.delete('booth')
-    }, { replace: false })
+    }, { replace: false, flushSync: true })
   }, [updateParams])
 
   // 검색어 갱신 — replace. 한 글자마다 히스토리가 쌓이면 뒤로가기를 글자 수만큼 눌러야 한다.
