@@ -8,7 +8,12 @@ export const getBooths = ({ date, timeSlot, category } = {}, { signal } = {}) =>
   })
 
 // 부스 상세 (바텀시트/장소상세 공용)
-export const getBoothDetail = (boothId) => apiClient.get(`/api/booths/${boothId}/`, { optionalUserAuth: true })
+export const getBoothDetail = (boothId, { date, signal } = {}) =>
+  apiClient.get(`/api/booths/${boothId}/`, {
+    params: { date: date || undefined },
+    signal,
+    optionalUserAuth: true,
+  })
 
 // 장소 검색은 날짜·시간대·구역에 관계없이 검색어만 전달한다.
 export const searchBooths = ({ keyword }, { signal } = {}) =>
