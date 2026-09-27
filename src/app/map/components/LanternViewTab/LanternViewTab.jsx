@@ -101,7 +101,7 @@ const StatusMessage = styled.p`
 
 // 부스·날짜·로그인 상태가 바뀌면 목록과 필터를 초기화한다.
 // selectedDate는 BoothDetailPanel이 props로 넘겨준다. MapProvider 안이면 컨텍스트 값을, 둘 다 없으면 오늘 축제일을 쓴다.
-export default function LanternViewTab({ boothId, selectedDate, isNight = false }) {
+export default function LanternViewTab({ boothId, selectedDate, isNight = false, onTotalCountChange }) {
   const map = useOptionalMapContext()
   const { isLoggedIn, accessToken } = useAuthStore()
   const date = selectedDate ?? map?.selectedDate ?? getCurrentFestivalDate()
@@ -112,10 +112,11 @@ export default function LanternViewTab({ boothId, selectedDate, isNight = false 
     date={date}
     isLoggedIn={isLoggedIn}
     isNight={isNight}
+    onTotalCountChange={onTotalCountChange}
   />
 }
 
-function BoothLanternList({ boothId, date, isLoggedIn, isNight }) {
+function BoothLanternList({ boothId, date, isLoggedIn, isNight, onTotalCountChange }) {
   const { t } = useTranslation()
   const [onlyMine, setOnlyMine] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -163,12 +164,13 @@ function BoothLanternList({ boothId, date, isLoggedIn, isNight }) {
         mine={onlyMine}
         isLoggedIn={isLoggedIn}
         isNight={isNight}
+        onTotalCountChange={onTotalCountChange}
       />
     </section>
   )
 }
 
-function LanternResults({ boothId, date, mine, isLoggedIn, isNight }) {
+function LanternResults({ boothId, date, mine, isLoggedIn, isNight, onTotalCountChange }) {
   const { t } = useTranslation()
   // 홈 랭킹 모달처럼 MapProvider 밖에서 열리면 부스 목록 갱신은 건너뛴다.
   const refreshBooths = useOptionalMapContext()?.refreshBooths
@@ -265,6 +267,9 @@ function LanternResults({ boothId, date, mine, isLoggedIn, isNight }) {
         }))
         setItems((previous) => [...new Map([...previous, ...nextItems].map((item) => [item.id, item])).values()])
         setHasNext(data.has_next)
+        if (!mine && page === 0) {
+          onTotalCountChange?.(data.total_count ?? data.meta?.total_count)
+        }
         setStatus('success')
       })
       .catch((failure) => {
@@ -276,7 +281,7 @@ function LanternResults({ boothId, date, mine, isLoggedIn, isNight }) {
         setStatus('error')
       })
     return () => controller.abort()
-  }, [boothId, date, mine, page, attempt, t])
+  }, [boothId, date, mine, page, attempt, onTotalCountChange, t])
 
   return (
     <div aria-busy={status === 'loading'}>
