@@ -17,7 +17,7 @@ export const Toolbar = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 `
 
 export const Back = styled.button`
@@ -128,9 +128,14 @@ export const Label = styled.h3`
 
 export const LabelRow = styled.div`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: 6px;
+  margin-bottom: 12px;
+
+  > ${Label} {
+    margin-bottom: 0;
+  }
 `
 
 export const Reusable = styled.span`
@@ -163,6 +168,15 @@ line-height: normal;
 white-space: pre-line;
 
 padding: 12px 0px;
+`
+
+export const InformationDetails = styled.div`
+  display: grid;
+  gap: 4px;
+
+  > ${Text} {
+    padding: 0;
+  }
 `
 
 export const Operations = styled.ul`

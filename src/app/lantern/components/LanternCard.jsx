@@ -124,6 +124,11 @@ export default function LanternCard({
                         onReport(lantern.id)
                     }}
                     >
+                    {mapAppearance && (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="12" viewBox="0 0 11 12" fill="none" aria-hidden="true">
+                        <path d="M0.5 11.0003V7.90103M0.5 7.90103C3.89383 5.24686 6.4395 10.5552 9.83333 7.90103V1.26619C6.4395 3.92036 3.89383 -1.38797 0.5 1.26619V7.90103Z" stroke="#737373" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
                     {t('lantern.report')}
                     </S.DropdownItem>
                 )}

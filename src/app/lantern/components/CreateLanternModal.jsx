@@ -12,6 +12,10 @@ const DEFAULT_BOOTH_DOT_COLOR = '#DC7054';
 const getCategoryColor = (category) =>
   BOOTH_CATEGORIES.find((item) => item.value === category)?.color ?? DEFAULT_BOOTH_DOT_COLOR;
 
+// 한글 입력은 자모를 조합하는 도중엔 브라우저의 maxLength가 안 걸려서 조합이 끝나는 순간
+// 글자수 제한을 1자 넘겨서 확정되는 문제가 있다 — 조합 중엔 그대로 두고, 조합이 끝났을 때만 잘라낸다.
+const clampLength = (value, max) => (value.length > max ? value.slice(0, max) : value);
+
 const largeModalStyle = {
   display: 'flex',
   width: '305px',
@@ -81,7 +85,9 @@ export default function CreateLanternModal({
     };
   }, [isOpen, boothList.length]);
 
-  const resolvedBoothList = boothList.length > 0 ? boothList : fetchedBoothList;
+  // 드롭다운은 가나다순으로 보여준다 (부스 목록 응답 순서와 무관하게 정렬)
+  const resolvedBoothList = [...(boothList.length > 0 ? boothList : fetchedBoothList)]
+    .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
   const selectedBoothName = resolvedBoothList.find((booth) => booth.id === selectedBooth)?.name ?? '';
 
@@ -143,9 +149,25 @@ export default function CreateLanternModal({
     setIsBoothOpen(false);
   };
 
+  // 조합 중(isComposing)엔 자르지 않고 그대로 반영, 조합이 끝난 입력만 30자로 자른다
   const handleContentChange = (e) => {
-    setContent(e.target.value);
-    if (e.target.value.trim().length > 0) setContentError(false);
+    const { value } = e.target;
+    setContent(e.nativeEvent.isComposing ? value : clampLength(value, 30));
+    if (value.trim().length > 0) setContentError(false);
+  };
+
+  // 조합이 끝나는 시점(한글 마지막 글자 확정)에 넘친 글자를 다시 한번 잘라준다
+  const handleContentCompositionEnd = (e) => {
+    setContent(clampLength(e.target.value, 30));
+  };
+
+  const handleNicknameChange = (e) => {
+    const { value } = e.target;
+    setNickname(e.nativeEvent.isComposing ? value : clampLength(value, 5));
+  };
+
+  const handleNicknameCompositionEnd = (e) => {
+    setNickname(clampLength(e.target.value, 5));
   };
 
   // onSubmitSuccess는 부모(useCreateLanternFlow)에서 실제 등록 API를 호출하고,
@@ -255,7 +277,8 @@ export default function CreateLanternModal({
                   type="text"
                   maxLength={5}
                   value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
+                  onChange={handleNicknameChange}
+                  onCompositionEnd={handleNicknameCompositionEnd}
                   placeholder={t('lantern.nicknamePlaceholder')}
                 />
                 <S.CharCount>{nickname.length}/5</S.CharCount>
@@ -271,6 +294,7 @@ export default function CreateLanternModal({
                   rows={3}
                   value={content}
                   onChange={handleContentChange}
+                  onCompositionEnd={handleContentCompositionEnd}
                   placeholder={t('lantern.messagePlaceholder')}
                 />
                 <S.CharCount>{content.length}/30</S.CharCount>

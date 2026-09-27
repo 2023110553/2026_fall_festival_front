@@ -19,11 +19,6 @@ import SceneLoading from './SceneLoading'
 // props 계약(map-section-scope-and-roles.md에서 합의):
 //   - zoneId: 'zone1' | 'zone2' | 'zone3' — 어느 구역 씬을 불러올지
 //   - timeOfDay: 'day' | 'sunset' | 'night' — 낮/노을/밤 전환
-//   - boothBrightnessPreview: (선택) 부스 밝기 단계 override, null이면 자동. 2026-09-13에 "실제 등불 개수
-//     연동 전 전체 부스에 같은 단계를 넣어보는 임시 미리보기"로 추가했고(2026-09-18 구간 0/1/10/30/50/100개
-//     → 6단계 확장), 2026-09-19부터는 부스별 lantern_count로 BoothMarker가 단계를 스스로 계산하므로
-//     기본값이 0 → null(자동)로 바뀌었다. 숫자를 넣으면 네 구역 모든 부스가 그 단계로 강제되는 개발용
-//     스위치로만 남아 있다(BoothMarker.jsx 19번 항목).
 //   - focusBooth: (선택) 카메라를 가까이 옮길 부스 한 개(GET /api/booths/ 항목) 또는 null.
 //     2026-09-24 추가 — 값이 들어오면 그 부스 앞으로 날아간다. 어디서 골랐는지는 알 필요가 없다.
 //     2026-09-26(#287): 날아가는 방향은 그 구역 기본 시점과 같고, 거리는 부스 크기에서 역산한다.
@@ -68,9 +63,8 @@ import SceneLoading from './SceneLoading'
 // 정할 때 zone4와 함께 조정 예정.
 //
 // 2026-09-19(2차): 네 구역 모두 API 부스 데이터와 zones/ZoneBooths.jsx를 연결.
-// 그래서 Zone2/3/4Scene도 Zone1Scene과 같은 props(brightnessLevel/onBoothClick)를 받게 됐고, 이 컴포넌트는
-// 네 구역에 똑같은 값을 넘긴다. 부스 밝기는 이제 각 부스의 lantern_count로 자동 계산되므로(BoothMarker.jsx
-// 19번 항목) boothBrightnessPreview는 null(자동)이 기본이다.
+// 그래서 Zone2/3/4Scene도 Zone1Scene과 같은 onBoothClick을 받고, 부스 밝기는 각 부스의
+// lantern_count로 BoothMarker가 자동 계산한다.
 // 같이 추가된 것 — <TimeOfDayContext.Provider>: 부스가 시간대를 알아야 낮에 바닥 글로우를 눌러줄 수 있어서
 // (BoothMarker.jsx 20번 항목) timeOfDay를 씬 안쪽 컨텍스트로도 흘려보낸다. SceneEnvironment는 기존대로
 // prop으로 받는다(바꿀 이유가 없어서 그대로 둠).
@@ -432,7 +426,7 @@ function ZoneCamera({ zoneId, focusBooth, controlsRef }) {
   return null
 }
 
-export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPreview = null, focusBooth = null, onBoothClick }) {
+export default function MapCanvas({ zoneId, timeOfDay = 'day', focusBooth = null, onBoothClick }) {
   const controlsRef = useRef(null)
 
   return (
@@ -447,13 +441,13 @@ export default function MapCanvas({ zoneId, timeOfDay = 'day', boothBrightnessPr
               사용자가 '로딩 중'과 '실패'를 구분할 수 없다. 실패 화면은 MapSceneBoundary가 맡는다. */}
           <Suspense fallback={<SceneLoading />}>
             {zoneId === 'zone1' ? (
-              <Zone1Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+              <Zone1Scene onBoothClick={onBoothClick} />
             ) : zoneId === 'zone2' ? (
-              <Zone2Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+              <Zone2Scene onBoothClick={onBoothClick} />
             ) : zoneId === 'zone3' ? (
-              <Zone3Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+              <Zone3Scene onBoothClick={onBoothClick} />
             ) : zoneId === 'zone5' ? (
-              <Zone5Scene brightnessLevel={boothBrightnessPreview} onBoothClick={onBoothClick} />
+              <Zone5Scene onBoothClick={onBoothClick} />
             ) : null}
           </Suspense>
           {/* 디버그/검증 편의를 위한 임시 카메라 컨트롤 — 실제 구역 전환 카메라 연출이 정해지면 교체 예정 */}

@@ -10,7 +10,7 @@ import { getCurrentFestivalDate } from '../../lantern/utils/getCurrentFestivalDa
 import donggam from '../assets/donggam.png'
 import ecoco from '../assets/ecoco.png'
 import scien from '../assets/scien.png'
-import sogaeting from '../assets/sogaeting.svg'
+import sogaeting from '../assets/sogaeting.png'
 import ba from '../assets/ba.png'
 import ace from '../assets/ace.png'
 import leaders from '../assets/108.png'
@@ -22,12 +22,12 @@ import stu from '../assets/stuco.png'
 // image에 실제 배너 이미지가 들어오면 Wrapper 배경으로 깔린다 (title은 스크린리더용)
 const BANNERS = [
   {
-    id: 1,
-    title: '동감',
-    image: donggam,
+    id: 8,
+    title: '축제기획단',
+    image: stu,
     href: null,
     boothId: null,
-    to: '/info/collab/donggam',
+    to: '/info/collab/festival-planning-team',
   },
   {
     id: 2,
@@ -38,20 +38,12 @@ const BANNERS = [
     to: '/info/collab/ecoco',
   },
   {
-    id: 3,
-    title: '자연科 함께',
-    image: scien,
+    id: 7,
+    title: '108 리더스',
+    image: leaders,
     href: null,
     boothId: null,
-    to: '/info/collab/with-nature',
-  },
-  {
-    id: 4,
-    title: '소개팅',
-    image: sogaeting,
-    href: 'https://threadoffate.site/?ref=dgufest',
-    boothId: null,
-    to: null,
+    to: '/info/collab/108-leaders',
   },
   {
     id: 5,
@@ -62,6 +54,30 @@ const BANNERS = [
     to: null,
   },
   {
+    id: 1,
+    title: '동감',
+    image: donggam,
+    href: null,
+    boothId: null,
+    to: '/info/collab/donggam',
+  },
+  {
+    id: 4,
+    title: '운명도 꿰어야 사랑이다',
+    image: sogaeting,
+    href: 'https://threadoffate.site',
+    boothId: null,
+    to: null,
+  },
+  {
+    id: 3,
+    title: '자연科 함께',
+    image: scien,
+    href: null,
+    boothId: null,
+    to: '/info/collab/with-nature',
+  },
+  {
     id: 6,
     title: '첨단융합대학 야간부스',
     image: ace,
@@ -69,25 +85,12 @@ const BANNERS = [
     boothId: 18,
     to: null,
   },
-  {
-    id: 7,
-    title: '108 리더스',
-    image: leaders,
-    href: null,
-    boothId: null,
-    to: '/info/collab/108-leaders',
-  },
-  {
-    id: 8,
-    title: '축제기획단',
-    image: stu,
-    href: null,
-    boothId: null,
-    to: '/info/collab/festival-planning-team',
-  },
 ]
 
 const ROLLING_INTERVAL = 5000
+const LOOP_BANNERS = BANNERS.length > 1
+  ? [BANNERS[BANNERS.length - 1], ...BANNERS, BANNERS[0]]
+  : BANNERS
 
 let lastIndex = 0
 
@@ -148,6 +151,9 @@ export default function AdBanner() {
   const navigate = useNavigate()
   const location = useLocation()
   const [index, setIndex] = useState(lastIndex % BANNERS.length)
+  const [slideIndex, setSlideIndex] = useState(
+    BANNERS.length > 1 ? (lastIndex % BANNERS.length) + 1 : 0,
+  )
   const [openBoothId, setOpenBoothId] = useState(null)
   const [sheetTab, setSheetTab] = useState('info')
   const triggerRef = useRef(null)
@@ -159,7 +165,7 @@ export default function AdBanner() {
     triggerRef.current?.focus()
   }, [])
 
-  // 현재 index로 스크롤 위치를 맞춘다 (자동 롤링 / 첫 진입 복원)
+  // 실제 배너 앞뒤에 복제 슬라이드를 두어 양방향으로 끊김 없이 순환한다.
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -168,21 +174,33 @@ export default function AdBanner() {
     if (!track || isUserScrolling.current) return
 
     track.scrollTo({
-      left: track.clientWidth * index,
+      left: track.clientWidth * slideIndex,
       behavior: isFirstRender.current ? 'auto' : 'smooth',
     })
     isFirstRender.current = false
-  }, [index])
+  }, [index, slideIndex])
 
   // 사용자가 직접 넘긴 경우 index를 스크롤 위치에 맞춘다
   const handleScroll = () => {
     const track = trackRef.current
     if (!track) return
     isUserScrolling.current = true
-    const next = Math.round(track.scrollLeft / track.clientWidth)
-    setIndex((current) => (next === current ? current : next))
+    const nextSlide = Math.round(track.scrollLeft / track.clientWidth)
+    const nextIndex = BANNERS.length > 1
+      ? (nextSlide - 1 + BANNERS.length) % BANNERS.length
+      : 0
+
+    setSlideIndex(nextSlide)
+    setIndex(nextIndex)
     window.clearTimeout(trackRef.current._t)
     trackRef.current._t = window.setTimeout(() => {
+      if (BANNERS.length > 1 && nextSlide === 0) {
+        track.scrollTo({ left: track.clientWidth * BANNERS.length, behavior: 'auto' })
+        setSlideIndex(BANNERS.length)
+      } else if (BANNERS.length > 1 && nextSlide === BANNERS.length + 1) {
+        track.scrollTo({ left: track.clientWidth, behavior: 'auto' })
+        setSlideIndex(1)
+      }
       isUserScrolling.current = false
     }, 200)
   }
@@ -190,7 +208,7 @@ export default function AdBanner() {
   useEffect(() => {
     const timer = setInterval(() => {
       if (isUserScrolling.current) return
-      setIndex((current) => (current + 1) % BANNERS.length)
+      setSlideIndex((current) => current + 1)
     }, ROLLING_INTERVAL)
 
     return () => clearInterval(timer)
@@ -223,9 +241,9 @@ export default function AdBanner() {
   return (
     <>
       <Track ref={trackRef} onScroll={handleScroll}>
-        {BANNERS.map((banner) => (
+        {LOOP_BANNERS.map((banner, bannerIndex) => (
           <Slide
-            key={banner.id}
+            key={`${banner.id}-${bannerIndex}`}
             type="button"
             $image={banner.image}
             aria-label={banner.title}

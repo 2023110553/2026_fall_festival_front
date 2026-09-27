@@ -45,8 +45,8 @@ import { useMapZoneBooths } from '../../hooks/useMapZones'
 //   - 카메라(MapCanvas의 ZONE_CAMERAS.zone5)도 원점 기준으로 똑같이 2배라 화면 구도는 그대로다.
 const MAP_SCALE = 2
 
-export default function Zone5Scene({ brightnessLevel = null, onBoothClick }) {
-  const { booths } = useMapZoneBooths()
+export default function Zone5Scene({ onBoothClick }) {
+  const booths = useMapZoneBooths()
   const { scene } = useGLTF('/models/zone5.glb')
 
   // Zone1~4Scene과 동일한 이유로 그림자 cast/receive 활성화(기본값 false라 명시 필요).
@@ -62,7 +62,7 @@ export default function Zone5Scene({ brightnessLevel = null, onBoothClick }) {
   return (
     <>
       <primitive object={scene} scale={MAP_SCALE} />
-      <ZoneBooths booths={booths} brightnessLevel={brightnessLevel} onBoothClick={onBoothClick} />
+      <ZoneBooths booths={booths} onBoothClick={onBoothClick} />
     </>
   )
 }

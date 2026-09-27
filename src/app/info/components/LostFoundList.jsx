@@ -70,7 +70,7 @@ export default function LostFoundList({
                 </S.Hashtags>
               </S.Body>
               <S.Thumbnail>
-                {item.thumbnail_url ? <img src={item.thumbnail_url} alt="" /> : <span>{t('lostFound.photo')}</span>}
+                {item.thumbnail_url && <img src={item.thumbnail_url} alt="" />}
               </S.Thumbnail>
             </S.Card>
           ))}

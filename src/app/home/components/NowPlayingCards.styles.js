@@ -137,8 +137,6 @@ export const Thumbnail = styled.img`
 
     object-fit: cover;
     object-position: center;
-
-    transform: scale(1.1);
 `
 
 export const BottomGradient = styled.div`

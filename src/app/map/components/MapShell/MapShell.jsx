@@ -16,13 +16,12 @@ export default function MapShell() {
   const { t } = useTranslation()
   const {
     selectedDate, setSelectedDate, zoneId, setZoneId, timeOfDay,
-    booths, selectedBoothId, setSelectedBoothId, setIsSheetOpen, setSheetTab, boothBrightnessPreview,
+    booths, selectedBoothId, setSelectedBoothId, setSheetTab,
   } = useMapContext()
 
   const handleBoothClick = (boothId) => {
     setSelectedBoothId(boothId)
     setSheetTab('info')
-    setIsSheetOpen(true)
   }
 
   // 2026-09-24: 고른 부스를 찾아 지도에 넘긴다 — MapCanvas가 그 부스 정면으로 카메라를 옮긴다.
@@ -54,7 +53,6 @@ export default function MapShell() {
           <MapCanvas
             zoneId={zoneId}
             timeOfDay={timeOfDay}
-            boothBrightnessPreview={boothBrightnessPreview}
             focusBooth={focusBooth}
             onBoothClick={handleBoothClick}
           />

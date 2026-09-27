@@ -33,6 +33,13 @@ export const Thumbnail = styled.img`
     object-fit: cover;
     border-radius: 8px;
 `
+export const ThumbnailPlaceholder = styled.div`
+    width: 66px;
+    height: 66px;
+    flex: 0 0 66px;
+    border-radius: 8px;
+    background: #272727;
+`
 export const RestroomThumbnail = styled.div`
     width: 66px;
     height: 66px;
@@ -86,13 +93,34 @@ export const Info = styled.div`
     flex-direction: column;
     
 `
+export const TitleRow = styled.div`
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+    margin-bottom: 4px;
+`
 export const Title = styled.span`
+    min-width: 0;
     font-family: var(--font-pretendard);
     font-weight: 600;
     font-size: 16px;
     line-height: 100%;
     letter-spacing: 0;
-    margin-bottom: 4px;
+    overflow-wrap: anywhere;
+`
+export const ZoneBadge = styled.span`
+    flex-shrink: 0;
+    margin-top: 0.5px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(159, 156, 153, 0.18);
+    color: #737373;
+    font-family: var(--font-pretendard);
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
 `
 export const Department = styled.span`
     font-family: var(--font-pretendard);
@@ -114,10 +142,9 @@ export const Location = styled.span`
     color: #9F9C99;
 `
 export const LanternWrapper = styled.div`
-    width: 34px;
     min-width: 34px;
-    max-width: 34px;
-    flex: 0 0 34px;
+    width: max-content;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -125,13 +152,14 @@ export const LanternWrapper = styled.div`
     margin-left: auto;
 `
 export const CollabBadge = styled.span`
-    width: 34px;
+    width: max-content;
+    min-width: 34px;
     box-sizing: border-box;
     gap: 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 3px 0;
+    padding: 3px 4px;
     border-radius: 4px;
     background: #DC7054;
     color: #FDFDFD;
