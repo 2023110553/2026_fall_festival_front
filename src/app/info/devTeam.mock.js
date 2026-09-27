@@ -157,6 +157,7 @@ export const DEV_TEAM_MOCKS = [
       withTrack(MEMBERS.hyunwoo, '프론트엔드 팀장'),
       withTrack(MEMBERS.heesooBack, '백엔드 팀장'),
       withTrack(MEMBERS.heesooFront, '대외협력팀 팀장'),
+      withTrack(MEMBERS.hyoryeong, '홍보팀 팀장'),
     ],
   },
   {

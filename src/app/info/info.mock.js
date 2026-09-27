@@ -1,10 +1,11 @@
-import dongbitImage from '../../assets/info/collab-dongbit.png'
-import ecocoImage from '../../assets/info/collab-ecoco.png'
+import dongbitImage from '../../assets/info/collab-dongbit.webp'
+import ecocoImage from '../../assets/info/collab-ecoco.webp'
 import donggamImage from '../../assets/info/collab-donggam.webp'
 import naturalScienceImage from '../../assets/info/collab-natural-science.webp'
-import leaders108Image from '../../assets/info/collab-108.jpg'
-import studentCouncilImage from '../../assets/info/collab-student-council.png'
+import leaders108Image from '../../assets/info/collab-108.webp'
+import studentCouncilImage from '../../assets/info/collab-student-council.webp'
 import jogakImage from '../../assets/info/collab-jogak.webp'
+import fateDatingImage from '../../assets/info/collab-fate-dating.webp'
 import medicalAiBoothImage from '../../assets/info/booth-medical-ai.jpg'
 import businessBoothImage from '../../assets/info/booth-business.webp'
 
@@ -67,6 +68,29 @@ export const COLLAB_MOCKS = [
     snsUrl: 'https://www.instagram.com/donggukuniv_donggam/',
   },
   {
+    id: 'fate-dating',
+    name: '운명도 꿰어야 사랑이다',
+    description: `사주로 나를 알아보고, 궁합으로 인연을 찾아보세요.
+
+‘운명도 꿰어야 사랑이다’는
+나의 사주를 바탕으로 연애·결혼·자녀 운세를 확인하고,
+친구와의 궁합부터 새로운 사람과의 인연까지
+재미있게 탐색할 수 있는 사주 기반 소개팅 서비스입니다.
+
+친구와 궁합지도를 만들어 서로의 인연을 확인하고,
+나와 잘 맞는 사람을 찾아 새로운 인연으로 이어져 보세요.
+
+재미로 시작한 사주가
+어쩌면 설레는 인연의 시작이 될지도 몰라요.
+
+당신의 운명은 이미 정해져 있을지도 몰라요.
+하지만 그 인연을 꿰는 건, 당신입니다.`,
+    imageUrl: fateDatingImage,
+    imageFit: 'contain',
+    snsHandle: '@doyoubelieve_fate',
+    snsUrl: 'https://www.instagram.com/doyoubelieve_fate/',
+  },
+  {
     id: 'with-nature',
     name: '이과대학 불교동아리 ‘자연科 함께',
     description: '🪷이과대학 불교동아리 ‘자연科 함께’ 🪷 안녕하세요, 이과대학 불교동아리 ’자연科 함께‘입니다. 저희는 불교의 가르침을 중심으로 활동하지만, 종교적 배경에 상관없이 누구나 참여할 수 있는 환경을 제공합니다.',
@@ -81,6 +105,14 @@ export const COLLAB_MOCKS = [
 // 객체를 추가하면 목록 개수·펼쳐보기·상세 라우팅이 자동으로 반영된다.
 export const COLLAB_BOOTH_MOCKS = [
   {
+    id: 'business-administration',
+    name: '경영학과',
+    description: '👻강철상사 x 오뚜기 진라면 서포터즈👻 오뚜기 진라면 서포터즈와 함께하는 강철상사 할로윈 파티에 여러분을 초대합니다. 다양한 분장을 한 임직원들과 오뚜기의 라면들을 만나보세요 ! 🎃🧙🏻‍♀️',
+    imageUrl: businessBoothImage,
+    snsHandle: '@dongguk_biz',
+    snsUrl: 'https://www.instagram.com/dongguk_biz/',
+  },
+  {
     id: 'medical-ai',
     name: '의료인공지능공학과',
     description: '안녕하세요 첨단융합대학 의료인공지능공학과입니다. 오늘 밤, 신들의 연회에 당신을 초대합니다.',
@@ -88,13 +120,5 @@ export const COLLAB_BOOTH_MOCKS = [
     imageFit: 'contain',
     snsHandle: '@dgu_medai',
     snsUrl: 'https://www.instagram.com/dgu_medai/',
-  },
-  {
-    id: 'business-administration',
-    name: '경영학과',
-    description: '👻강철상사 x 오뚜기 진라면 서포터즈👻 오뚜기 진라면 서포터즈와 함께하는 강철상사 할로윈 파티에 여러분을 초대합니다. 다양한 분장을 한 임직원들과 오뚜기의 라면들을 만나보세요 ! 🎃🧙🏻‍♀️',
-    imageUrl: businessBoothImage,
-    snsHandle: '@dongguk_biz',
-    snsUrl: 'https://www.instagram.com/dongguk_biz/',
   },
 ]
