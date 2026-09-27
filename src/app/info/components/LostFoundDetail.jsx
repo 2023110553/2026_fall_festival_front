@@ -19,17 +19,19 @@ export default function LostFoundDetail({ item, onBack }) {
         <S.Title>{item.title}</S.Title>
       </S.TitleRow>
 
-      {item.image_urls?.length > 0 && (
-        <S.ImageGallery aria-label={t('lostFound.imagesLabel', { title: item.title })}>
-          {item.image_urls.map((imageUrl, index) => (
+      <S.ImageGallery aria-label={t('lostFound.imagesLabel', { title: item.title })}>
+        {item.image_urls?.length > 0 ? (
+          item.image_urls.map((imageUrl, index) => (
             <S.Image
               key={imageUrl}
               src={imageUrl}
               alt={t('lostFound.imageAlt', { title: item.title, index: index + 1 })}
             />
-          ))}
-        </S.ImageGallery>
-      )}
+          ))
+        ) : (
+          <S.ImagePlaceholder role="img" aria-label={t('lostFound.photo')} />
+        )}
+      </S.ImageGallery>
 
       <S.Tags>
         {item.tags?.map((tag) => (

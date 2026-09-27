@@ -58,6 +58,13 @@ export const Image = styled.img`
   scroll-snap-align: center;
 `
 
+export const ImagePlaceholder = styled.div`
+  width: 100%;
+  flex: 0 0 100%;
+  aspect-ratio: 1;
+  background: #100b0b;
+`
+
 export const Tags = styled.div`
   display: flex;
   flex-wrap: wrap;
