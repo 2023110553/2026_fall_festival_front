@@ -5,8 +5,8 @@ import styled, { keyframes } from 'styled-components'
 import { useTranslation } from '../../../i18n/useTranslation'
 
 const scroll = keyframes`
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
 `
 
 const Wrapper = styled.button`
