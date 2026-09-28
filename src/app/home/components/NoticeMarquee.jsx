@@ -81,10 +81,9 @@ const Item = styled.span`
 export default function NoticeMarquee({ notices = [], isLoading = false, isError = false }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const ordered = [...notices].sort((a, b) =>
-    Number(b.type === 'URGENT') - Number(a.type === 'URGENT') ||
-    b.created_at.localeCompare(a.created_at)
-  )
+  const ordered = notices
+    .filter((notice) => notice.type === 'URGENT')
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
   const message = isLoading
     ? t('home.noticeLoading')
     : isError
