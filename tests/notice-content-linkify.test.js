@@ -20,3 +20,18 @@ test('URL이 없는 공지 본문은 기존 텍스트를 그대로 유지한다'
 
   assert.deepEqual(parseTextWithUrls(content), [{ type: 'text', value: content }])
 })
+
+test('URL 뒤의 문장부호는 링크에서 제외하고 일반 텍스트로 유지한다', () => {
+  assert.deepEqual(parseTextWithUrls('신청: https://example.com/path?q=notice.'), [
+    { type: 'text', value: '신청: ' },
+    { type: 'url', value: 'https://example.com/path?q=notice' },
+    { type: 'text', value: '.' },
+  ])
+
+  assert.deepEqual(parseTextWithUrls('(https://example.org/help), 확인해주세요.'), [
+    { type: 'text', value: '(' },
+    { type: 'url', value: 'https://example.org/help' },
+    { type: 'text', value: '),' },
+    { type: 'text', value: ' 확인해주세요.' },
+  ])
+})
