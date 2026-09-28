@@ -1,5 +1,5 @@
 const URL_PATTERN = /https?:\/\/[^\s]+/gi
-const TRAILING_PUNCTUATION_PATTERN = /[.,!?;:]+$/u
+const TRAILING_PUNCTUATION_PATTERN = /[.,!?;:…。，、"'”’>]+$/u
 const KOREAN_PARTICLE_PATTERN = /(에서|으로|에게|까지|부터|처럼|보다|하고|이며|이면|에는|에도|으로는|으로도|로는|로도|을|를|은|는|이|가|와|과|도|만|에|로)$/u
 const CLOSING_DELIMITERS = {
   ')': '(',

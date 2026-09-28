@@ -71,3 +71,17 @@ test('URL 내부의 짝이 맞는 닫는 괄호는 링크에 유지한다', () =
 test('null 본문은 빈 내용으로 처리한다', () => {
   assert.deepEqual(parseTextWithUrls(null), [])
 })
+
+test('URL을 감싼 따옴표와 꺾쇠 및 유니코드 문장부호를 링크에서 제외한다', () => {
+  assert.deepEqual(parseTextWithUrls('<https://dgufesta.com>'), [
+    { type: 'text', value: '<' },
+    { type: 'url', value: 'https://dgufesta.com' },
+    { type: 'text', value: '>' },
+  ])
+
+  assert.deepEqual(parseTextWithUrls('“https://dgufesta.com”…'), [
+    { type: 'text', value: '“' },
+    { type: 'url', value: 'https://dgufesta.com' },
+    { type: 'text', value: '”…' },
+  ])
+})
