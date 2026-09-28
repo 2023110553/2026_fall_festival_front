@@ -20,8 +20,19 @@ export const Article = styled.div`
 export const TitleRow = styled.div`
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+`
+
+export const Title = styled.h3`
+  min-width: 0;
+  margin: 0;
+  color: #100b0b;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 `
 
 export const Image = styled.img`

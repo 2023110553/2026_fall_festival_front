@@ -85,6 +85,8 @@ const Item = styled.span`
   font-size: 12px;
   font-weight: 400;
   line-height: normal;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
 `
 
 export default function NoticeMarquee({ notices = [], isLoading = false, isError = false }) {

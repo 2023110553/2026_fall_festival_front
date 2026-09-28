@@ -1,7 +1,6 @@
 import { useAnalyticsView } from '../../../analytics/useAnalyticsView'
 import Tag from '../../../components/common/Tag'
 import InfoDetailHeader from './InfoDetailHeader'
-import OverflowMarquee from './OverflowMarquee'
 import { formatNoticeDate } from '../utils/formatNoticeDate'
 import { parseTextWithUrls } from '../utils/parseTextWithUrls'
 import { useTranslation } from '../../../i18n/useTranslation'
@@ -20,9 +19,7 @@ export default function NoticeDetail({ notice, onBack }) {
         <Tag tone={notice.type === 'URGENT' ? 'danger' : 'default'} size="detail">
           {notice.type === 'URGENT' ? t('notice.urgent') : t('notice.normal')}
         </Tag>
-        <OverflowMarquee as="h3" variant="detail">
-          {notice.title}
-        </OverflowMarquee>
+        <S.Title>{notice.title}</S.Title>
       </S.TitleRow>
 
       <S.Article>
