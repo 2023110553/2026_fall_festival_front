@@ -30,6 +30,17 @@ export const TitleRow = styled.span`
   gap: 8px;
 `
 
+export const Title = styled.strong`
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`
+
 export const Summary = styled.span`
   width: 100%;
   display: -webkit-box;
