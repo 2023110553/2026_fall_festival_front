@@ -3,6 +3,7 @@ import Tag from '../../../components/common/Tag'
 import InfoDetailHeader from './InfoDetailHeader'
 import OverflowMarquee from './OverflowMarquee'
 import { formatNoticeDate } from '../utils/formatNoticeDate'
+import { parseTextWithUrls } from '../utils/parseTextWithUrls'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './NoticeDetail.styles'
 
@@ -30,7 +31,20 @@ export default function NoticeDetail({ notice, onBack }) {
           <time dateTime={notice.created_at}>
             {formatNoticeDate(notice.created_at)}
           </time>{' '}
-          {notice.content}
+          {parseTextWithUrls(notice.content).map((segment, index) =>
+            segment.type === 'url' ? (
+              <S.ContentLink
+                key={`${segment.value}-${index}`}
+                href={segment.value}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {segment.value}
+              </S.ContentLink>
+            ) : (
+              segment.value
+            ),
+          )}
         </S.Content>
       </S.Article>
     </S.Page>
