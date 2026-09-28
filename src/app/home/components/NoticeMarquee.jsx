@@ -1,4 +1,5 @@
 import { trackEvent } from '../../../analytics/analytics'
+import { useLayoutEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components'
 import { useTranslation } from '../../../i18n/useTranslation'
@@ -64,11 +65,19 @@ const Track = styled.span`
 
 const Rolling = styled.span`
   display: flex;
+  width: max-content;
   flex-shrink: 0;
+  animation: ${scroll} var(--notice-duration, 8s) linear infinite;
+`
+
+const NoticeGroup = styled.span`
+  display: flex;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  min-width: var(--notice-cycle-width, 400px);
   gap: 40px;
   padding-right: 40px;
   white-space: nowrap;
-  animation: ${scroll} 18s linear infinite;
 `
 
 const Item = styled.span`
@@ -81,6 +90,9 @@ const Item = styled.span`
 export default function NoticeMarquee({ notices = [], isLoading = false, isError = false }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const trackRef = useRef(null)
+  const rollingRef = useRef(null)
+  const groupRef = useRef(null)
   const ordered = notices
     .filter((notice) => notice.type === 'URGENT')
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
@@ -92,21 +104,43 @@ export default function NoticeMarquee({ notices = [], isLoading = false, isError
         ? t('home.noticeEmpty')
         : null
 
+  useLayoutEffect(() => {
+    const track = trackRef.current
+    const rolling = rollingRef.current
+    const group = groupRef.current
+    if (!track || !rolling || !group) return
+
+    const updateTiming = () => {
+      // 50px/s, with at least 8 seconds before the same list repeats.
+      // Cover the viewport so the two identical groups join without a jump.
+      rolling.style.setProperty('--notice-cycle-width', `${Math.max(400, track.clientWidth)}px`)
+      rolling.style.setProperty('--notice-duration', `${group.getBoundingClientRect().width / 50}s`)
+    }
+
+    updateTiming()
+    const observer = new ResizeObserver(updateTiming)
+    observer.observe(track)
+    observer.observe(group)
+    return () => observer.disconnect()
+  }, [message])
+
   return (
     <Wrapper type="button" aria-label={t('home.viewNotices')} onClick={(event) => { const id = event.target.closest('[data-notice-id]')?.dataset.noticeId; trackEvent('rolling_notice_clicked', id ? { notice_id: id } : {}); navigate('/info?tab=notice') }}>
       <IconBox>
         <NoticeIcon />
       </IconBox>
       <Label>{t('home.notice')}</Label>
-      <Track>
+      <Track ref={trackRef}>
 
-        {message ? <Item role="status">{message}</Item> : [0, 1].map((loop) => (
-          <Rolling key={loop} aria-hidden={loop === 1 ? 'true' : undefined}>
+        {message ? <Item role="status">{message}</Item> : <Rolling ref={rollingRef}>
+          {[0, 1].map((loop) => (
+          <NoticeGroup key={loop} ref={loop === 0 ? groupRef : undefined} aria-hidden={loop === 1 ? 'true' : undefined}>
             {ordered.map((notice) => (
               <Item key={notice.notice_id} data-notice-id={notice.notice_id}>{notice.title}</Item>
             ))}
-          </Rolling>
-        ))}
+          </NoticeGroup>
+          ))}
+        </Rolling>}
       </Track>
     </Wrapper>
   )
