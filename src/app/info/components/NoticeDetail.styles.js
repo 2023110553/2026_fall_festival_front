@@ -39,3 +39,9 @@ export const Content = styled.p`
   line-height: 24px;
   white-space: pre-wrap;
 `
+
+export const ContentLink = styled.a`
+  color: inherit;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+`
