@@ -32,20 +32,15 @@ export const TitleRow = styled.span`
 
 export const Summary = styled.span`
   width: 100%;
-  display: flex;
-  gap: 4px;
+  display: -webkit-box;
   overflow: hidden;
-  color: ${({ theme }) => theme.color.textSub};
+  color: #737373;
   font-size: 12px;
-  line-height: 1;
-  white-space: nowrap;
-
-  time {
-    flex: 0 0 auto;
-  }
-
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  line-height: 14px;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  word-break: keep-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 `

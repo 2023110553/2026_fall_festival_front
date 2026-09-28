@@ -1,7 +1,6 @@
 import Tag from '../../../components/common/Tag'
 import EmptyState from '../../../components/common/EmptyState'
 import OverflowMarquee from './OverflowMarquee'
-import { formatNoticeDate } from '../utils/formatNoticeDate'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as S from './NoticeList.styles'
 
@@ -25,12 +24,7 @@ export default function NoticeList({ notices = [], onSelect }) {
             </Tag>
             <OverflowMarquee>{item.title}</OverflowMarquee>
           </S.TitleRow>
-          <S.Summary>
-            <time dateTime={item.created_at}>
-              {formatNoticeDate(item.created_at)}
-            </time>
-            {/* 목록 응답(GET /api/notices/)에는 본문 미리보기 필드가 없다 — 제목·날짜·유형만 표시 */}
-          </S.Summary>
+          <S.Summary>{item.content}</S.Summary>
         </S.Card>
       ))}
     </S.List>
